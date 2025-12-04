@@ -3,19 +3,24 @@
     "release": {
         "projects": ["packages/heatmap"],
         "version": {
-            "conventionalCommits": true
+            "conventionalCommits": true,
+            "fallbackCurrentVersionResolver": "disk",
+            "git": {
+                "commit": true,
+                "tag": true
+            }
         },
         "changelog": {
             "workspaceChangelog": {
                 "createRelease": "github"
             },
             "projectChangelogs": {
-                "file": "./CHANGELOG.md"
+                "file": "{projectRoot}/CHANGELOG.md"
+            },
+            "git": {
+                "commit": true,
+                "tag": false
             }
-        },
-        "git": {
-            "commit": true,
-            "tag": true
         }
     },
     "namedInputs": {
