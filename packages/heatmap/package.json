@@ -24,6 +24,7 @@
     ],
     "sideEffects": false,
     "scripts": {
+        "dev": "tsdown --watch",
         "build": "tsdown",
         "test": "vitest",
         "test:run": "vitest run",

@@ -181,5 +181,5 @@ export const DEFAULT_CONFIG = {
     blur: 15,
     maxOpacity: 0.8,
     minOpacity: 0,
-    useOffscreenCanvas: true
+    useOffscreenCanvas: false
 } as const;

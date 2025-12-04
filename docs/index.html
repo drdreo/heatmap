@@ -4,50 +4,635 @@
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Heatmap - Documentation & Examples</title>
+        <title>Heatmap - Modern Canvas Heatmap Library</title>
+        <meta name="description" content="A modern, performant, tree-shakeable heatmap rendering library with composable features." />
     </head>
     <body>
         <div id="app">
-            <header>
-                <h1>🔥 Heatmap</h1>
-                <p>
-                    A lightweight heatmap library for visualizing data intensity
-                </p>
+            <!-- Hero Section -->
+            <header class="hero">
+                <div class="hero-content">
+                    <h1>🔥 Heatmap</h1>
+                    <p class="tagline">A modern, performant, tree-shakeable heatmap rendering library</p>
+                    <div class="hero-badges">
+                        <span class="badge">Zero Dependencies</span>
+                        <span class="badge">Tree-Shakeable</span>
+                        <span class="badge">TypeScript</span>
+                        <span class="badge">Canvas2D</span>
+                    </div>
+                    <div class="hero-actions">
+                        <a href="#getting-started" class="btn btn-primary">Get Started</a>
+                        <a href="https://github.com/drdreo/heatmap" target="_blank" class="btn btn-secondary">GitHub</a>
+                    </div>
+                </div>
             </header>
 
+            <!-- Navigation -->
+            <nav class="nav">
+                <ul>
+                    <li><a href="#getting-started">Getting Started</a></li>
+                    <li><a href="#basic-demo">Basic Demo</a></li>
+                    <li><a href="#tooltip-demo">Tooltip</a></li>
+                    <li><a href="#animation-demo">Animation</a></li>
+                    <li><a href="#customization">Customization</a></li>
+                    <li><a href="#api">API</a></li>
+                </ul>
+            </nav>
+
             <main>
-                <section id="demo">
-                    <h2>Live Demo</h2>
-                    <p>
-                        Click anywhere on the canvas below to add data points:
-                    </p>
-                    <div id="heatmap-container"></div>
-                    <div class="controls">
-                        <button id="clear-btn">Clear</button>
-                        <button id="random-btn">Add Random Points</button>
+                <!-- Getting Started -->
+                <section id="getting-started" class="section">
+                    <h2>Getting Started</h2>
+                    <div class="card">
+                        <h3>Installation</h3>
+                        <pre><code class="language-bash">npm install @drdreo/heatmap</code></pre>
+                    </div>
+                    <div class="card">
+                        <h3>Quick Start</h3>
+                        <pre><code class="language-typescript">import { createHeatmap } from '@drdreo/heatmap';
+
+const heatmap = createHeatmap({
+    container: document.getElementById('heatmap')!,
+    width: 800,
+    height: 400,
+    radius: 25
+});
+
+heatmap.setData({
+    min: 0,
+    max: 100,
+    data: [
+        { x: 200, y: 200, value: 80 },
+        { x: 400, y: 150, value: 60 }
+    ]
+});</code></pre>
                     </div>
                 </section>
 
-                <section id="installation">
-                    <h2>Installation</h2>
-                    <pre><code>npm install @drdreo/heatmap</code></pre>
-                </section>
+                <!-- Basic Demo -->
+                <section id="basic-demo" class="section">
+                    <h2>Basic Demo</h2>
+                    <p class="section-description">Click anywhere on the canvas to add data points. The heatmap visualizes intensity based on point values.</p>
 
-                <section id="usage">
-                    <h2>Basic Usage</h2>
-                    <pre><code>import { Heatmap } from '@drdreo/heatmap';
+                    <div class="demo-container">
+                        <div class="demo-canvas-wrapper">
+                            <div id="basic-heatmap-container" class="heatmap-container"></div>
+                        </div>
+                        <div class="demo-controls">
+                            <button id="basic-clear-btn" class="btn">Clear</button>
+                            <button id="basic-random-btn" class="btn btn-primary">Add Random Points</button>
+                        </div>
+                        <div class="demo-info">
+                            <span id="basic-point-count">Points: 0</span>
+                        </div>
+                    </div>
 
-const heatmap = new Heatmap('#container', {
-  width: 800,
-  height: 600,
-  radius: 25,
+                    <div class="code-example">
+                        <h4>Code</h4>
+                        <pre><code class="language-typescript">import { createHeatmap } from '@drdreo/heatmap';
+
+const heatmap = createHeatmap({
+    container: document.querySelector('#container')!,
+    width: 800,
+    height: 400
 });
 
-heatmap.addPoint({ x: 100, y: 100, value: 50 });
-heatmap.render();</code></pre>
+// Add a single point
+heatmap.addPoint({ x: 200, y: 200, value: 80 });
+
+// Add multiple points
+heatmap.addPoints([
+    { x: 100, y: 100, value: 50 },
+    { x: 300, y: 200, value: 70 }
+]);</code></pre>
+                    </div>
                 </section>
+
+                <!-- Tooltip Demo -->
+                <section id="tooltip-demo" class="section">
+                    <h2>Tooltip Feature</h2>
+                    <p class="section-description">Add interactive tooltips that display values when hovering over data points. Hover over the heatmap to see it in action!</p>
+
+                    <div class="feature-highlights">
+                        <div class="feature-item">
+                            <span class="feature-icon">📍</span>
+                            <span>Custom Formatters</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🎨</span>
+                            <span>Customizable Styles</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📐</span>
+                            <span>Boundary Enforcement</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-container">
+                        <div class="demo-canvas-wrapper">
+                            <div id="tooltip-heatmap-container" class="heatmap-container"></div>
+                        </div>
+                        <div class="demo-controls">
+                            <button id="tooltip-clear-btn" class="btn">Clear</button>
+                            <button id="tooltip-random-btn" class="btn btn-primary">Add Random Points</button>
+                        </div>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Code</h4>
+                        <pre><code class="language-typescript">import { createHeatmap, withTooltip } from '@drdreo/heatmap';
+
+const heatmap = createHeatmap(
+    {
+        container: document.querySelector('#container')!,
+        width: 800,
+        height: 400
+    },
+    withTooltip({
+        formatter: (value, x, y) => `Value: ${value.toFixed(1)} at (${x}, ${y})`,
+        offset: { x: 15, y: 15 },
+        enforceBounds: true
+    })
+);</code></pre>
+                    </div>
+
+                    <div class="card config-card">
+                        <h4>TooltipConfig Options</h4>
+                        <table class="config-table">
+                            <thead>
+                                <tr>
+                                    <th>Option</th>
+                                    <th>Type</th>
+                                    <th>Default</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>formatter</code></td>
+                                    <td><code>(value, x, y) => string</code></td>
+                                    <td><code>v => \`${v}\`</code></td>
+                                    <td>Custom text formatter for tooltip</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gridSize</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>6</code></td>
+                                    <td>Grid cell size for point grouping</td>
+                                </tr>
+                                <tr>
+                                    <td><code>offset</code></td>
+                                    <td><code>{ x, y }</code></td>
+                                    <td><code>{ x: 15, y: 15 }</code></td>
+                                    <td>Offset from cursor position</td>
+                                </tr>
+                                <tr>
+                                    <td><code>enforceBounds</code></td>
+                                    <td><code>boolean</code></td>
+                                    <td><code>false</code></td>
+                                    <td>Keep tooltip within container</td>
+                                </tr>
+                                <tr>
+                                    <td><code>className</code></td>
+                                    <td><code>string</code></td>
+                                    <td><code>'heatmap-tooltip'</code></td>
+                                    <td>Custom CSS class name</td>
+                                </tr>
+                                <tr>
+                                    <td><code>style</code></td>
+                                    <td><code>CSSStyleDeclaration</code></td>
+                                    <td>-</td>
+                                    <td>Custom inline styles</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Animation Demo -->
+                <section id="animation-demo" class="section">
+                    <h2>Animation Feature</h2>
+                    <p class="section-description">Visualize time-series data with smooth animations. Watch data points appear and fade over time.</p>
+
+                    <div class="feature-highlights">
+                        <div class="feature-item">
+                            <span class="feature-icon">⏱️</span>
+                            <span>Temporal Data</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🔄</span>
+                            <span>Loop Support</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">⏩</span>
+                            <span>Playback Control</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📊</span>
+                            <span>Fade Effects</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-container">
+                        <div class="demo-canvas-wrapper">
+                            <div id="animation-heatmap-container" class="heatmap-container"></div>
+                        </div>
+                        <div class="demo-controls animation-controls">
+                            <button id="animation-play-btn" class="btn btn-primary">▶ Play</button>
+                            <button id="animation-pause-btn" class="btn">⏸ Pause</button>
+                            <button id="animation-stop-btn" class="btn">⏹ Stop</button>
+                            <div class="speed-control">
+                                <label for="animation-speed">Speed:</label>
+                                <input type="range" id="animation-speed" min="0.5" max="5" step="0.5" value="1">
+                                <span id="animation-speed-value">1x</span>
+                            </div>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="animation-loop">
+                                Loop
+                            </label>
+                        </div>
+                        <div class="progress-container">
+                            <input type="range" id="animation-progress" min="0" max="100" value="0" class="progress-slider">
+                            <div class="progress-info">
+                                <span id="animation-time">00:00</span>
+                                <span id="animation-state">Idle</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Code</h4>
+                        <pre><code class="language-typescript">import { createHeatmap, withAnimation, type AnimatedHeatmap } from '@drdreo/heatmap';
+
+const heatmap = createHeatmap(
+    {
+        container: document.querySelector('#container')!,
+        width: 800,
+        height: 400
+    },
+    withAnimation({
+        fadeOutDuration: 2000,
+        timeWindow: 5000,
+        playbackSpeed: 1,
+        loop: true,
+        onFrame: (timestamp, progress) => {
+            console.log(`Progress: ${(progress * 100).toFixed(1)}%`);
+        }
+    })
+) as AnimatedHeatmap;
+
+// Set temporal data
+heatmap.setTemporalData({
+    min: 0,
+    max: 100,
+    startTime: 0,
+    endTime: 30000,
+    data: [
+        { x: 100, y: 100, value: 50, timestamp: 1000 },
+        { x: 200, y: 150, value: 70, timestamp: 2000 },
+        // ... more points
+    ]
+});
+
+// Control playback
+heatmap.play();
+heatmap.pause();
+heatmap.seek(5000); // Seek to 5 seconds
+heatmap.setSpeed(2); // 2x speed</code></pre>
+                    </div>
+
+                    <div class="card config-card">
+                        <h4>AnimationConfig Options</h4>
+                        <table class="config-table">
+                            <thead>
+                                <tr>
+                                    <th>Option</th>
+                                    <th>Type</th>
+                                    <th>Default</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>fadeOutDuration</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>2000</code></td>
+                                    <td>Point fade-out duration in ms</td>
+                                </tr>
+                                <tr>
+                                    <td><code>timeWindow</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>5000</code></td>
+                                    <td>Time window for point accumulation</td>
+                                </tr>
+                                <tr>
+                                    <td><code>playbackSpeed</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>1</code></td>
+                                    <td>Animation speed multiplier</td>
+                                </tr>
+                                <tr>
+                                    <td><code>loop</code></td>
+                                    <td><code>boolean</code></td>
+                                    <td><code>false</code></td>
+                                    <td>Whether to loop the animation</td>
+                                </tr>
+                                <tr>
+                                    <td><code>onFrame</code></td>
+                                    <td><code>(timestamp, progress) => void</code></td>
+                                    <td>-</td>
+                                    <td>Callback on each animation frame</td>
+                                </tr>
+                                <tr>
+                                    <td><code>onComplete</code></td>
+                                    <td><code>() => void</code></td>
+                                    <td>-</td>
+                                    <td>Callback when animation completes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Customization -->
+                <section id="customization" class="section">
+                    <h2>Customization</h2>
+                    <p class="section-description">Customize every aspect of your heatmap - gradients, radius, blur, and more.</p>
+
+                    <div class="demo-container">
+                        <div class="demo-canvas-wrapper">
+                            <div id="custom-heatmap-container" class="heatmap-container"></div>
+                        </div>
+                        <div class="customization-panel">
+                            <div class="control-group">
+                                <label for="radius-slider">Radius: <span id="radius-value">25</span></label>
+                                <input type="range" id="radius-slider" min="5" max="100" value="25">
+                            </div>
+                            <div class="control-group">
+                                <label for="blur-slider">Blur: <span id="blur-value">15</span></label>
+                                <input type="range" id="blur-slider" min="0" max="50" value="15">
+                            </div>
+                            <div class="control-group">
+                                <label for="opacity-slider">Max Opacity: <span id="opacity-value">0.8</span></label>
+                                <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.8">
+                            </div>
+                            <div class="control-group">
+                                <label>Gradient Preset:</label>
+                                <select id="gradient-select">
+                                    <option value="default">Default (Blue → Green → Yellow → Red)</option>
+                                    <option value="thermal">Thermal (Black → Purple → Red → Yellow → White)</option>
+                                    <option value="cool">Cool (Purple → Cyan → Green)</option>
+                                    <option value="fire">Fire (Black → Red → Orange → Yellow)</option>
+                                    <option value="ocean">Ocean (Dark Blue → Cyan → White)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <button id="custom-random-btn" class="btn btn-primary btn-full">Generate Random Data</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Custom Gradient Example</h4>
+                        <pre><code class="language-typescript">import { createHeatmap, type GradientStop } from '@drdreo/heatmap';
+
+const customGradient: GradientStop[] = [
+    { offset: 0, color: 'rgba(0, 0, 0, 0)' },
+    { offset: 0.2, color: 'rgba(128, 0, 255, 1)' },
+    { offset: 0.5, color: 'rgba(0, 255, 255, 1)' },
+    { offset: 0.8, color: 'rgba(0, 255, 0, 1)' },
+    { offset: 1, color: 'rgba(255, 255, 255, 1)' }
+];
+
+const heatmap = createHeatmap({
+    container: document.querySelector('#container')!,
+    width: 800,
+    height: 400,
+    radius: 30,
+    blur: 20,
+    maxOpacity: 0.9,
+    minOpacity: 0.1,
+    gradient: customGradient
+});
+
+// Update gradient dynamically
+heatmap.setGradient(newGradient);</code></pre>
+                    </div>
+                </section>
+
+                <!-- API Reference -->
+                <section id="api" class="section">
+                    <h2>API Reference</h2>
+
+                    <div class="card">
+                        <h3>HeatmapConfig</h3>
+                        <table class="config-table">
+                            <thead>
+                                <tr>
+                                    <th>Option</th>
+                                    <th>Type</th>
+                                    <th>Default</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>container</code></td>
+                                    <td><code>HTMLElement</code></td>
+                                    <td>required</td>
+                                    <td>Container element for the canvas</td>
+                                </tr>
+                                <tr>
+                                    <td><code>width</code></td>
+                                    <td><code>number</code></td>
+                                    <td>container width</td>
+                                    <td>Canvas width in pixels</td>
+                                </tr>
+                                <tr>
+                                    <td><code>height</code></td>
+                                    <td><code>number</code></td>
+                                    <td>container height</td>
+                                    <td>Canvas height in pixels</td>
+                                </tr>
+                                <tr>
+                                    <td><code>radius</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>25</code></td>
+                                    <td>Point influence radius</td>
+                                </tr>
+                                <tr>
+                                    <td><code>blur</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>15</code></td>
+                                    <td>Blur amount for smoothing</td>
+                                </tr>
+                                <tr>
+                                    <td><code>maxOpacity</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>0.8</code></td>
+                                    <td>Maximum opacity (0-1)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>minOpacity</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>0</code></td>
+                                    <td>Minimum opacity (0-1)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gradient</code></td>
+                                    <td><code>GradientStop[]</code></td>
+                                    <td>Default gradient</td>
+                                    <td>Custom gradient definition</td>
+                                </tr>
+                                <tr>
+                                    <td><code>useOffscreenCanvas</code></td>
+                                    <td><code>boolean</code></td>
+                                    <td><code>true</code></td>
+                                    <td>Use offscreen canvas for performance</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <h3>Heatmap Methods</h3>
+                        <table class="config-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Parameters</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>setData()</code></td>
+                                    <td><code>HeatmapData</code></td>
+                                    <td>Set the data to render</td>
+                                </tr>
+                                <tr>
+                                    <td><code>addPoint()</code></td>
+                                    <td><code>HeatmapPoint</code></td>
+                                    <td>Add a single point</td>
+                                </tr>
+                                <tr>
+                                    <td><code>addPoints()</code></td>
+                                    <td><code>HeatmapPoint[]</code></td>
+                                    <td>Add multiple points</td>
+                                </tr>
+                                <tr>
+                                    <td><code>setGradient()</code></td>
+                                    <td><code>GradientStop[]</code></td>
+                                    <td>Update the gradient</td>
+                                </tr>
+                                <tr>
+                                    <td><code>clear()</code></td>
+                                    <td>-</td>
+                                    <td>Clear all data</td>
+                                </tr>
+                                <tr>
+                                    <td><code>getValueAt()</code></td>
+                                    <td><code>x, y</code></td>
+                                    <td>Get value at position</td>
+                                </tr>
+                                <tr>
+                                    <td><code>getDataURL()</code></td>
+                                    <td><code>type?, quality?</code></td>
+                                    <td>Export as data URL</td>
+                                </tr>
+                                <tr>
+                                    <td><code>destroy()</code></td>
+                                    <td>-</td>
+                                    <td>Clean up resources</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <h3>AnimatedHeatmap Methods</h3>
+                        <p class="card-description">Additional methods available when using <code>withAnimation()</code></p>
+                        <table class="config-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Parameters</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>setTemporalData()</code></td>
+                                    <td><code>TemporalHeatmapData</code></td>
+                                    <td>Set time-series data</td>
+                                </tr>
+                                <tr>
+                                    <td><code>play()</code></td>
+                                    <td>-</td>
+                                    <td>Start/resume animation</td>
+                                </tr>
+                                <tr>
+                                    <td><code>pause()</code></td>
+                                    <td>-</td>
+                                    <td>Pause animation</td>
+                                </tr>
+                                <tr>
+                                    <td><code>stop()</code></td>
+                                    <td>-</td>
+                                    <td>Stop and reset</td>
+                                </tr>
+                                <tr>
+                                    <td><code>seek()</code></td>
+                                    <td><code>timestamp</code></td>
+                                    <td>Seek to timestamp</td>
+                                </tr>
+                                <tr>
+                                    <td><code>seekProgress()</code></td>
+                                    <td><code>progress (0-1)</code></td>
+                                    <td>Seek to progress</td>
+                                </tr>
+                                <tr>
+                                    <td><code>setSpeed()</code></td>
+                                    <td><code>speed</code></td>
+                                    <td>Set playback speed</td>
+                                </tr>
+                                <tr>
+                                    <td><code>setLoop()</code></td>
+                                    <td><code>loop</code></td>
+                                    <td>Enable/disable loop</td>
+                                </tr>
+                                <tr>
+                                    <td><code>getAnimationState()</code></td>
+                                    <td>-</td>
+                                    <td>Get current state</td>
+                                </tr>
+                                <tr>
+                                    <td><code>getCurrentTime()</code></td>
+                                    <td>-</td>
+                                    <td>Get current timestamp</td>
+                                </tr>
+                                <tr>
+                                    <td><code>getProgress()</code></td>
+                                    <td>-</td>
+                                    <td>Get progress (0-1)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="footer">
+                    <p>Built with ❤️ by <a href="https://github.com/drdreo" target="_blank">@drdreo</a></p>
+                    <p class="footer-links">
+                        <a href="https://github.com/drdreo/heatmap" target="_blank">GitHub</a>
+                        <span>•</span>
+                        <a href="https://www.npmjs.com/package/@drdreo/heatmap" target="_blank">npm</a>
+                    </p>
+                </footer>
             </main>
         </div>
         <script type="module" src="/src/main.ts"></script>
     </body>
 </html>
+
