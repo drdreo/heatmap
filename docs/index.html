@@ -5,7 +5,10 @@
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Heatmap - Modern Canvas Heatmap Library</title>
-        <meta name="description" content="A modern, performant, tree-shakeable heatmap rendering library with composable features." />
+        <meta
+            name="description"
+            content="A modern, performant, tree-shakeable heatmap rendering library with composable features."
+        />
     </head>
     <body>
         <div id="app">
@@ -13,7 +16,10 @@
             <header class="hero">
                 <div class="hero-content">
                     <h1>🔥 Heatmap</h1>
-                    <p class="tagline">A modern, performant, tree-shakeable heatmap rendering library</p>
+                    <p class="tagline">
+                        A modern, performant, tree-shakeable heatmap rendering
+                        library
+                    </p>
                     <div class="hero-badges">
                         <span class="badge">Zero Dependencies</span>
                         <span class="badge">Tree-Shakeable</span>
@@ -21,8 +27,15 @@
                         <span class="badge">Canvas2D</span>
                     </div>
                     <div class="hero-actions">
-                        <a href="#getting-started" class="btn btn-primary">Get Started</a>
-                        <a href="https://github.com/drdreo/heatmap" target="_blank" class="btn btn-secondary">GitHub</a>
+                        <a href="#getting-started" class="btn btn-primary"
+                            >Get Started</a
+                        >
+                        <a
+                            href="https://github.com/drdreo/heatmap"
+                            target="_blank"
+                            class="btn btn-secondary"
+                            >GitHub</a
+                        >
                     </div>
                 </div>
             </header>
@@ -31,10 +44,10 @@
             <nav class="nav">
                 <ul>
                     <li><a href="#getting-started">Getting Started</a></li>
+                    <li><a href="#customization">Customization</a></li>
                     <li><a href="#basic-demo">Basic Demo</a></li>
                     <li><a href="#tooltip-demo">Tooltip</a></li>
                     <li><a href="#animation-demo">Animation</a></li>
-                    <li><a href="#customization">Customization</a></li>
                     <li><a href="#api">API</a></li>
                 </ul>
             </nav>
@@ -55,32 +68,214 @@ const heatmap = createHeatmap({
     container: document.getElementById('heatmap')!,
     width: 800,
     height: 400,
-    radius: 25
+    radius: 25,
+    data: {
+        min: 0,
+        max: 100,
+        data: [
+            { x: 200, y: 200, value: 80 },
+            { x: 400, y: 150, value: 60 }
+        ]
+    }
+});
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Customization -->
+                <section id="customization" class="section">
+                    <h2>Customization</h2>
+                    <p class="section-description">
+                        Customize every aspect of your heatmap - gradients,
+                        radius, blur, and more.
+                    </p>
+
+                    <div class="demo-container">
+                        <div class="demo-canvas-wrapper">
+                            <div
+                                id="custom-heatmap-container"
+                                class="heatmap-container"
+                            ></div>
+                        </div>
+                        <div class="customization-panel">
+                            <div class="control-group">
+                                <label for="radius-slider"
+                                    >Radius:
+                                    <span id="radius-value">25</span></label
+                                >
+                                <input
+                                    type="range"
+                                    id="radius-slider"
+                                    min="5"
+                                    max="100"
+                                    value="25"
+                                />
+                            </div>
+                            <div class="control-group">
+                                <label for="blur-slider"
+                                    >Blur:
+                                    <span id="blur-value">0.85</span></label
+                                >
+                                <input
+                                    type="range"
+                                    id="blur-slider"
+                                    min="0"
+                                    max="1"
+                                    step="0.05"
+                                    value="0.85"
+                                />
+                            </div>
+                            <div class="control-group">
+                                <label for="opacity-slider"
+                                    >Max Opacity:
+                                    <span id="opacity-value">0.8</span></label
+                                >
+                                <input
+                                    type="range"
+                                    id="opacity-slider"
+                                    min="0"
+                                    max="1"
+                                    step="0.1"
+                                    value="0.8"
+                                />
+                            </div>
+                            <div class="control-group">
+                                <label for="gridsize-slider"
+                                    >Grid Size:
+                                    <span id="gridsize-value">20</span></label
+                                >
+                                <input
+                                    type="range"
+                                    id="gridsize-slider"
+                                    min="1"
+                                    value="20"
+                                    step="1"
+                                />
+                            </div>
+                            <div class="control-group">
+                                <label>Gradient Preset:</label>
+                                <select id="gradient-select">
+                                    <option value="cool">
+                                        Cool (Purple → Cyan → Green)
+                                    </option>
+                                    <option value="default">
+                                        Default (Blue → Green → Yellow → Red)
+                                    </option>
+                                    <option value="thermal">
+                                        Thermal (Black → Purple → Red → Yellow →
+                                        White)
+                                    </option>
+                                    <option value="fire">
+                                        Fire (Black → Red → Orange → Yellow)
+                                    </option>
+                                    <option value="ocean">
+                                        Ocean (Dark Blue → Cyan → White)
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label
+                                    >Blend Mode:
+                                    <small style="opacity: 0.7"
+                                        >(how points combine)</small
+                                    ></label
+                                >
+                                <select id="blendmode-select">
+                                    <option value="source-over">
+                                        Source Over (Default layering)
+                                    </option>
+                                    <option value="lighter">
+                                        Lighter (Additive - overlaps glow
+                                        brighter)
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="intensity-slider"
+                                    >Intensity Curve:
+                                    <span id="intensity-value">1.0</span>
+                                    <small style="opacity: 0.7"
+                                        >(&lt; 1 = boost lows, &gt; 1 = boost
+                                        highs)</small
+                                    ></label
+                                >
+                                <input
+                                    type="range"
+                                    id="intensity-slider"
+                                    min="0.1"
+                                    max="3"
+                                    step="0.1"
+                                    value="1"
+                                />
+                            </div>
+                            <div class="control-group">
+                                <button
+                                    id="custom-random-btn"
+                                    class="btn btn-primary btn-full"
+                                >
+                                    Generate Random Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Custom Gradient Example</h4>
+                        <pre><code class="language-typescript">import { createHeatmap, type GradientStop } from '@drdreo/heatmap';
+
+const customGradient: GradientStop[] = [
+    { offset: 0, color: 'rgba(0, 0, 0, 0)' },
+    { offset: 0.2, color: 'rgba(128, 0, 255, 1)' },
+    { offset: 0.5, color: 'rgba(0, 255, 255, 1)' },
+    { offset: 0.8, color: 'rgba(0, 255, 0, 1)' },
+    { offset: 1, color: 'rgba(255, 255, 255, 1)' }
+];
+
+const heatmap = createHeatmap({
+    container: document.querySelector('#container')!,
+    width: 800,
+    height: 400,
+    radius: 30,
+    blur: 0.85,
+    maxOpacity: 0.9,
+    minOpacity: 0.1,
+    gradient: customGradient,
+    // 'lighter' makes overlapping points glow brighter (additive blending)
+    blendMode: 'lighter',
+    // &lt; 1 boosts low values, &gt; 1 emphasizes high values
+    intensityExponent: 0.7
 });
 
-heatmap.setData({
-    min: 0,
-    max: 100,
-    data: [
-        { x: 200, y: 200, value: 80 },
-        { x: 400, y: 150, value: 60 }
-    ]
-});</code></pre>
+// Update gradient dynamically
+heatmap.setGradient(newGradient);</code></pre>
                     </div>
                 </section>
 
                 <!-- Basic Demo -->
                 <section id="basic-demo" class="section">
                     <h2>Basic Demo</h2>
-                    <p class="section-description">Click anywhere on the canvas to add data points. The heatmap visualizes intensity based on point values.</p>
+                    <p class="section-description">
+                        Click anywhere on the canvas to add data points. The
+                        heatmap visualizes intensity based on point values.
+                    </p>
 
                     <div class="demo-container">
                         <div class="demo-canvas-wrapper">
-                            <div id="basic-heatmap-container" class="heatmap-container"></div>
+                            <div
+                                id="basic-heatmap-container"
+                                class="heatmap-container"
+                            ></div>
                         </div>
                         <div class="demo-controls">
-                            <button id="basic-clear-btn" class="btn">Clear</button>
-                            <button id="basic-random-btn" class="btn btn-primary">Add Random Points</button>
+                            <button id="basic-clear-btn" class="btn">
+                                Clear
+                            </button>
+                            <button
+                                id="basic-random-btn"
+                                class="btn btn-primary"
+                            >
+                                Add Random Points
+                            </button>
                             <label class="checkbox-label">
                                 <input type="checkbox" id="basic-show-stats" />
                                 Show Debug Stats
@@ -89,38 +284,66 @@ heatmap.setData({
                         <div class="demo-info">
                             <span id="basic-point-count">Points: 0</span>
                         </div>
-                        
+
                         <!-- Debug Stats Panel -->
                         <div id="basic-stats-panel" class="stats-panel hidden">
                             <h4>🔍 Debug Stats</h4>
                             <div class="stats-grid">
                                 <div class="stat-item">
                                     <span class="stat-label">Points</span>
-                                    <span id="stat-point-count" class="stat-value">0</span>
+                                    <span
+                                        id="stat-point-count"
+                                        class="stat-value"
+                                        >0</span
+                                    >
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-label">Radius</span>
-                                    <span id="stat-radius" class="stat-value">25</span>
+                                    <span id="stat-radius" class="stat-value"
+                                        >25</span
+                                    >
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">Value Grid Size</span>
-                                    <span id="stat-grid-size" class="stat-value">0</span>
+                                    <span class="stat-label"
+                                        >Value Grid Size</span
+                                    >
+                                    <span id="stat-grid-size" class="stat-value"
+                                        >0</span
+                                    >
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-label">Data Range</span>
-                                    <span id="stat-data-range" class="stat-value">-</span>
+                                    <span
+                                        id="stat-data-range"
+                                        class="stat-value"
+                                        >-</span
+                                    >
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-label">Canvas Size</span>
-                                    <span id="stat-canvas-size" class="stat-value">-</span>
+                                    <span
+                                        id="stat-canvas-size"
+                                        class="stat-value"
+                                        >-</span
+                                    >
                                 </div>
                                 <div class="stat-item full-width">
-                                    <span class="stat-label">Render Boundaries</span>
-                                    <span id="stat-render-bounds" class="stat-value">-</span>
+                                    <span class="stat-label"
+                                        >Render Boundaries</span
+                                    >
+                                    <span
+                                        id="stat-render-bounds"
+                                        class="stat-value"
+                                        >-</span
+                                    >
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">Render Coverage</span>
-                                    <span id="stat-coverage" class="stat-value">0%</span>
+                                    <span class="stat-label"
+                                        >Render Coverage</span
+                                    >
+                                    <span id="stat-coverage" class="stat-value"
+                                        >0%</span
+                                    >
                                 </div>
                             </div>
                         </div>
@@ -150,7 +373,11 @@ heatmap.addPoints([
                 <!-- Tooltip Demo -->
                 <section id="tooltip-demo" class="section">
                     <h2>Tooltip Feature</h2>
-                    <p class="section-description">Add interactive tooltips that display values when hovering over data points. Hover over the heatmap to see it in action!</p>
+                    <p class="section-description">
+                        Add interactive tooltips that display values when
+                        hovering over data points. Hover over the heatmap to see
+                        it in action!
+                    </p>
 
                     <div class="feature-highlights">
                         <div class="feature-item">
@@ -169,11 +396,21 @@ heatmap.addPoints([
 
                     <div class="demo-container">
                         <div class="demo-canvas-wrapper">
-                            <div id="tooltip-heatmap-container" class="heatmap-container"></div>
+                            <div
+                                id="tooltip-heatmap-container"
+                                class="heatmap-container"
+                            ></div>
                         </div>
                         <div class="demo-controls">
-                            <button id="tooltip-clear-btn" class="btn">Clear</button>
-                            <button id="tooltip-random-btn" class="btn btn-primary">Add Random Points</button>
+                            <button id="tooltip-clear-btn" class="btn">
+                                Clear
+                            </button>
+                            <button
+                                id="tooltip-random-btn"
+                                class="btn btn-primary"
+                            >
+                                Add Random Points
+                            </button>
                         </div>
                     </div>
 
@@ -209,7 +446,9 @@ const heatmap = createHeatmap(
                             <tbody>
                                 <tr>
                                     <td><code>formatter</code></td>
-                                    <td><code>(value, x, y) => string</code></td>
+                                    <td>
+                                        <code>(value, x, y) => string</code>
+                                    </td>
                                     <td><code>v => \`${v}\`</code></td>
                                     <td>Custom text formatter for tooltip</td>
                                 </tr>
@@ -245,7 +484,10 @@ const heatmap = createHeatmap(
                 <!-- Animation Demo -->
                 <section id="animation-demo" class="section">
                     <h2>Animation Feature</h2>
-                    <p class="section-description">Visualize time-series data with smooth animations. Watch data points appear and fade over time.</p>
+                    <p class="section-description">
+                        Visualize time-series data with smooth animations. Watch
+                        data points appear and fade over time.
+                    </p>
 
                     <div class="feature-highlights">
                         <div class="feature-item">
@@ -268,24 +510,50 @@ const heatmap = createHeatmap(
 
                     <div class="demo-container">
                         <div class="demo-canvas-wrapper">
-                            <div id="animation-heatmap-container" class="heatmap-container"></div>
+                            <div
+                                id="animation-heatmap-container"
+                                class="heatmap-container"
+                            ></div>
                         </div>
                         <div class="demo-controls animation-controls">
-                            <button id="animation-play-btn" class="btn btn-primary">▶ Play</button>
-                            <button id="animation-pause-btn" class="btn">⏸ Pause</button>
-                            <button id="animation-stop-btn" class="btn">⏹ Stop</button>
+                            <button
+                                id="animation-play-btn"
+                                class="btn btn-primary"
+                            >
+                                ▶ Play
+                            </button>
+                            <button id="animation-pause-btn" class="btn">
+                                ⏸ Pause
+                            </button>
+                            <button id="animation-stop-btn" class="btn">
+                                ⏹ Stop
+                            </button>
                             <div class="speed-control">
                                 <label for="animation-speed">Speed:</label>
-                                <input type="range" id="animation-speed" min="0.5" max="5" step="0.5" value="1">
+                                <input
+                                    type="range"
+                                    id="animation-speed"
+                                    min="0.5"
+                                    max="5"
+                                    step="0.5"
+                                    value="1"
+                                />
                                 <span id="animation-speed-value">1x</span>
                             </div>
                             <label class="checkbox-label">
-                                <input type="checkbox" id="animation-loop">
+                                <input type="checkbox" id="animation-loop" />
                                 Loop
                             </label>
                         </div>
                         <div class="progress-container">
-                            <input type="range" id="animation-progress" min="0" max="100" value="0" class="progress-slider">
+                            <input
+                                type="range"
+                                id="animation-progress"
+                                min="0"
+                                max="100"
+                                value="0"
+                                class="progress-slider"
+                            />
                             <div class="progress-info">
                                 <span id="animation-time">00:00</span>
                                 <span id="animation-state">Idle</span>
@@ -372,7 +640,11 @@ heatmap.setSpeed(2); // 2x speed</code></pre>
                                 </tr>
                                 <tr>
                                     <td><code>onFrame</code></td>
-                                    <td><code>(timestamp, progress) => void</code></td>
+                                    <td>
+                                        <code
+                                            >(timestamp, progress) => void</code
+                                        >
+                                    </td>
                                     <td>-</td>
                                     <td>Callback on each animation frame</td>
                                 </tr>
@@ -384,91 +656,6 @@ heatmap.setSpeed(2); // 2x speed</code></pre>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </section>
-
-                <!-- Customization -->
-                <section id="customization" class="section">
-                    <h2>Customization</h2>
-                    <p class="section-description">Customize every aspect of your heatmap - gradients, radius, blur, and more.</p>
-
-                    <div class="demo-container">
-                        <div class="demo-canvas-wrapper">
-                            <div id="custom-heatmap-container" class="heatmap-container"></div>
-                        </div>
-                        <div class="customization-panel">
-                            <div class="control-group">
-                                <label for="radius-slider">Radius: <span id="radius-value">25</span></label>
-                                <input type="range" id="radius-slider" min="5" max="100" value="25">
-                            </div>
-                            <div class="control-group">
-                                <label for="blur-slider">Blur: <span id="blur-value">0.85</span></label>
-                                <input type="range" id="blur-slider" min="0" max="1" step="0.05" value="0.85" >
-                            </div>
-                            <div class="control-group">
-                                <label for="opacity-slider">Max Opacity: <span id="opacity-value">0.8</span></label>
-                                <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.8">
-                            </div>
-                            <div class="control-group">
-                                <label for="gridsize-slider">Grid Size: <span id="gridsize-value">20</span></label>
-                                <input type="range" id="gridsize-slider" min="1" value="20" step="1">
-                            </div>
-                            <div class="control-group">
-                                <label>Gradient Preset:</label>
-                                <select id="gradient-select">
-                                    <option value="cool">Cool (Purple → Cyan → Green)</option>
-                                    <option value="default">Default (Blue → Green → Yellow → Red)</option>
-                                    <option value="thermal">Thermal (Black → Purple → Red → Yellow → White)</option>
-                                    <option value="fire">Fire (Black → Red → Orange → Yellow)</option>
-                                    <option value="ocean">Ocean (Dark Blue → Cyan → White)</option>
-                                </select>
-                            </div>
-                            <div class="control-group">
-                                <label>Blend Mode: <small style="opacity: 0.7">(how points combine)</small></label>
-                                <select id="blendmode-select">
-                                    <option value="source-over">Source Over (Default layering)</option>
-                                    <option value="lighter">Lighter (Additive - overlaps glow brighter)</option>
-                                </select>
-                            </div>
-                            <div class="control-group">
-                                <label for="intensity-slider">Intensity Curve: <span id="intensity-value">1.0</span> <small style="opacity: 0.7">(< 1 = boost lows, > 1 = boost highs)</small></label>
-                                <input type="range" id="intensity-slider" min="0.1" max="3" step="0.1" value="1">
-                            </div>
-                            <div class="control-group">
-                                <button id="custom-random-btn" class="btn btn-primary btn-full">Generate Random Data</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="code-example">
-                        <h4>Custom Gradient Example</h4>
-                        <pre><code class="language-typescript">import { createHeatmap, type GradientStop } from '@drdreo/heatmap';
-
-const customGradient: GradientStop[] = [
-    { offset: 0, color: 'rgba(0, 0, 0, 0)' },
-    { offset: 0.2, color: 'rgba(128, 0, 255, 1)' },
-    { offset: 0.5, color: 'rgba(0, 255, 255, 1)' },
-    { offset: 0.8, color: 'rgba(0, 255, 0, 1)' },
-    { offset: 1, color: 'rgba(255, 255, 255, 1)' }
-];
-
-const heatmap = createHeatmap({
-    container: document.querySelector('#container')!,
-    width: 800,
-    height: 400,
-    radius: 30,
-    blur: 0.85,
-    maxOpacity: 0.9,
-    minOpacity: 0.1,
-    gradient: customGradient,
-    // 'lighter' makes overlapping points glow brighter (additive blending)
-    blendMode: 'lighter',
-    // < 1 boosts low values, > 1 emphasizes high values
-    intensityExponent: 0.7
-});
-
-// Update gradient dynamically
-heatmap.setGradient(newGradient);</code></pre>
                     </div>
                 </section>
 
@@ -540,25 +727,41 @@ heatmap.setGradient(newGradient);</code></pre>
                                     <td><code>useOffscreenCanvas</code></td>
                                     <td><code>boolean</code></td>
                                     <td><code>true</code></td>
-                                    <td>Use offscreen canvas for performance</td>
+                                    <td>
+                                        Use offscreen canvas for performance
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><code>gridSize</code></td>
                                     <td><code>number</code></td>
                                     <td><code>6</code></td>
-                                    <td>Grid cell size for value lookups (affects tooltip precision)</td>
+                                    <td>
+                                        Grid cell size for value lookups
+                                        (affects tooltip precision)
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><code>blendMode</code></td>
-                                    <td><code>GlobalCompositeOperation</code></td>
+                                    <td>
+                                        <code>GlobalCompositeOperation</code>
+                                    </td>
                                     <td><code>'source-over'</code></td>
-                                    <td>Canvas blend mode for overlapping points. Use <code>'lighter'</code> for additive blending where overlaps glow brighter.</td>
+                                    <td>
+                                        Canvas blend mode for overlapping
+                                        points. Use <code>'lighter'</code> for
+                                        additive blending where overlaps glow
+                                        brighter.
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><code>intensityExponent</code></td>
                                     <td><code>number</code></td>
                                     <td><code>1</code></td>
-                                    <td>Exponent for intensity curve. Values &lt; 1 boost low values, &gt; 1 emphasize high values.</td>
+                                    <td>
+                                        Exponent for intensity curve. Values
+                                        &lt; 1 boost low values, &gt; 1
+                                        emphasize high values.
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -621,7 +824,10 @@ heatmap.setGradient(newGradient);</code></pre>
 
                     <div class="card">
                         <h3>AnimatedHeatmap Methods</h3>
-                        <p class="card-description">Additional methods available when using <code>withAnimation()</code></p>
+                        <p class="card-description">
+                            Additional methods available when using
+                            <code>withAnimation()</code>
+                        </p>
                         <table class="config-table">
                             <thead>
                                 <tr>
@@ -693,11 +899,24 @@ heatmap.setGradient(newGradient);</code></pre>
 
                 <!-- Footer -->
                 <footer class="footer">
-                    <p>Built with ❤️ by <a href="https://github.com/drdreo" target="_blank">@drdreo</a></p>
+                    <p>
+                        Built with ❤️ by
+                        <a href="https://github.com/drdreo" target="_blank"
+                            >@drdreo</a
+                        >
+                    </p>
                     <p class="footer-links">
-                        <a href="https://github.com/drdreo/heatmap" target="_blank">GitHub</a>
+                        <a
+                            href="https://github.com/drdreo/heatmap"
+                            target="_blank"
+                            >GitHub</a
+                        >
                         <span>•</span>
-                        <a href="https://www.npmjs.com/package/@drdreo/heatmap" target="_blank">npm</a>
+                        <a
+                            href="https://www.npmjs.com/package/@drdreo/heatmap"
+                            target="_blank"
+                            >npm</a
+                        >
                     </p>
                 </footer>
             </main>
@@ -705,4 +924,3 @@ heatmap.setGradient(newGradient);</code></pre>
         <script type="module" src="/src/main.ts"></script>
     </body>
 </html>
-
