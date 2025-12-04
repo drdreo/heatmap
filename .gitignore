@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+.nx/workspace-data
+.nx/cache
 
 coverage
 # Editor directories and files

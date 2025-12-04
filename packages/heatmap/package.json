@@ -19,8 +19,10 @@
         }
     },
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
+    "sideEffects": false,
     "scripts": {
         "build": "tsdown",
         "test": "vitest",
@@ -31,13 +33,24 @@
         "heatmap",
         "visualization",
         "canvas",
-        "typescript"
+        "typescript",
+        "data-visualization",
+        "heat-map",
+        "intensity-map"
     ],
-    "author": "",
+    "author": "DrDreo",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "git+https://github.com/drdreo/heatmap.git",
+        "directory": "packages/heatmap"
+    },
+    "bugs": {
+        "url": "https://github.com/drdreo/heatmap/issues"
+    },
+    "homepage": "https://github.com/drdreo/heatmap#readme",
+    "publishConfig": {
+        "access": "public"
     },
     "devDependencies": {
         "@vitest/browser": "^4.0.15",

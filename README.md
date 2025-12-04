@@ -73,6 +73,11 @@ pnpm test:run
 pnpm test:coverage
 ```
 
+### Releasing
+
+Locally run:
+`nx release publish --otp=<OTP>`
+
 ## Usage
 
 ```typescript

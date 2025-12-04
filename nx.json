@@ -1,0 +1,25 @@
+{
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "release": {
+        "projects": ["packages/heatmap"],
+        "version": {
+            "conventionalCommits": true
+        },
+        "changelog": {
+            "workspaceChangelog": {
+                "createRelease": "github"
+            },
+            "projectChangelogs": {
+                "file": "./CHANGELOG.md"
+            }
+        },
+        "git": {
+            "commit": true,
+            "tag": true
+        }
+    },
+    "namedInputs": {
+        "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"],
+        "default": ["sharedGlobals"]
+    }
+}
