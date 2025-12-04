@@ -16,11 +16,6 @@ export interface TooltipConfig {
     formatter?: (value: number, x: number, y: number) => string;
 
     /**
-     * Size of the grid cell for grouping nearby points (default: 6)
-     */
-    gridSize?: number;
-
-    /**
      * Offset from cursor position in pixels (default: { x: 15, y: 15 })
      */
     offset?: { x: number; y: number };

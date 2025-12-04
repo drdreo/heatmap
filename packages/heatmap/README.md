@@ -1,33 +1,39 @@
 # Heatmap Library
 
-A lightweight, high-performance, **composable** heatmap rendering library built with TypeScript and Canvas2D. Zero dependencies.
+A lightweight, composable heatmap rendering library built with TypeScript and Canvas2D. Zero dependencies.
 
 ## Features
 
-- **Tree-shakeable** – Only include what you use
-- **Performant** – Pre-computed values, offscreen canvas
-- **Zero dependencies** – Don't drag in the whole React ecosystem
-- **Customizable** – You define what you need with a composable API - via a `withXXX()` pattern
+- ESM first
+- Tree-shakeable: only include what you use. ~5kb gzipped
+- Customizable: composable features via `withXXX()` pattern
+- Zero Dependency: Pure TypeScript. Don't drag in the whole React ecosystem
+- High-performance
+
+## Installation
+
+```bash
+npm install @drdreo/heatmap
+```
 
 ## Usage
 
 ### Basic Heatmap
 
 ```typescript
-import { createHeatmap } from "./lib";
+import { createHeatmap } from "@drdreo/heatmap";
 
 const heatmap = createHeatmap({
     container: document.getElementById("heatmap")!,
     radius: 20,
-    blur: 15,
+    blur: 0.85,
     maxOpacity: 0.8,
     data: {
         min: 0,
         max: 100,
         data: [
             { x: 100, y: 150, value: 80 },
-            { x: 200, y: 100, value: 50 },
-            { x: 150, y: 200, value: 95 }
+            { x: 200, y: 100, value: 50 }
         ]
     }
 });
@@ -36,27 +42,24 @@ const heatmap = createHeatmap({
 ### With Tooltip
 
 ```typescript
-import { createHeatmap, withTooltip } from './lib';
+import { createHeatmap, withTooltip } from "@drdreo/heatmap";
 
 const heatmap = createHeatmap(
-    { container, radius: 20 },
+    { container },
     withTooltip({
         formatter: (value, x, y) => `${value} clicks`,
         enforceBounds: true
     })
 );
-
-heatmap.setData({ min: 0, max: 100, data: [...] });
 ```
 
 ### With Animation
 
 ```typescript
-import { createHeatmap, withAnimation } from "./lib";
+import { createHeatmap, withAnimation } from "@drdreo/heatmap";
 
-// Automatically typed as AnimatedHeatmap!
 const heatmap = createHeatmap(
-    { container, radius: 15 },
+    { container },
     withAnimation({
         fadeOutDuration: 2000,
         timeWindow: 5000,
@@ -65,7 +68,6 @@ const heatmap = createHeatmap(
             console.log(`${(progress * 100).toFixed(0)}%`)
     })
 );
-
 heatmap.setTemporalData({
     min: 0,
     max: 100,
@@ -78,82 +80,96 @@ heatmap.setTemporalData({
 });
 
 heatmap.play();
-// heatmap.pause(), .stop(), .seek(30000), .setSpeed(2)
 ```
 
-### Multiple Features
+### Composing Features
 
 ```typescript
-import { createHeatmap, withTooltip, withAnimation } from "./lib";
+import { createHeatmap, withTooltip, withAnimation } from "@drdreo/heatmap";
 
-// Automatically typed as AnimatedHeatmap when withAnimation is used!
+// Returns AnimatedHeatmap when withAnimation is included
 const heatmap = createHeatmap(
     { container },
-    withTooltip({ formatter: (v) => `${v} clicks` }),
-    withAnimation({ loop: true })
+    withTooltip(),
+    withAnimation()
 );
 ```
 
 ## API
 
-### Core Config Options
+### HeatmapConfig
 
-| Option       | Type             | Default               | Description            |
-| ------------ | ---------------- | --------------------- | ---------------------- |
-| `container`  | `HTMLElement`    | required              | Container element      |
-| `width`      | `number`         | container width       | Canvas width           |
-| `height`     | `number`         | container height      | Canvas height          |
-| `radius`     | `number`         | `25`                  | Point radius in pixels |
-| `blur`       | `number`         | `15`                  | Blur amount            |
-| `maxOpacity` | `number`         | `0.8`                 | Maximum opacity (0-1)  |
-| `minOpacity` | `number`         | `0`                   | Minimum opacity (0-1)  |
-| `gradient`   | `GradientStop[]` | blue→green→yellow→red | Color gradient         |
-| `data`       | `HeatmapData`    | –                     | Initial data to render |
+| Option               | Type                       | Default          | Description                                |
+| -------------------- | -------------------------- | ---------------- | ------------------------------------------ |
+| `container`          | `HTMLElement`              | required         | Container element                          |
+| `width`              | `number`                   | container width  | Canvas width in pixels                     |
+| `height`             | `number`                   | container height | Canvas height in pixels                    |
+| `radius`             | `number`                   | `25`             | Point radius in pixels                     |
+| `blur`               | `number`                   | `0.85`           | Blur factor (0 = solid, 1 = max blur)      |
+| `maxOpacity`         | `number`                   | `0.8`            | Maximum opacity (0-1)                      |
+| `minOpacity`         | `number`                   | `0`              | Minimum opacity (0-1)                      |
+| `gradient`           | `GradientStop[]`           | default palette  | Color gradient stops                       |
+| `useOffscreenCanvas` | `boolean`                  | `true`           | Use offscreen canvas for performance       |
+| `gridSize`           | `number`                   | `10`             | Grid cell size for value lookups           |
+| `blendMode`          | `GlobalCompositeOperation` | `source-over`    | Canvas blend mode (`lighter` for additive) |
+| `intensityExponent`  | `number`                   | `1`              | Intensity curve exponent                   |
+| `data`               | `HeatmapData`              | -                | Initial data                               |
 
-### withTooltip Options
+### TooltipConfig
 
-| Option          | Type                      | Default             | Description                    |
-| --------------- | ------------------------- | ------------------- | ------------------------------ |
-| `formatter`     | `(value, x, y) => string` | `(v) => v`          | Custom tooltip text            |
-| `gridSize`      | `number`                  | `6`                 | Grid cell size for aggregation |
-| `offset`        | `{ x, y }`                | `{ x: 15, y: 15 }`  | Offset from cursor             |
-| `enforceBounds` | `boolean`                 | `false`             | Keep tooltip in container      |
-| `className`     | `string`                  | `'heatmap-tooltip'` | Custom CSS class               |
-| `style`         | `CSSStyleDeclaration`     | –                   | Custom inline styles           |
+| Option          | Type                           | Default            | Description                    |
+| --------------- | ------------------------------ | ------------------ | ------------------------------ |
+| `formatter`     | `(value, x, y) => string`      | `(v) => v`         | Tooltip text formatter         |
+| `offset`        | `{ x, y }`                     | `{ x: 15, y: 15 }` | Offset from cursor             |
+| `enforceBounds` | `boolean`                      | `false`            | Keep tooltip in container      |
+| `className`     | `string`                       | -                  | CSS class for tooltip element  |
+| `style`         | `Partial<CSSStyleDeclaration>` | -                  | Inline styles                  |
 
-### withAnimation Options
+### AnimationConfig
 
 | Option            | Type                            | Default | Description              |
 | ----------------- | ------------------------------- | ------- | ------------------------ |
-| `fadeOutDuration` | `number`                        | `2000`  | Point decay time (ms)    |
+| `fadeOutDuration` | `number`                        | `2000`  | Point fade-out time (ms) |
 | `timeWindow`      | `number`                        | `5000`  | Visible time window (ms) |
 | `playbackSpeed`   | `number`                        | `1`     | Speed multiplier         |
 | `loop`            | `boolean`                       | `false` | Loop animation           |
-| `onFrame`         | `(timestamp, progress) => void` | –       | Frame callback           |
-| `onComplete`      | `() => void`                    | –       | Completion callback      |
+| `onFrame`         | `(timestamp, progress) => void` | -       | Frame callback           |
+| `onComplete`      | `() => void`                    | -       | Completion callback      |
 
-### Core Methods
-
-- `setData(data)` – Set heatmap data
-- `addPoint(point)` – Add single point
-- `setGradient(stops)` – Update gradient
-- `clear()` – Clear display
-- `getValueAt(x, y)` – Get value at position
-- `getDataURL()` – Get canvas as data URL
-- `destroy()` – Clean up
-
-### Animation Methods (when using withAnimation)
-
-- `setTemporalData(data)` – Set temporal data
-- `play()` / `pause()` / `stop()`
-- `seek(timestamp)` / `seekProgress(0-1)`
-- `setSpeed(multiplier)` / `setLoop(boolean)`
-- `getAnimationState()` / `getCurrentTime()` / `getProgress()`
-
-## Custom Gradient
+### Heatmap Methods
 
 ```typescript
-import { createHeatmap, GradientStop } from "./lib";
+setData(data: HeatmapData): void
+addPoint(point: HeatmapPoint): void
+addPoints(points: HeatmapPoint[]): void
+setGradient(stops: GradientStop[]): void
+clear(): void
+getValueAt(x: number, y: number): number
+getDataURL(type?: string, quality?: number): string
+getStats(): HeatmapStats
+destroy(): void
+```
+
+### AnimatedHeatmap Methods
+
+```typescript
+setTemporalData(data: TemporalHeatmapData): void
+play(): void
+pause(): void
+stop(): void
+seek(timestamp: number): void
+seekProgress(progress: number): void  // 0-1
+setSpeed(speed: number): void
+setLoop(loop: boolean): void
+getAnimationState(): AnimationState   // 'idle' | 'playing' | 'paused'
+getCurrentTime(): number
+getProgress(): number                  // 0-1
+```
+
+### Custom Gradient
+
+```typescript
+import { createHeatmap, type GradientStop } from "@drdreo/heatmap";
 
 const gradient: GradientStop[] = [
     { offset: 0, color: "rgba(0, 0, 255, 0)" },
