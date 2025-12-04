@@ -13,8 +13,19 @@ import {
     type HeatmapConfig,
     type HeatmapData,
     type HeatmapPoint,
+    type HeatmapStats,
     type RenderablePoint
 } from "./types";
+
+/**
+ * Render boundaries for dirty rectangle optimization
+ */
+interface RenderBoundaries {
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+}
 
 /**
  * Internal state for the heatmap renderer
@@ -22,8 +33,10 @@ import {
 interface HeatmapState {
     data: HeatmapData | null;
     palette: Uint8ClampedArray;
-    pointTemplate: HTMLCanvasElement | null;
+    opacityLUT: Uint8ClampedArray;
+    defaultTemplate: HTMLCanvasElement;
     valueGrid: Map<string, number>;
+    renderBoundaries: RenderBoundaries;
 }
 
 /**
@@ -73,9 +86,12 @@ export function createCore(config: HeatmapConfig): Heatmap {
     const state: HeatmapState = {
         data: null,
         palette: generatePalette(gradient),
-        pointTemplate: generatePointTemplate(radius, blur),
-        valueGrid: new Map()
+        opacityLUT: generateOpacityLUT(minOpacity, maxOpacity),
+        defaultTemplate: generatePointTemplate(radius, blur),
+        valueGrid: new Map(),
+        renderBoundaries: { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 }
     };
+
 
     // Append canvas to container
     container.appendChild(canvas);
@@ -96,29 +112,69 @@ export function createCore(config: HeatmapConfig): Heatmap {
     function addPoint(point: HeatmapPoint): void {
         if (!state.data) {
             state.data = { min: 0, max: point.value, data: [point] };
-        } else {
-            state.data.data.push(point);
-            if (point.value > state.data.max) {
-                state.data.max = point.value;
-            }
+            updateValueGrid(state.data.data);
+            render();
+            return;
         }
+
+        state.data.data.push(point);
+        const needsFullRender = point.value > state.data.max;
+        if (needsFullRender) {
+            state.data.max = point.value;
+        }
+
         updateValueGrid(state.data.data);
-        render();
+
+        if (needsFullRender) {
+            // Full re-render needed because max changed (affects all alpha values)
+            render();
+        } else {
+            // Incremental render - only draw the new point
+            const { min, max } = state.data;
+            const range = max - min || 1;
+            const renderablePoint: RenderablePoint = {
+                x: point.x,
+                y: point.y,
+                alpha: Math.min(1, Math.max(0, (point.value - min) / range))
+            };
+            renderPoints([renderablePoint]);
+        }
     }
 
     function addPoints(points: HeatmapPoint[]): void {
+        if (points.length === 0) return;
+
         if (!state.data) {
-            state.data = { min: 0, max: points[0].value, data: points };
-        } else {
-            state.data.data.push(...points);
-            const max = Math.max(...state.data.data.map((p) => p.value));
-            if (max > state.data.max) {
-                state.data.max = max;
-            }
+            const max = Math.max(...points.map((p) => p.value));
+            state.data = { min: 0, max, data: points };
+            updateValueGrid(state.data.data);
+            render();
+            return;
+        }
+
+        state.data.data.push(...points);
+        const newMax = Math.max(...points.map((p) => p.value));
+        const needsFullRender = newMax > state.data.max;
+        if (needsFullRender) {
+            state.data.max = newMax;
         }
 
         updateValueGrid(state.data.data);
-        render();
+
+        if (needsFullRender) {
+            // Full re-render needed because max changed (affects all alpha values)
+            render();
+        } else {
+            // Incremental render - only draw the new points
+            const { min, max } = state.data;
+            const range = max - min || 1;
+            const renderablePoints: RenderablePoint[] = points.map((point) => ({
+                x: point.x,
+                y: point.y,
+                alpha: Math.min(1, Math.max(0, (point.value - min) / range))
+            }));
+            renderPoints(renderablePoints);
+        }
     }
 
     function setGradient(stops: GradientStop[]): void {
@@ -142,9 +198,33 @@ export function createCore(config: HeatmapConfig): Heatmap {
         return canvas.toDataURL(type, quality);
     }
 
+    function getStats(): HeatmapStats {
+        const { minX, minY, maxX, maxY } = state.renderBoundaries;
+        const regionWidth = maxX - minX;
+        const regionHeight = maxY - minY;
+        const canvasArea = width * height;
+        const renderArea = Math.max(0, regionWidth * regionHeight);
+
+        return {
+            pointCount: state.data?.data.length ?? 0,
+            radius,
+            renderBoundaries: {
+                minX,
+                minY,
+                maxX,
+                maxY,
+                width: regionWidth,
+                height: regionHeight
+            },
+            canvasSize: { width, height },
+            renderCoveragePercent: canvasArea > 0 ? (renderArea / canvasArea) * 100 : 0,
+            valueGridSize: state.valueGrid.size,
+            dataRange: state.data ? { min: state.data.min, max: state.data.max } : null
+        };
+    }
+
     function destroy(): void {
         canvas.remove();
-        state.pointTemplate = null;
         state.valueGrid.clear();
         state.data = null;
     }
@@ -174,7 +254,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         }
 
         const points = computeRenderablePoints(state.data);
-        renderPoints(points);
+        renderPointsWithClear(points);
     }
 
     function computeRenderablePoints(data: HeatmapData): RenderablePoint[] {
@@ -188,54 +268,84 @@ export function createCore(config: HeatmapConfig): Heatmap {
         }));
     }
 
-    function renderPoints(points: RenderablePoint[]): void {
-        clearCanvases();
+    /**
+     * Draw points to shadow canvas and track render boundaries
+     * Shared logic between full render and partial render
+     */
+    function drawPoints(points: RenderablePoint[]): void {
+        // Reset render boundaries
+        state.renderBoundaries = { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 };
 
-        if (points.length === 0 || !state.pointTemplate) return;
-
-        // Draw grayscale points
-        const templateSize = state.pointTemplate.width;
+        // Use pre-generated default template (most points use same radius)
+        const template = state.defaultTemplate;
+        const templateSize = template.width;
         const offset = templateSize / 2;
 
-        for (const point of points) {
-            shadowCtx.globalAlpha = point.alpha;
-            shadowCtx.drawImage(
-                state.pointTemplate,
-                point.x - offset,
-                point.y - offset,
-                templateSize,
-                templateSize
-            );
+        let len = points.length;
+        while (len--) {
+            const point = points[len];
+
+            const pointMinX = point.x - offset;
+            const pointMinY = point.y - offset;
+            const pointMaxX = point.x + offset;
+            const pointMaxY = point.y + offset;
+
+            // Track render boundaries
+            state.renderBoundaries.minX = Math.min(state.renderBoundaries.minX, pointMinX);
+            state.renderBoundaries.minY = Math.min(state.renderBoundaries.minY, pointMinY);
+            state.renderBoundaries.maxX = Math.max(state.renderBoundaries.maxX, pointMaxX);
+            state.renderBoundaries.maxY = Math.max(state.renderBoundaries.maxY, pointMaxY);
+
+            // Clamp minimum alpha to ensure very small values are visible
+            shadowCtx.globalAlpha = Math.max(0.01, point.alpha);
+            shadowCtx.drawImage(template, pointMinX, pointMinY, templateSize, templateSize);
         }
         shadowCtx.globalAlpha = 1;
 
-        // Colorize
+        // Clamp boundaries to canvas dimensions
+        state.renderBoundaries.minX = Math.max(0, Math.floor(state.renderBoundaries.minX));
+        state.renderBoundaries.minY = Math.max(0, Math.floor(state.renderBoundaries.minY));
+        state.renderBoundaries.maxX = Math.min(width, Math.ceil(state.renderBoundaries.maxX));
+        state.renderBoundaries.maxY = Math.min(height, Math.ceil(state.renderBoundaries.maxY));
+    }
+
+    function renderPointsWithClear(points: RenderablePoint[]): void {
+        clearCanvases();
+        renderPoints(points);
+    }
+
+    function renderPoints(points: RenderablePoint[]): void {
+        if (points.length === 0) return;
+
+        drawPoints(points);
         colorize();
     }
 
     function colorize(): void {
-        const imageData = shadowCtx.getImageData(0, 0, width, height);
+        const { minX, minY, maxX, maxY } = state.renderBoundaries;
+        const regionWidth = maxX - minX;
+        const regionHeight = maxY - minY;
+
+        // Skip if no valid region
+        if (regionWidth <= 0 || regionHeight <= 0) return;
+
+        const imageData = shadowCtx.getImageData(minX, minY, regionWidth, regionHeight);
         const pixels = imageData.data;
-        const opacityRange = maxOpacity - minOpacity;
 
-        for (let i = 0; i < pixels.length; i += 4) {
-            const alpha = pixels[i + 3];
+        // Optimized loop: start at alpha channel (index 3) and work backwards
+        for (let i = 3; i < pixels.length; i += 4) {
+            const alpha = pixels[i];
+            if (alpha === 0) continue;
 
-            if (alpha > 0) {
-                const paletteIdx = alpha * 4;
+            const paletteIdx = alpha * 4;
 
-                pixels[i] = state.palette[paletteIdx];
-                pixels[i + 1] = state.palette[paletteIdx + 1];
-                pixels[i + 2] = state.palette[paletteIdx + 2];
-
-                const normalizedAlpha = alpha / 255;
-                const scaledOpacity =
-                    minOpacity + normalizedAlpha * opacityRange;
-                pixels[i + 3] = Math.round(scaledOpacity * 255);
-            }
+            pixels[i - 3] = state.palette[paletteIdx];
+            pixels[i - 2] = state.palette[paletteIdx + 1];
+            pixels[i - 1] = state.palette[paletteIdx + 2];
+            pixels[i] = state.opacityLUT[alpha];
         }
 
-        ctx.putImageData(imageData, 0, 0);
+        ctx.putImageData(imageData, minX, minY);
     }
 
     // Return the public API
@@ -251,6 +361,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         clear,
         getValueAt,
         getDataURL,
+        getStats,
         destroy
     };
 }
@@ -293,3 +404,21 @@ function generatePointTemplate(
 
     return canvas;
 }
+
+/**
+ * Generate opacity lookup table (256 entries)
+ * Pre-computes all possible opacity values for the colorize loop
+ */
+function generateOpacityLUT(minOpacity: number, maxOpacity: number): Uint8ClampedArray {
+    const lut = new Uint8ClampedArray(256);
+    const opacityRange = maxOpacity - minOpacity;
+
+    for (let alpha = 0; alpha < 256; alpha++) {
+        const normalizedAlpha = alpha / 255;
+        const scaledOpacity = minOpacity + normalizedAlpha * opacityRange;
+        lut[alpha] = Math.round(scaledOpacity * 255);
+    }
+
+    return lut;
+}
+

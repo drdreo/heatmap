@@ -48,6 +48,31 @@ export interface RenderablePoint {
     alpha: number;
 }
 
+/** Debug statistics for performance monitoring */
+export interface HeatmapStats {
+    /** Total number of data points */
+    pointCount: number;
+    /** Default point radius */
+    radius: number;
+    /** Current render boundaries */
+    renderBoundaries: {
+        minX: number;
+        minY: number;
+        maxX: number;
+        maxY: number;
+        width: number;
+        height: number;
+    };
+    /** Canvas dimensions */
+    canvasSize: { width: number; height: number };
+    /** Percentage of canvas covered by render region */
+    renderCoveragePercent: number;
+    /** Number of grid cells in value lookup */
+    valueGridSize: number;
+    /** Data range */
+    dataRange: { min: number; max: number } | null;
+}
+
 /** Configuration options for the heatmap */
 export interface HeatmapConfig {
     /** Container element to render the heatmap canvas into */
@@ -122,6 +147,9 @@ export interface Heatmap {
     /** Get the canvas as a data URL */
     getDataURL(type?: string, quality?: number): string;
 
+    /** Get debug statistics for performance monitoring */
+    getStats(): HeatmapStats;
+
     /** Clean up resources */
     destroy(): void;
 }
@@ -181,5 +209,5 @@ export const DEFAULT_CONFIG = {
     blur: 15,
     maxOpacity: 0.8,
     minOpacity: 0,
-    useOffscreenCanvas: false
+    useOffscreenCanvas: true
 } as const;

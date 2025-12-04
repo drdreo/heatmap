@@ -81,9 +81,48 @@ heatmap.setData({
                         <div class="demo-controls">
                             <button id="basic-clear-btn" class="btn">Clear</button>
                             <button id="basic-random-btn" class="btn btn-primary">Add Random Points</button>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="basic-show-stats" />
+                                Show Debug Stats
+                            </label>
                         </div>
                         <div class="demo-info">
                             <span id="basic-point-count">Points: 0</span>
+                        </div>
+                        
+                        <!-- Debug Stats Panel -->
+                        <div id="basic-stats-panel" class="stats-panel hidden">
+                            <h4>🔍 Debug Stats</h4>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Points</span>
+                                    <span id="stat-point-count" class="stat-value">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Radius</span>
+                                    <span id="stat-radius" class="stat-value">25</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Value Grid Size</span>
+                                    <span id="stat-grid-size" class="stat-value">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Data Range</span>
+                                    <span id="stat-data-range" class="stat-value">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Canvas Size</span>
+                                    <span id="stat-canvas-size" class="stat-value">-</span>
+                                </div>
+                                <div class="stat-item full-width">
+                                    <span class="stat-label">Render Boundaries</span>
+                                    <span id="stat-render-bounds" class="stat-value">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Render Coverage</span>
+                                    <span id="stat-coverage" class="stat-value">0%</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -379,9 +418,9 @@ heatmap.setSpeed(2); // 2x speed</code></pre>
                             <div class="control-group">
                                 <label>Gradient Preset:</label>
                                 <select id="gradient-select">
+                                    <option value="cool">Cool (Purple → Cyan → Green)</option>
                                     <option value="default">Default (Blue → Green → Yellow → Red)</option>
                                     <option value="thermal">Thermal (Black → Purple → Red → Yellow → White)</option>
-                                    <option value="cool">Cool (Purple → Cyan → Green)</option>
                                     <option value="fire">Fire (Black → Red → Orange → Yellow)</option>
                                     <option value="ocean">Ocean (Dark Blue → Cyan → White)</option>
                                 </select>

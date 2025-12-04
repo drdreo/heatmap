@@ -12,6 +12,7 @@ export type {
     HeatmapData,
     HeatmapFeature,
     HeatmapPoint,
+    HeatmapStats,
     GradientStop,
     RGBAColor,
     RenderablePoint,

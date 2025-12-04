@@ -13,10 +13,14 @@ import "./style.css";
 // BASIC DEMO
 // ============================================================================
 
+const basicContainer = document.querySelector<HTMLElement>("#basic-heatmap-container")!;
+const basicWidth = basicContainer.clientWidth;
+const basicHeight = basicContainer.clientHeight;
+
 const basicConfig = {
-    container: document.querySelector<HTMLElement>("#basic-heatmap-container")!,
-    width: 800,
-    height: 400,
+    container: basicContainer,
+    width: basicWidth,
+    height: basicHeight,
     radius: 25,
     blur: 15
 };
@@ -25,26 +29,66 @@ const basicHeatmap = createHeatmap(basicConfig);
 
 // Initialize with some data
 const initialBasicData: HeatmapPoint[] = [
-    { x: 200, y: 200, value: 80 },
+    { x: 200, y: 20, value: 80 },
     { x: 250, y: 180, value: 60 },
     { x: 300, y: 220, value: 90 },
     { x: 500, y: 150, value: 70 },
     { x: 550, y: 180, value: 85 },
-    { x: 400, y: 300, value: 50 }
+    { x: 400, y: 30, value: 50 }
 ];
 
 basicHeatmap.setData({ min: 0, max: 100, data: initialBasicData });
 updateBasicPointCount(initialBasicData.length);
 
 let basicPointCount = initialBasicData.length;
+let showStats = false;
 
 function updateBasicPointCount(count: number) {
     const el = document.getElementById("basic-point-count");
     if (el) el.textContent = `Points: ${count}`;
 }
 
+function updateStatsDisplay() {
+    if (!showStats) return;
+
+    const stats = basicHeatmap.getStats();
+
+    // Update each stat element
+    const setStatValue = (id: string, value: string | number) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = String(value);
+    };
+
+    setStatValue("stat-point-count", stats.pointCount);
+    setStatValue("stat-radius", stats.radius);
+    setStatValue("stat-grid-size", stats.valueGridSize);
+    setStatValue("stat-data-range", stats.dataRange
+        ? `${stats.dataRange.min.toFixed(1)} - ${stats.dataRange.max.toFixed(1)}`
+        : "-");
+    setStatValue("stat-canvas-size", `${stats.canvasSize.width} × ${stats.canvasSize.height}`);
+
+    const bounds = stats.renderBoundaries;
+    setStatValue("stat-render-bounds",
+        `(${bounds.minX.toFixed(0)}, ${bounds.minY.toFixed(0)}) → (${bounds.maxX.toFixed(0)}, ${bounds.maxY.toFixed(0)}) [${bounds.width.toFixed(0)} × ${bounds.height.toFixed(0)}]`
+    );
+
+    setStatValue("stat-coverage", `${stats.renderCoveragePercent.toFixed(1)}%`);
+}
+
+// Toggle stats panel
+document.getElementById("basic-show-stats")?.addEventListener("change", (e) => {
+    showStats = (e.target as HTMLInputElement).checked;
+    const panel = document.getElementById("basic-stats-panel");
+    if (panel) {
+        panel.classList.toggle("hidden", !showStats);
+    }
+    if (showStats) {
+        updateStatsDisplay();
+    }
+});
+
 // Click to add points
-basicHeatmap.canvas.addEventListener("click", (event) => {
+basicContainer.addEventListener("click", (event) => {
     const rect = basicHeatmap.canvas.getBoundingClientRect();
     const scaleX = basicHeatmap.width / rect.width;
     const scaleY = basicHeatmap.height / rect.height;
@@ -54,6 +98,7 @@ basicHeatmap.canvas.addEventListener("click", (event) => {
     basicHeatmap.addPoint({ x, y, value: Math.random() * 100 });
     basicPointCount++;
     updateBasicPointCount(basicPointCount);
+    updateStatsDisplay();
 });
 
 // Clear button
@@ -61,14 +106,16 @@ document.getElementById("basic-clear-btn")?.addEventListener("click", () => {
     basicHeatmap.clear();
     basicPointCount = 0;
     updateBasicPointCount(basicPointCount);
+    updateStatsDisplay();
 });
 
 // Random points button
 document.getElementById("basic-random-btn")?.addEventListener("click", () => {
-    const points = generateRandomPoints(50, 800, 400);
+    const points = generateRandomPoints(200, basicWidth, basicHeight);
     basicHeatmap.addPoints(points);
     basicPointCount += points.length;
     updateBasicPointCount(basicPointCount);
+    updateStatsDisplay();
 });
 
 // ============================================================================
@@ -79,11 +126,11 @@ const tooltipConfig = {
     container: document.querySelector<HTMLElement>(
         "#tooltip-heatmap-container"
     )!,
-    width: 800,
-    height: 400,
-    radius: 30,
-    blur: 20
+    radius: 20,
 };
+
+const tooltipDemoWidth = tooltipConfig.container.clientWidth;
+const tooltipDemoHeight = tooltipConfig.container.clientHeight;
 
 const tooltipHeatmap = createHeatmap(
     tooltipConfig,
@@ -91,6 +138,7 @@ const tooltipHeatmap = createHeatmap(
         formatter: (value, x, y) =>
             `Value: ${value.toFixed(1)} @ (${Math.round(x)}, ${Math.round(y)})`,
         offset: { x: 15, y: 15 },
+        className: "with-tooltip",
         enforceBounds: true
     })
 );
@@ -131,7 +179,7 @@ document.getElementById("tooltip-clear-btn")?.addEventListener("click", () => {
 });
 
 document.getElementById("tooltip-random-btn")?.addEventListener("click", () => {
-    tooltipHeatmap.addPoints(generateRandomPoints(30, 800, 400));
+    tooltipHeatmap.addPoints(generateRandomPoints(100, tooltipDemoWidth, tooltipDemoHeight));
 });
 
 // ============================================================================
@@ -168,7 +216,7 @@ const animatedHeatmap = createHeatmap(
 function generateTemporalData() {
     const duration = 30000; // 30 seconds
     const data = [];
-    const numPoints = 200;
+    const numPoints = 1000;
 
     for (let i = 0; i < numPoints; i++) {
         const timestamp = Math.random() * duration;
@@ -336,7 +384,7 @@ const gradientPresets: Record<string, GradientStop[]> = {
 let customRadius = 25;
 let customBlur = 15;
 let customOpacity = 0.8;
-let currentGradient = "default";
+let currentGradient = "cool";
 
 // Store current points for re-rendering
 let customPoints: HeatmapPoint[] = generateRandomPoints(100, 800, 400);
