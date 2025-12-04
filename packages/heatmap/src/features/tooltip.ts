@@ -43,7 +43,6 @@ export interface TooltipConfig {
 
 /** Default tooltip configuration */
 const DEFAULT_TOOLTIP_CONFIG = {
-    gridSize: 6,
     offset: { x: 15, y: 15 },
     enforceBounds: false,
     formatter: (value: number) => `${value}`
@@ -67,7 +66,6 @@ export function withTooltip(config: TooltipConfig = {}): TooltipFeature {
     let heatmapRef: Heatmap | null = null;
 
     const resolvedConfig = {
-        gridSize: config.gridSize ?? DEFAULT_TOOLTIP_CONFIG.gridSize,
         offset: config.offset ?? DEFAULT_TOOLTIP_CONFIG.offset,
         enforceBounds:
             config.enforceBounds ?? DEFAULT_TOOLTIP_CONFIG.enforceBounds,

@@ -48,8 +48,7 @@ interface HeatmapState {
 export function createCore(config: HeatmapConfig): Heatmap {
     const { container, gradient = DEFAULT_GRADIENT } = config;
 
-    const { width, height, radius, blur, maxOpacity, minOpacity } = validateConfig(config);
-    const gridSize = 6; // Default grid size for value lookups
+    const { width, height, radius, blur, maxOpacity, minOpacity, gridSize } = validateConfig(config);
 
     // Create main canvas
     const canvas = document.createElement("canvas");

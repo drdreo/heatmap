@@ -13,7 +13,9 @@ import "./style.css";
 // BASIC DEMO
 // ============================================================================
 
-const basicContainer = document.querySelector<HTMLElement>("#basic-heatmap-container")!;
+const basicContainer = document.querySelector<HTMLElement>(
+    "#basic-heatmap-container"
+)!;
 const basicWidth = basicContainer.clientWidth;
 const basicHeight = basicContainer.clientHeight;
 
@@ -60,13 +62,20 @@ function updateStatsDisplay() {
     setStatValue("stat-point-count", stats.pointCount);
     setStatValue("stat-radius", stats.radius);
     setStatValue("stat-grid-size", stats.valueGridSize);
-    setStatValue("stat-data-range", stats.dataRange
-        ? `${stats.dataRange.min.toFixed(1)} - ${stats.dataRange.max.toFixed(1)}`
-        : "-");
-    setStatValue("stat-canvas-size", `${stats.canvasSize.width} × ${stats.canvasSize.height}`);
+    setStatValue(
+        "stat-data-range",
+        stats.dataRange
+            ? `${stats.dataRange.min.toFixed(1)} - ${stats.dataRange.max.toFixed(1)}`
+            : "-"
+    );
+    setStatValue(
+        "stat-canvas-size",
+        `${stats.canvasSize.width} × ${stats.canvasSize.height}`
+    );
 
     const bounds = stats.renderBoundaries;
-    setStatValue("stat-render-bounds",
+    setStatValue(
+        "stat-render-bounds",
         `(${bounds.minX.toFixed(0)}, ${bounds.minY.toFixed(0)}) → (${bounds.maxX.toFixed(0)}, ${bounds.maxY.toFixed(0)}) [${bounds.width.toFixed(0)} × ${bounds.height.toFixed(0)}]`
     );
 
@@ -124,7 +133,7 @@ const tooltipConfig = {
     container: document.querySelector<HTMLElement>(
         "#tooltip-heatmap-container"
     )!,
-    radius: 20,
+    gridSize: 10
 };
 
 const tooltipDemoWidth = tooltipConfig.container.clientWidth;
@@ -177,7 +186,9 @@ document.getElementById("tooltip-clear-btn")?.addEventListener("click", () => {
 });
 
 document.getElementById("tooltip-random-btn")?.addEventListener("click", () => {
-    tooltipHeatmap.addPoints(generateRandomPoints(100, tooltipDemoWidth, tooltipDemoHeight));
+    tooltipHeatmap.addPoints(
+        generateRandomPoints(100, tooltipDemoWidth, tooltipDemoHeight)
+    );
 });
 
 // ============================================================================
@@ -188,9 +199,7 @@ const animationContainer = document.querySelector<HTMLElement>(
     "#animation-heatmap-container"
 )!;
 const animationConfig = {
-    container: animationContainer,
-    width: animationContainer.clientWidth,
-    height: animationContainer.clientHeight,
+    container: animationContainer
 };
 
 const animatedHeatmap = createHeatmap(
@@ -256,7 +265,6 @@ function generateTemporalData() {
     };
 }
 
-// Set initial temporal data
 animatedHeatmap.setTemporalData(generateTemporalData());
 
 function updateAnimationUI(timestamp: number, progress: number) {
@@ -378,39 +386,40 @@ const gradientPresets: Record<string, GradientStop[]> = {
     ]
 };
 
+const customContainer = document.querySelector<HTMLElement>(
+    "#custom-heatmap-container"
+)!;
 let customRadius = 25;
 let customBlur = 0.85;
 let customOpacity = 0.8;
+let customGridSize = 6;
 let currentGradient = "cool";
 
-// Store current points for re-rendering
-let customPoints: HeatmapPoint[] = generateRandomPoints(100, 800, 400);
-
-// Create and setup custom heatmap
+let customPoints: HeatmapPoint[] = generateRandomPoints(
+    200,
+    customContainer.clientWidth,
+    customContainer.clientHeight
+);
 let customHeatmap: Heatmap;
 
 function createCustomHeatmap() {
-    const container = document.querySelector<HTMLElement>(
-        "#custom-heatmap-container"
-    )!;
+    customContainer.innerHTML = "";
 
-    // Clear container
-    container.innerHTML = "";
-
-    customHeatmap = createHeatmap({
-        container,
-        width: 800,
-        height: 400,
-        radius: customRadius,
-        blur: customBlur,
-        maxOpacity: customOpacity,
-        gradient: gradientPresets[currentGradient]
-    });
+    customHeatmap = createHeatmap(
+        {
+            container: customContainer,
+            radius: customRadius,
+            blur: customBlur,
+            maxOpacity: customOpacity,
+            gridSize: customGridSize,
+            gradient: gradientPresets[currentGradient]
+        },
+        withTooltip()
+    );
 
     customHeatmap.setData({ min: 0, max: 100, data: customPoints });
 }
 
-// Initialize
 createCustomHeatmap();
 
 // Radius slider
@@ -447,6 +456,18 @@ opacitySlider?.addEventListener("input", () => {
     createCustomHeatmap();
 });
 
+// Grid Size slider
+const gridSizeSlider = document.getElementById(
+    "gridsize-slider"
+) as HTMLInputElement;
+const gridSizeValue = document.getElementById("gridsize-value");
+
+gridSizeSlider?.addEventListener("input", () => {
+    customGridSize = parseInt(gridSizeSlider.value);
+    if (gridSizeValue) gridSizeValue.textContent = String(customGridSize);
+    createCustomHeatmap();
+});
+
 // Gradient select
 const gradientSelect = document.getElementById(
     "gradient-select"
@@ -459,7 +480,11 @@ gradientSelect?.addEventListener("change", () => {
 
 // Random button
 document.getElementById("custom-random-btn")?.addEventListener("click", () => {
-    customPoints = generateRandomPoints(100, 800, 400);
+    customPoints = generateRandomPoints(
+        100,
+        customContainer.clientWidth,
+        customContainer.clientHeight
+    );
     createCustomHeatmap();
 });
 

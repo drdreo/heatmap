@@ -108,6 +108,9 @@ export interface HeatmapConfig {
     /** Use offscreen canvas for better performance (default: true) */
     useOffscreenCanvas?: boolean;
 
+    /** Grid cell size for value lookups in pixels (default: 10) */
+    gridSize?: number;
+
     /** Initial data to render */
     data?: HeatmapData;
 }
@@ -154,17 +157,11 @@ export interface Heatmap {
     destroy(): void;
 }
 
-/**
- * Feature kind symbols for type-safe feature identification
- */
 export const FeatureKind = {
     Tooltip: Symbol("tooltip"),
     Animation: Symbol("animation")
 } as const;
 
-/**
- * Base feature interface with kind for type discrimination
- */
 export interface HeatmapFeature<K extends symbol = symbol> {
     /** Unique identifier for the feature kind */
     readonly kind: K;
@@ -176,10 +173,7 @@ export interface HeatmapFeature<K extends symbol = symbol> {
     teardown?(): void;
 }
 
-/** Tooltip feature type */
 export type TooltipFeature = HeatmapFeature<typeof FeatureKind.Tooltip>;
-
-/** Animation feature type */
 export type AnimationFeature = HeatmapFeature<typeof FeatureKind.Animation>;
 
 /**
@@ -203,11 +197,11 @@ export const DEFAULT_GRADIENT: GradientStop[] = [
     { offset: 1, color: "rgba(255, 0, 0, 1)" }
 ];
 
-/** Default configuration values */
 export const DEFAULT_CONFIG = {
     radius: 25,
     blur: 0.85,
     maxOpacity: 0.8,
     minOpacity: 0,
-    useOffscreenCanvas: true
+    useOffscreenCanvas: true,
+    gridSize: 10
 } as const;

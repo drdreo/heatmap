@@ -16,6 +16,7 @@ export interface ResolvedConfig {
     blur: number;
     maxOpacity: number;
     minOpacity: number;
+    gridSize: number;
 }
 
 /**
@@ -33,12 +34,14 @@ export function validateConfig(config: HeatmapConfig): ResolvedConfig {
     const blur = config.blur ?? DEFAULT_CONFIG.blur;
     const maxOpacity = config.maxOpacity ?? DEFAULT_CONFIG.maxOpacity;
     const minOpacity = config.minOpacity ?? DEFAULT_CONFIG.minOpacity;
+    const gridSize = config.gridSize ?? DEFAULT_CONFIG.gridSize;
 
     validateBlur(blur);
     validateRadius(radius);
     validateOpacity(minOpacity, maxOpacity);
+    validateGridSize(gridSize);
 
-    return { width, height, radius, blur, maxOpacity, minOpacity };
+    return { width, height, radius, blur, maxOpacity, minOpacity, gridSize };
 }
 
 /**
@@ -80,6 +83,17 @@ function validateOpacity(minOpacity: number, maxOpacity: number): void {
     if (minOpacity > maxOpacity) {
         throw new Error(
             `Invalid opacity values: minOpacity (${minOpacity}) cannot be greater than maxOpacity (${maxOpacity}).`
+        );
+    }
+}
+
+/**
+ * Validate grid size is a positive integer
+ */
+function validateGridSize(gridSize: number): void {
+    if (gridSize <= 0 || !Number.isInteger(gridSize)) {
+        throw new Error(
+            `Invalid gridSize value: ${gridSize}. Must be a positive integer.`
         );
     }
 }
