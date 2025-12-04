@@ -16,7 +16,6 @@ jobs:
         steps:
             - uses: actions/checkout@v6
               with:
-                  filter: tree:0
                   fetch-depth: 0
 
             - uses: pnpm/action-setup@v4
@@ -37,6 +36,7 @@ jobs:
                   cache: "pnpm"
 
             - run: pnpm install --frozen-lockfile
+            - run: pnpm exec playwright install --with-deps chromium
             - uses: nrwl/nx-set-shas@v4
 
             # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
