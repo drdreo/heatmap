@@ -57,7 +57,22 @@ export type {
     TooltipFeature
 } from "./core/types";
 
-export { FeatureKind, DEFAULT_CONFIG, DEFAULT_GRADIENT } from "./core/types";
+export { FeatureKind } from "./core/types";
+export { DEFAULT_CONFIG, DEFAULT_GRADIENT } from "./core/defaults";
+
+// Re-export gradient presets
+export {
+    GRADIENT_DEFAULT,
+    GRADIENT_THERMAL,
+    GRADIENT_COOL,
+    GRADIENT_FIRE,
+    GRADIENT_OCEAN,
+    GRADIENT_GRAYSCALE,
+    GRADIENT_SUNSET,
+    GRADIENT_VIRIDIS,
+    GRADIENT_PRESETS,
+    type GradientPresetName
+} from "./core/presets";
 
 // Re-export gradient utilities
 export {

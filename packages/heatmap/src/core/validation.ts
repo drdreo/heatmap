@@ -4,7 +4,8 @@
  * Validates heatmap configuration options and provides helpful error messages.
  */
 
-import { DEFAULT_CONFIG, type HeatmapConfig } from "./types";
+import { DEFAULT_CONFIG } from "./defaults";
+import type { HeatmapConfig } from "./types";
 
 /**
  * Validated and resolved configuration values

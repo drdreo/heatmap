@@ -5,16 +5,15 @@
  */
 
 import { generatePalette } from "./gradient";
-import {
-    DEFAULT_CONFIG,
-    DEFAULT_GRADIENT,
-    type GradientStop,
-    type Heatmap,
-    type HeatmapConfig,
-    type HeatmapData,
-    type HeatmapPoint,
-    type HeatmapStats,
-    type RenderablePoint
+import { DEFAULT_CONFIG, DEFAULT_GRADIENT } from "./defaults";
+import type {
+    GradientStop,
+    Heatmap,
+    HeatmapConfig,
+    HeatmapData,
+    HeatmapPoint,
+    HeatmapStats,
+    RenderablePoint
 } from "./types";
 import { validateConfig } from "./validation";
 

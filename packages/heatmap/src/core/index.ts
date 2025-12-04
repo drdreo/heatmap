@@ -20,4 +20,17 @@ export type {
     TooltipFeature,
     AnimationFeature
 } from "./types";
-export { DEFAULT_CONFIG, DEFAULT_GRADIENT, FeatureKind } from "./types";
+export { FeatureKind } from "./types";
+export { DEFAULT_CONFIG, DEFAULT_GRADIENT } from "./defaults";
+export {
+    GRADIENT_DEFAULT,
+    GRADIENT_THERMAL,
+    GRADIENT_COOL,
+    GRADIENT_FIRE,
+    GRADIENT_OCEAN,
+    GRADIENT_GRAYSCALE,
+    GRADIENT_SUNSET,
+    GRADIENT_VIRIDIS,
+    GRADIENT_PRESETS,
+    type GradientPresetName
+} from "./presets";

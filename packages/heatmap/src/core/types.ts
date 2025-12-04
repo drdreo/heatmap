@@ -210,22 +210,3 @@ export type HasFeature<
         : false
     : false;
 
-/** Default gradient: transparent -> blue -> green -> yellow -> red */
-export const DEFAULT_GRADIENT: GradientStop[] = [
-    { offset: 0, color: "rgba(0, 0, 0, 0)" },
-    { offset: 0.25, color: "rgba(98, 98, 246, 1)" },
-    { offset: 0.5, color: "rgba(114, 255, 114, 1)" },
-    { offset: 0.75, color: "rgba(255, 255, 38, 1)" },
-    { offset: 1, color: "rgba(255, 0, 0, 1)" }
-];
-
-export const DEFAULT_CONFIG = {
-    radius: 25,
-    blur: 0.85,
-    maxOpacity: 0.8,
-    minOpacity: 0,
-    useOffscreenCanvas: true,
-    gridSize: 10,
-    blendMode: "source-over" as GlobalCompositeOperation,
-    intensityExponent: 1
-} as const;

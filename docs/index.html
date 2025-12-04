@@ -162,14 +162,22 @@ const heatmap = createHeatmap({
                                         Default (Blue → Green → Yellow → Red)
                                     </option>
                                     <option value="thermal">
-                                        Thermal (Black → Purple → Red → Yellow →
-                                        White)
+                                        Thermal (Purple → Red → Yellow → White)
                                     </option>
                                     <option value="fire">
-                                        Fire (Black → Red → Orange → Yellow)
+                                        Fire (Dark Red → Orange → Yellow)
                                     </option>
                                     <option value="ocean">
                                         Ocean (Dark Blue → Cyan → White)
+                                    </option>
+                                    <option value="grayscale">
+                                        Grayscale (Black → White)
+                                    </option>
+                                    <option value="sunset">
+                                        Sunset (Purple → Magenta → Orange → Gold)
+                                    </option>
+                                    <option value="viridis">
+                                        Viridis (Purple → Teal → Green → Yellow)
                                     </option>
                                 </select>
                             </div>
@@ -220,34 +228,43 @@ const heatmap = createHeatmap({
                     </div>
 
                     <div class="code-example">
-                        <h4>Custom Gradient Example</h4>
-                        <pre><code class="language-typescript">import { createHeatmap, type GradientStop } from '@drdreo/heatmap';
+                        <h4>Gradient Presets &amp; Custom Gradients</h4>
+                        <pre><code class="language-typescript">import {
+    createHeatmap,
+    GRADIENT_PRESETS,
+    GRADIENT_VIRIDIS,
+    type GradientStop
+} from '@drdreo/heatmap';
 
+// Option 1: Use a preset directly
+const heatmap = createHeatmap({
+    container: document.querySelector('#container')!,
+    gradient: GRADIENT_VIRIDIS
+});
+
+// Option 2: Access any preset via GRADIENT_PRESETS object
+// Available: default, thermal, cool, fire, ocean, grayscale, sunset, viridis, plasma
+const fireHeatmap = createHeatmap({
+    container: document.querySelector('#fire-container')!,
+    gradient: GRADIENT_PRESETS.fire
+});
+
+// Option 3: Create a custom gradient
 const customGradient: GradientStop[] = [
     { offset: 0, color: 'rgba(0, 0, 0, 0)' },
-    { offset: 0.2, color: 'rgba(128, 0, 255, 1)' },
-    { offset: 0.5, color: 'rgba(0, 255, 255, 1)' },
-    { offset: 0.8, color: 'rgba(0, 255, 0, 1)' },
+    { offset: 0.5, color: 'rgba(128, 0, 255, 1)' },
     { offset: 1, color: 'rgba(255, 255, 255, 1)' }
 ];
 
-const heatmap = createHeatmap({
-    container: document.querySelector('#container')!,
-    width: 800,
-    height: 400,
-    radius: 30,
-    blur: 0.85,
-    maxOpacity: 0.9,
-    minOpacity: 0.1,
+const customHeatmap = createHeatmap({
+    container: document.querySelector('#custom-container')!,
     gradient: customGradient,
-    // 'lighter' makes overlapping points glow brighter (additive blending)
     blendMode: 'lighter',
-    // &lt; 1 boosts low values, &gt; 1 emphasizes high values
     intensityExponent: 0.7
 });
 
 // Update gradient dynamically
-heatmap.setGradient(newGradient);</code></pre>
+heatmap.setGradient(GRADIENT_PRESETS.thermal);</code></pre>
                     </div>
                 </section>
 

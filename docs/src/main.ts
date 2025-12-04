@@ -1,7 +1,8 @@
 import {
     type AnimatedHeatmap,
     createHeatmap,
-    type GradientStop,
+    GRADIENT_PRESETS,
+    type GradientPresetName,
     type Heatmap,
     type HeatmapPoint,
     withAnimation,
@@ -347,44 +348,8 @@ progressSlider?.addEventListener("input", () => {
 // CUSTOMIZATION DEMO
 // ============================================================================
 
-// Gradient presets
-const gradientPresets: Record<string, GradientStop[]> = {
-    default: [
-        { offset: 0, color: "rgba(0, 0, 0, 0)" },
-        { offset: 0.25, color: "rgba(98, 98, 246, 1)" },
-        { offset: 0.5, color: "rgba(114, 255, 114, 1)" },
-        { offset: 0.75, color: "rgba(255, 255, 38, 1)" },
-        { offset: 1, color: "rgba(255, 0, 0, 1)" }
-    ],
-    thermal: [
-        { offset: 0, color: "rgba(0, 0, 0, 0)" },
-        { offset: 0.2, color: "rgba(128, 0, 128, 1)" },
-        { offset: 0.4, color: "rgba(255, 0, 0, 1)" },
-        { offset: 0.6, color: "rgba(255, 165, 0, 1)" },
-        { offset: 0.8, color: "rgba(255, 255, 0, 1)" },
-        { offset: 1, color: "rgba(255, 255, 255, 1)" }
-    ],
-    cool: [
-        { offset: 0, color: "rgba(0, 0, 0, 0)" },
-        { offset: 0.33, color: "rgba(128, 0, 255, 1)" },
-        { offset: 0.66, color: "rgba(0, 255, 255, 1)" },
-        { offset: 1, color: "rgba(0, 255, 128, 1)" }
-    ],
-    fire: [
-        { offset: 0, color: "rgba(0, 0, 0, 0)" },
-        { offset: 0.25, color: "rgba(139, 0, 0, 1)" },
-        { offset: 0.5, color: "rgba(255, 69, 0, 1)" },
-        { offset: 0.75, color: "rgba(255, 165, 0, 1)" },
-        { offset: 1, color: "rgba(255, 255, 0, 1)" }
-    ],
-    ocean: [
-        { offset: 0, color: "rgba(0, 0, 0, 0)" },
-        { offset: 0.25, color: "rgba(0, 0, 139, 1)" },
-        { offset: 0.5, color: "rgba(0, 139, 139, 1)" },
-        { offset: 0.75, color: "rgba(0, 255, 255, 1)" },
-        { offset: 1, color: "rgba(255, 255, 255, 1)" }
-    ]
-};
+// Use gradient presets from the library
+const gradientPresets = GRADIENT_PRESETS;
 
 const customContainer = document.querySelector<HTMLElement>(
     "#custom-heatmap-container"
@@ -393,7 +358,7 @@ let customRadius = 25;
 let customBlur = 0.85;
 let customOpacity = 0.8;
 let customGridSize = 20;
-let currentGradient = "cool";
+let currentGradient: GradientPresetName = "cool";
 let currentBlendMode: GlobalCompositeOperation = "source-over";
 let currentIntensityExponent = 1;
 
@@ -478,7 +443,7 @@ const gradientSelect = document.getElementById(
 ) as HTMLSelectElement;
 
 gradientSelect?.addEventListener("change", () => {
-    currentGradient = gradientSelect.value;
+    currentGradient = gradientSelect.value as GradientPresetName;
     createCustomHeatmap();
 });
 

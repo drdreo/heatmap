@@ -2,7 +2,8 @@
  * Gradient utilities for heatmap color interpolation
  */
 
-import { DEFAULT_GRADIENT, type GradientStop, type RGBAColor } from "./types";
+import { DEFAULT_GRADIENT } from "./defaults";
+import type { GradientStop, RGBAColor } from "./types";
 
 /**
  * Parse a CSS color string to RGBA values
