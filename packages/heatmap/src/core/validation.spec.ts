@@ -79,8 +79,12 @@ describe("validateConfig", () => {
         });
 
         it("should accept blur values between 0 and 1", () => {
-            expect(() => validateConfig({ container, blur: 0.5 })).not.toThrow();
-            expect(() => validateConfig({ container, blur: 0.85 })).not.toThrow();
+            expect(() =>
+                validateConfig({ container, blur: 0.5 })
+            ).not.toThrow();
+            expect(() =>
+                validateConfig({ container, blur: 0.85 })
+            ).not.toThrow();
         });
 
         it("should throw error when blur is less than 0", () => {
@@ -104,9 +108,15 @@ describe("validateConfig", () => {
 
     describe("radius validation", () => {
         it("should accept positive radius values", () => {
-            expect(() => validateConfig({ container, radius: 1 })).not.toThrow();
-            expect(() => validateConfig({ container, radius: 25 })).not.toThrow();
-            expect(() => validateConfig({ container, radius: 100 })).not.toThrow();
+            expect(() =>
+                validateConfig({ container, radius: 1 })
+            ).not.toThrow();
+            expect(() =>
+                validateConfig({ container, radius: 25 })
+            ).not.toThrow();
+            expect(() =>
+                validateConfig({ container, radius: 100 })
+            ).not.toThrow();
         });
 
         it("should throw error when radius is 0", () => {
@@ -130,11 +140,15 @@ describe("validateConfig", () => {
         });
 
         it("should accept maxOpacity = 1", () => {
-            expect(() => validateConfig({ container, maxOpacity: 1 })).not.toThrow();
+            expect(() =>
+                validateConfig({ container, maxOpacity: 1 })
+            ).not.toThrow();
         });
 
         it("should accept minOpacity = 0", () => {
-            expect(() => validateConfig({ container, minOpacity: 0 })).not.toThrow();
+            expect(() =>
+                validateConfig({ container, minOpacity: 0 })
+            ).not.toThrow();
         });
 
         it("should accept minOpacity = 1", () => {
@@ -150,25 +164,33 @@ describe("validateConfig", () => {
         });
 
         it("should throw error when maxOpacity is less than 0", () => {
-            expect(() => validateConfig({ container, maxOpacity: -0.1 })).toThrow(
+            expect(() =>
+                validateConfig({ container, maxOpacity: -0.1 })
+            ).toThrow(
                 "Invalid maxOpacity value: -0.1. Must be between 0 and 1."
             );
         });
 
         it("should throw error when maxOpacity is greater than 1", () => {
-            expect(() => validateConfig({ container, maxOpacity: 1.5 })).toThrow(
+            expect(() =>
+                validateConfig({ container, maxOpacity: 1.5 })
+            ).toThrow(
                 "Invalid maxOpacity value: 1.5. Must be between 0 and 1."
             );
         });
 
         it("should throw error when minOpacity is less than 0", () => {
-            expect(() => validateConfig({ container, minOpacity: -0.1 })).toThrow(
+            expect(() =>
+                validateConfig({ container, minOpacity: -0.1 })
+            ).toThrow(
                 "Invalid minOpacity value: -0.1. Must be between 0 and 1."
             );
         });
 
         it("should throw error when minOpacity is greater than 1", () => {
-            expect(() => validateConfig({ container, minOpacity: 1.5 })).toThrow(
+            expect(() =>
+                validateConfig({ container, minOpacity: 1.5 })
+            ).toThrow(
                 "Invalid minOpacity value: 1.5. Must be between 0 and 1."
             );
         });
@@ -182,4 +204,3 @@ describe("validateConfig", () => {
         });
     });
 });
-

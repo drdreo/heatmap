@@ -38,7 +38,8 @@ export function validateConfig(config: HeatmapConfig): ResolvedConfig {
     const minOpacity = config.minOpacity ?? DEFAULT_CONFIG.minOpacity;
     const gridSize = config.gridSize ?? DEFAULT_CONFIG.gridSize;
     const blendMode = config.blendMode ?? DEFAULT_CONFIG.blendMode;
-    const intensityExponent = config.intensityExponent ?? DEFAULT_CONFIG.intensityExponent;
+    const intensityExponent =
+        config.intensityExponent ?? DEFAULT_CONFIG.intensityExponent;
 
     validateBlur(blur);
     validateRadius(radius);
@@ -46,7 +47,17 @@ export function validateConfig(config: HeatmapConfig): ResolvedConfig {
     validateGridSize(gridSize);
     validateIntensityExponent(intensityExponent);
 
-    return { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode, intensityExponent };
+    return {
+        width,
+        height,
+        radius,
+        blur,
+        maxOpacity,
+        minOpacity,
+        gridSize,
+        blendMode,
+        intensityExponent
+    };
 }
 
 /**
@@ -113,4 +124,3 @@ function validateIntensityExponent(intensityExponent: number): void {
         );
     }
 }
-

@@ -48,7 +48,17 @@ interface HeatmapState {
 export function createCore(config: HeatmapConfig): Heatmap {
     const { container, gradient = DEFAULT_GRADIENT } = config;
 
-    const { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode, intensityExponent } = validateConfig(config);
+    const {
+        width,
+        height,
+        radius,
+        blur,
+        maxOpacity,
+        minOpacity,
+        gridSize,
+        blendMode,
+        intensityExponent
+    } = validateConfig(config);
 
     // Create main canvas
     const canvas = document.createElement("canvas");
@@ -155,7 +165,9 @@ export function createCore(config: HeatmapConfig): Heatmap {
         } else {
             // Incremental render - only draw the new points
             const { min, max } = state.data;
-            const renderablePoints = points.map((p) => toRenderablePoint(p, min, max));
+            const renderablePoints = points.map((p) =>
+                toRenderablePoint(p, min, max)
+            );
             renderPoints(renderablePoints);
         }
     }
@@ -201,9 +213,12 @@ export function createCore(config: HeatmapConfig): Heatmap {
                 height: regionHeight
             },
             canvasSize: { width, height },
-            renderCoveragePercent: canvasArea > 0 ? (renderArea / canvasArea) * 100 : 0,
+            renderCoveragePercent:
+                canvasArea > 0 ? (renderArea / canvasArea) * 100 : 0,
             valueGridSize: state.valueGrid.size,
-            dataRange: state.data ? { min: state.data.min, max: state.data.max } : null
+            dataRange: state.data
+                ? { min: state.data.min, max: state.data.max }
+                : null
         };
     }
 
@@ -227,7 +242,11 @@ export function createCore(config: HeatmapConfig): Heatmap {
     /**
      * Convert a HeatmapPoint to a RenderablePoint using current data range
      */
-    function toRenderablePoint(point: HeatmapPoint, min: number, max: number): RenderablePoint {
+    function toRenderablePoint(
+        point: HeatmapPoint,
+        min: number,
+        max: number
+    ): RenderablePoint {
         return {
             x: point.x,
             y: point.y,
@@ -272,7 +291,12 @@ export function createCore(config: HeatmapConfig): Heatmap {
      */
     function drawPoints(points: RenderablePoint[]): void {
         // Reset render boundaries
-        state.renderBoundaries = { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 };
+        state.renderBoundaries = {
+            minX: Infinity,
+            minY: Infinity,
+            maxX: 0,
+            maxY: 0
+        };
 
         // Use pre-generated default template (most points use same radius)
         const template = state.defaultTemplate;
@@ -292,23 +316,53 @@ export function createCore(config: HeatmapConfig): Heatmap {
             const pointMaxY = point.y + offset;
 
             // Track render boundaries
-            state.renderBoundaries.minX = Math.min(state.renderBoundaries.minX, pointMinX);
-            state.renderBoundaries.minY = Math.min(state.renderBoundaries.minY, pointMinY);
-            state.renderBoundaries.maxX = Math.max(state.renderBoundaries.maxX, pointMaxX);
-            state.renderBoundaries.maxY = Math.max(state.renderBoundaries.maxY, pointMaxY);
+            state.renderBoundaries.minX = Math.min(
+                state.renderBoundaries.minX,
+                pointMinX
+            );
+            state.renderBoundaries.minY = Math.min(
+                state.renderBoundaries.minY,
+                pointMinY
+            );
+            state.renderBoundaries.maxX = Math.max(
+                state.renderBoundaries.maxX,
+                pointMaxX
+            );
+            state.renderBoundaries.maxY = Math.max(
+                state.renderBoundaries.maxY,
+                pointMaxY
+            );
 
             // Clamp minimum alpha to ensure very small values are visible
             shadowCtx.globalAlpha = Math.max(0.01, point.alpha);
-            shadowCtx.drawImage(template, pointMinX, pointMinY, templateSize, templateSize);
+            shadowCtx.drawImage(
+                template,
+                pointMinX,
+                pointMinY,
+                templateSize,
+                templateSize
+            );
         }
         shadowCtx.globalAlpha = 1;
         shadowCtx.globalCompositeOperation = "source-over";
 
         // Clamp boundaries to canvas dimensions
-        state.renderBoundaries.minX = Math.max(0, Math.floor(state.renderBoundaries.minX));
-        state.renderBoundaries.minY = Math.max(0, Math.floor(state.renderBoundaries.minY));
-        state.renderBoundaries.maxX = Math.min(width, Math.ceil(state.renderBoundaries.maxX));
-        state.renderBoundaries.maxY = Math.min(height, Math.ceil(state.renderBoundaries.maxY));
+        state.renderBoundaries.minX = Math.max(
+            0,
+            Math.floor(state.renderBoundaries.minX)
+        );
+        state.renderBoundaries.minY = Math.max(
+            0,
+            Math.floor(state.renderBoundaries.minY)
+        );
+        state.renderBoundaries.maxX = Math.min(
+            width,
+            Math.ceil(state.renderBoundaries.maxX)
+        );
+        state.renderBoundaries.maxY = Math.min(
+            height,
+            Math.ceil(state.renderBoundaries.maxY)
+        );
     }
 
     function renderPointsWithClear(points: RenderablePoint[]): void {
@@ -329,12 +383,19 @@ export function createCore(config: HeatmapConfig): Heatmap {
         const regionHeight = maxY - minY;
 
         // Skip if no valid region
-        if (regionWidth <= 0 || regionHeight <= 0) return;
+        if (regionWidth <= 0 || regionHeight <= 0) {
+            return;
+        }
 
-        const imageData = shadowCtx.getImageData(minX, minY, regionWidth, regionHeight);
+        const imageData = shadowCtx.getImageData(
+            minX,
+            minY,
+            regionWidth,
+            regionHeight
+        );
         const pixels = imageData.data;
 
-        // Optimized loop: start at alpha channel (index 3) and work backwards
+        // start at alpha channel (index 3) and work backwards
         for (let i = 3; i < pixels.length; i += 4) {
             const alpha = pixels[i];
             if (alpha === 0) continue;
@@ -428,7 +489,10 @@ function generatePointTemplate(
  * Generate opacity lookup table (256 entries)
  * Pre-computes all possible opacity values for the colorize loop
  */
-function generateOpacityLUT(minOpacity: number, maxOpacity: number): Uint8ClampedArray {
+function generateOpacityLUT(
+    minOpacity: number,
+    maxOpacity: number
+): Uint8ClampedArray {
     const lut = new Uint8ClampedArray(256);
     const opacityRange = maxOpacity - minOpacity;
 
@@ -440,4 +504,3 @@ function generateOpacityLUT(minOpacity: number, maxOpacity: number): Uint8Clampe
 
     return lut;
 }
-

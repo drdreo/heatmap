@@ -759,7 +759,11 @@ describe("createHeatmap renderer", () => {
             heatmap1.destroy();
 
             // Create heatmap with blur=0.5 (with blur)
-            const heatmap2 = createHeatmap({ container, blur: 0.5, radius: 30 });
+            const heatmap2 = createHeatmap({
+                container,
+                blur: 0.5,
+                radius: 30
+            });
             heatmap2.setData({
                 min: 0,
                 max: 100,
@@ -799,7 +803,9 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should throw error when maxOpacity is out of range", () => {
-            expect(() => createHeatmap({ container, maxOpacity: -0.1 })).toThrow(
+            expect(() =>
+                createHeatmap({ container, maxOpacity: -0.1 })
+            ).toThrow(
                 "Invalid maxOpacity value: -0.1. Must be between 0 and 1."
             );
             expect(() => createHeatmap({ container, maxOpacity: 1.5 })).toThrow(
@@ -808,7 +814,9 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should throw error when minOpacity is out of range", () => {
-            expect(() => createHeatmap({ container, minOpacity: -0.1 })).toThrow(
+            expect(() =>
+                createHeatmap({ container, minOpacity: -0.1 })
+            ).toThrow(
                 "Invalid minOpacity value: -0.1. Must be between 0 and 1."
             );
             expect(() => createHeatmap({ container, minOpacity: 1.5 })).toThrow(
@@ -863,7 +871,11 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should accept 'lighter' blend mode for additive blending", () => {
-            heatmap = createHeatmap({ container, radius: 20, blendMode: "lighter" });
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                blendMode: "lighter"
+            });
             heatmap.setData({
                 min: 0,
                 max: 100,
@@ -884,7 +896,11 @@ describe("createHeatmap renderer", () => {
 
         it("should produce different output with 'lighter' vs 'source-over' blend mode", () => {
             // Create heatmap with source-over (default)
-            const heatmap1 = createHeatmap({ container, radius: 30, blendMode: "source-over" });
+            const heatmap1 = createHeatmap({
+                container,
+                radius: 30,
+                blendMode: "source-over"
+            });
             heatmap1.setData({
                 min: 0,
                 max: 100,
@@ -899,7 +915,11 @@ describe("createHeatmap renderer", () => {
             heatmap1.destroy();
 
             // Create heatmap with lighter (additive)
-            const heatmap2 = createHeatmap({ container, radius: 30, blendMode: "lighter" });
+            const heatmap2 = createHeatmap({
+                container,
+                radius: 30,
+                blendMode: "lighter"
+            });
             heatmap2.setData({
                 min: 0,
                 max: 100,
@@ -927,7 +947,11 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should accept 'multiply' blend mode", () => {
-            heatmap = createHeatmap({ container, radius: 20, blendMode: "multiply" });
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                blendMode: "multiply"
+            });
             heatmap.setData({
                 min: 0,
                 max: 100,
@@ -944,7 +968,11 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should work with addPoint when using custom blend mode", () => {
-            heatmap = createHeatmap({ container, radius: 20, blendMode: "lighter" });
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                blendMode: "lighter"
+            });
             heatmap.setData({
                 min: 0,
                 max: 100,
@@ -961,7 +989,11 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should work with addPoints when using custom blend mode", () => {
-            heatmap = createHeatmap({ container, radius: 20, blendMode: "lighter" });
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                blendMode: "lighter"
+            });
 
             heatmap.addPoints([
                 { x: 150, y: 100, value: 50 },
@@ -989,7 +1021,11 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should accept custom intensityExponent", () => {
-            heatmap = createHeatmap({ container, radius: 20, intensityExponent: 2 });
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                intensityExponent: 2
+            });
             heatmap.setData({
                 min: 0,
                 max: 100,
@@ -1003,7 +1039,11 @@ describe("createHeatmap renderer", () => {
 
         it("should make low values more visible with exponent < 1", () => {
             // With exponent 0.5 (square root), a value of 0.25 becomes 0.5
-            const heatmap1 = createHeatmap({ container, radius: 20, intensityExponent: 1 });
+            const heatmap1 = createHeatmap({
+                container,
+                radius: 20,
+                intensityExponent: 1
+            });
             heatmap1.setData({
                 min: 0,
                 max: 100,
@@ -1013,7 +1053,11 @@ describe("createHeatmap renderer", () => {
             const alpha1 = ctx1.getImageData(150, 100, 1, 1).data[3];
             heatmap1.destroy();
 
-            const heatmap2 = createHeatmap({ container, radius: 20, intensityExponent: 0.5 });
+            const heatmap2 = createHeatmap({
+                container,
+                radius: 20,
+                intensityExponent: 0.5
+            });
             heatmap2.setData({
                 min: 0,
                 max: 100,
@@ -1031,7 +1075,11 @@ describe("createHeatmap renderer", () => {
 
         it("should emphasize high values with exponent > 1", () => {
             // With exponent 2 (quadratic), a value of 0.5 becomes 0.25
-            const heatmap1 = createHeatmap({ container, radius: 20, intensityExponent: 1 });
+            const heatmap1 = createHeatmap({
+                container,
+                radius: 20,
+                intensityExponent: 1
+            });
             heatmap1.setData({
                 min: 0,
                 max: 100,
@@ -1041,7 +1089,11 @@ describe("createHeatmap renderer", () => {
             const alpha1 = ctx1.getImageData(150, 100, 1, 1).data[3];
             heatmap1.destroy();
 
-            const heatmap2 = createHeatmap({ container, radius: 20, intensityExponent: 2 });
+            const heatmap2 = createHeatmap({
+                container,
+                radius: 20,
+                intensityExponent: 2
+            });
             heatmap2.setData({
                 min: 0,
                 max: 100,
@@ -1058,7 +1110,11 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should work with addPoint", () => {
-            heatmap = createHeatmap({ container, radius: 20, intensityExponent: 0.5 });
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                intensityExponent: 0.5
+            });
             heatmap.addPoint({ x: 150, y: 100, value: 25 });
 
             const ctx = heatmap.canvas.getContext("2d")!;
@@ -1067,7 +1123,11 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should work with addPoints", () => {
-            heatmap = createHeatmap({ container, radius: 20, intensityExponent: 2 });
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                intensityExponent: 2
+            });
             heatmap.addPoints([
                 { x: 150, y: 100, value: 50 },
                 { x: 200, y: 100, value: 75 }
@@ -1079,10 +1139,14 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should throw error when intensityExponent is 0 or negative", () => {
-            expect(() => createHeatmap({ container, intensityExponent: 0 })).toThrow(
+            expect(() =>
+                createHeatmap({ container, intensityExponent: 0 })
+            ).toThrow(
                 "Invalid intensityExponent value: 0. Must be greater than 0."
             );
-            expect(() => createHeatmap({ container, intensityExponent: -1 })).toThrow(
+            expect(() =>
+                createHeatmap({ container, intensityExponent: -1 })
+            ).toThrow(
                 "Invalid intensityExponent value: -1. Must be greater than 0."
             );
         });
