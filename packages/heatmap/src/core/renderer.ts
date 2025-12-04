@@ -4,17 +4,17 @@
  * Minimal, focused rendering engine. Features are added via composition.
  */
 
-import { generatePalette } from './gradient';
+import { generatePalette } from "./gradient";
 import {
     DEFAULT_CONFIG,
     DEFAULT_GRADIENT,
-    GradientStop,
-    Heatmap,
-    HeatmapConfig,
-    HeatmapData,
-    HeatmapPoint,
-    RenderablePoint
-} from './types';
+    type GradientStop,
+    type Heatmap,
+    type HeatmapConfig,
+    type HeatmapData,
+    type HeatmapPoint,
+    type RenderablePoint
+} from "./types";
 
 /**
  * Internal state for the heatmap renderer
@@ -42,30 +42,32 @@ export function createCore(config: HeatmapConfig): Heatmap {
     const gridSize = 6; // Default grid size for value lookups
 
     // Create main canvas
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     Object.assign(canvas.style, {
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none'
+        position: "absolute",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none"
     });
 
-    const ctx = canvas.getContext('2d', { willReadFrequently: false })!;
+    const ctx = canvas.getContext("2d", { willReadFrequently: false })!;
 
     // Create shadow canvas for grayscale rendering
     const useOffscreen =
         (config.useOffscreenCanvas ?? DEFAULT_CONFIG.useOffscreenCanvas) &&
-        typeof OffscreenCanvas !== 'undefined';
+        typeof OffscreenCanvas !== "undefined";
 
     const shadowCanvas = useOffscreen
         ? new OffscreenCanvas(width, height)
         : createShadowCanvas(width, height);
 
-    const shadowCtx = shadowCanvas.getContext('2d', { willReadFrequently: true })!;
+    const shadowCtx = shadowCanvas.getContext("2d", {
+        willReadFrequently: true
+    })!;
 
     // Internal state
     const state: HeatmapState = {
@@ -136,7 +138,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         return state.valueGrid.get(`${gridX},${gridY}`) ?? 0;
     }
 
-    function getDataURL(type = 'image/png', quality?: number): string {
+    function getDataURL(type = "image/png", quality?: number): string {
         return canvas.toDataURL(type, quality);
     }
 
@@ -227,7 +229,8 @@ export function createCore(config: HeatmapConfig): Heatmap {
                 pixels[i + 2] = state.palette[paletteIdx + 2];
 
                 const normalizedAlpha = alpha / 255;
-                const scaledOpacity = minOpacity + normalizedAlpha * opacityRange;
+                const scaledOpacity =
+                    minOpacity + normalizedAlpha * opacityRange;
                 pixels[i + 3] = Math.round(scaledOpacity * 255);
             }
         }
@@ -255,25 +258,35 @@ export function createCore(config: HeatmapConfig): Heatmap {
 // --- Utility Functions ---
 
 function createShadowCanvas(width: number, height: number): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     return canvas;
 }
 
-function generatePointTemplate(radius: number, blur: number): HTMLCanvasElement {
+function generatePointTemplate(
+    radius: number,
+    blur: number
+): HTMLCanvasElement {
     const size = radius * 2 + blur * 2;
     const center = size / 2;
 
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
 
-    const ctx = canvas.getContext('2d')!;
-    const gradient = ctx.createRadialGradient(center, center, 0, center, center, radius);
+    const ctx = canvas.getContext("2d")!;
+    const gradient = ctx.createRadialGradient(
+        center,
+        center,
+        0,
+        center,
+        center,
+        radius
+    );
 
-    gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(0, "rgba(0, 0, 0, 1)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, size, size);

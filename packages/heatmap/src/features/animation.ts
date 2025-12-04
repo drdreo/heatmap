@@ -5,13 +5,13 @@
  */
 
 import {
-    AnimationFeature,
+    type AnimationFeature,
     FeatureKind,
-    Heatmap,
-    HeatmapPoint,
-    RenderablePoint
-} from '../core/types';
-import { generatePalette } from '../core/gradient';
+    type Heatmap,
+    type HeatmapPoint,
+    type RenderablePoint
+} from "../core/types";
+import { generatePalette } from "../core/gradient";
 
 /** A temporal data point with timestamp */
 export interface TemporalHeatmapPoint extends HeatmapPoint {
@@ -34,7 +34,7 @@ export interface TemporalHeatmapData {
 }
 
 /** Animation state */
-export type AnimationState = 'idle' | 'playing' | 'paused';
+export type AnimationState = "idle" | "playing" | "paused";
 
 /** Animation configuration */
 export interface AnimationConfig {
@@ -121,16 +121,18 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     let heatmapRef: Heatmap | null = null;
 
     // Animation config
-    const fadeOutDuration = config.fadeOutDuration ?? DEFAULT_ANIMATION_CONFIG.fadeOutDuration;
+    const fadeOutDuration =
+        config.fadeOutDuration ?? DEFAULT_ANIMATION_CONFIG.fadeOutDuration;
     const timeWindow = config.timeWindow ?? DEFAULT_ANIMATION_CONFIG.timeWindow;
-    let playbackSpeed = config.playbackSpeed ?? DEFAULT_ANIMATION_CONFIG.playbackSpeed;
+    let playbackSpeed =
+        config.playbackSpeed ?? DEFAULT_ANIMATION_CONFIG.playbackSpeed;
     let loop = config.loop ?? DEFAULT_ANIMATION_CONFIG.loop;
     const onFrame = config.onFrame;
     const onComplete = config.onComplete;
 
     // Animation state
     let data: TemporalHeatmapData | null = null;
-    let state: AnimationState = 'idle';
+    let state: AnimationState = "idle";
     let currentTime = 0;
     let lastFrameTime = 0;
     let animationFrameId: number | null = null;
@@ -138,7 +140,10 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
 
     // Canvas contexts for animation rendering
     let shadowCanvas: HTMLCanvasElement | OffscreenCanvas | null = null;
-    let shadowCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null = null;
+    let shadowCtx:
+        | CanvasRenderingContext2D
+        | OffscreenCanvasRenderingContext2D
+        | null = null;
     let ctx: CanvasRenderingContext2D | null = null;
     let pointTemplate: HTMLCanvasElement | null = null;
     let palette: Uint8ClampedArray | null = null;
@@ -147,7 +152,9 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
 
     function setTemporalData(newData: TemporalHeatmapData): void {
         // Sort data by timestamp
-        const sortedData = [...newData.data].sort((a, b) => a.timestamp - b.timestamp);
+        const sortedData = [...newData.data].sort(
+            (a, b) => a.timestamp - b.timestamp
+        );
         data = { ...newData, data: sortedData };
         currentTime = newData.startTime;
         lastSearchIndex = 0;
@@ -155,15 +162,15 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     }
 
     function play(): void {
-        if (state === 'playing' || !data) return;
+        if (state === "playing" || !data) return;
 
-        state = 'playing';
+        state = "playing";
         lastFrameTime = performance.now();
         animationLoop();
     }
 
     function pause(): void {
-        state = 'paused';
+        state = "paused";
         if (animationFrameId !== null) {
             cancelAnimationFrame(animationFrameId);
             animationFrameId = null;
@@ -172,7 +179,7 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
 
     function stop(): void {
         pause();
-        state = 'idle';
+        state = "idle";
         if (data) {
             currentTime = data.startTime;
             lastSearchIndex = 0;
@@ -183,7 +190,10 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     function seek(timestamp: number): void {
         if (!data) return;
 
-        currentTime = Math.max(data.startTime, Math.min(timestamp, data.endTime));
+        currentTime = Math.max(
+            data.startTime,
+            Math.min(timestamp, data.endTime)
+        );
 
         if (currentTime < data.data[lastSearchIndex]?.timestamp) {
             lastSearchIndex = 0;
@@ -196,7 +206,8 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
         if (!data) return;
 
         const duration = data.endTime - data.startTime;
-        const timestamp = data.startTime + duration * Math.max(0, Math.min(1, progress));
+        const timestamp =
+            data.startTime + duration * Math.max(0, Math.min(1, progress));
         seek(timestamp);
     }
 
@@ -223,7 +234,7 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     }
 
     function animationLoop(): void {
-        if (state !== 'playing' || !data) return;
+        if (state !== "playing" || !data) return;
 
         const now = performance.now();
         const deltaTime = now - lastFrameTime;
@@ -237,7 +248,7 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
                 lastSearchIndex = 0;
             } else {
                 currentTime = data.endTime;
-                state = 'idle';
+                state = "idle";
                 renderFrame(currentTime);
                 onComplete?.();
                 return;
@@ -250,7 +261,15 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     }
 
     function renderFrame(timestamp: number): void {
-        if (!data || !heatmapRef || !shadowCtx || !ctx || !pointTemplate || !palette) return;
+        if (
+            !data ||
+            !heatmapRef ||
+            !shadowCtx ||
+            !ctx ||
+            !pointTemplate ||
+            !palette
+        )
+            return;
 
         const { width, height } = heatmapRef;
 
@@ -294,7 +313,8 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
                 pixels[i + 2] = palette[paletteIdx + 2];
 
                 const normalizedAlpha = alpha / 255;
-                const scaledOpacity = minOpacity + normalizedAlpha * opacityRange;
+                const scaledOpacity =
+                    minOpacity + normalizedAlpha * opacityRange;
                 pixels[i + 3] = Math.round(scaledOpacity * 255);
             }
         }
@@ -317,10 +337,16 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
 
             if (point.timestamp > timestamp) break;
 
-            const age = Math.min(1, (timestamp - point.timestamp) / fadeOutDuration);
+            const age = Math.min(
+                1,
+                (timestamp - point.timestamp) / fadeOutDuration
+            );
             if (age >= 1) continue;
 
-            const normalizedValue = Math.min(1, Math.max(0, (point.value - min) / range));
+            const normalizedValue = Math.min(
+                1,
+                Math.max(0, (point.value - min) / range)
+            );
             const decayMultiplier = 1 - easeOutQuad(age);
 
             result.push({
@@ -334,7 +360,10 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
         return result;
     }
 
-    function binarySearchStart(points: TemporalHeatmapPoint[], windowStart: number): number {
+    function binarySearchStart(
+        points: TemporalHeatmapPoint[],
+        windowStart: number
+    ): number {
         let left = lastSearchIndex;
         let right = points.length - 1;
 
@@ -358,15 +387,18 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
         return t * (2 - t);
     }
 
-    function generatePointTemplate(radius: number, blur: number): HTMLCanvasElement {
+    function generatePointTemplate(
+        radius: number,
+        blur: number
+    ): HTMLCanvasElement {
         const size = radius * 2 + blur * 2;
         const center = size / 2;
 
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = size;
         canvas.height = size;
 
-        const templateCtx = canvas.getContext('2d')!;
+        const templateCtx = canvas.getContext("2d")!;
         const gradient = templateCtx.createRadialGradient(
             center,
             center,
@@ -376,8 +408,8 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
             radius
         );
 
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        gradient.addColorStop(0, "rgba(0, 0, 0, 1)");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
 
         templateCtx.fillStyle = gradient;
         templateCtx.fillRect(0, 0, size, size);
@@ -392,17 +424,21 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
             heatmapRef = heatmap;
 
             const { width, height, canvas } = heatmap;
-            ctx = canvas.getContext('2d', { willReadFrequently: false })!;
+            ctx = canvas.getContext("2d", { willReadFrequently: false })!;
 
             // Create shadow canvas
-            if (typeof OffscreenCanvas !== 'undefined') {
+            if (typeof OffscreenCanvas !== "undefined") {
                 shadowCanvas = new OffscreenCanvas(width, height);
-                shadowCtx = shadowCanvas.getContext('2d', { willReadFrequently: true })!;
+                shadowCtx = shadowCanvas.getContext("2d", {
+                    willReadFrequently: true
+                })!;
             } else {
-                shadowCanvas = document.createElement('canvas');
+                shadowCanvas = document.createElement("canvas");
                 shadowCanvas.width = width;
                 shadowCanvas.height = height;
-                shadowCtx = shadowCanvas.getContext('2d', { willReadFrequently: true })!;
+                shadowCtx = shadowCanvas.getContext("2d", {
+                    willReadFrequently: true
+                })!;
             }
 
             // Generate point template (use reasonable defaults)

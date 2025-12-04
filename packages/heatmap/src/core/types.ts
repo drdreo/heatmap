@@ -130,8 +130,8 @@ export interface Heatmap {
  * Feature kind symbols for type-safe feature identification
  */
 export const FeatureKind = {
-    Tooltip: Symbol('tooltip'),
-    Animation: Symbol('animation')
+    Tooltip: Symbol("tooltip"),
+    Animation: Symbol("animation")
 } as const;
 
 /**
@@ -160,15 +160,19 @@ export type AnimationFeature = HeatmapFeature<typeof FeatureKind.Animation>;
 export type HasFeature<
     Features extends HeatmapFeature[],
     Kind extends symbol
-> = Features extends (infer F)[] ? (F extends HeatmapFeature<Kind> ? true : false) : false;
+> = Features extends (infer F)[]
+    ? F extends HeatmapFeature<Kind>
+        ? true
+        : false
+    : false;
 
 /** Default gradient: transparent -> blue -> green -> yellow -> red */
 export const DEFAULT_GRADIENT: GradientStop[] = [
-    { offset: 0, color: 'rgba(0, 0, 0, 0)' },
-    { offset: 0.25, color: 'rgba(98, 98, 246, 1)' },
-    { offset: 0.5, color: 'rgba(114, 255, 114, 1)' },
-    { offset: 0.75, color: 'rgba(255, 255, 38, 1)' },
-    { offset: 1, color: 'rgba(255, 0, 0, 1)' }
+    { offset: 0, color: "rgba(0, 0, 0, 0)" },
+    { offset: 0.25, color: "rgba(98, 98, 246, 1)" },
+    { offset: 0.5, color: "rgba(114, 255, 114, 1)" },
+    { offset: 0.75, color: "rgba(255, 255, 38, 1)" },
+    { offset: 1, color: "rgba(255, 0, 0, 1)" }
 ];
 
 /** Default configuration values */

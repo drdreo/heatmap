@@ -2,7 +2,7 @@
  * Gradient utilities for heatmap color interpolation
  */
 
-import { DEFAULT_GRADIENT, GradientStop, RGBAColor } from './types';
+import { DEFAULT_GRADIENT, type GradientStop, type RGBAColor } from "./types";
 
 /**
  * Parse a CSS color string to RGBA values
@@ -22,7 +22,9 @@ export function parseColor(color: string): RGBAColor {
     }
 
     // Handle hex format
-    const hexMatch = color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i);
+    const hexMatch = color.match(
+        /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i
+    );
     if (hexMatch) {
         return {
             r: parseInt(hexMatch[1], 16),
@@ -63,7 +65,9 @@ function lerpColor(color1: RGBAColor, color2: RGBAColor, t: number): RGBAColor {
  * Generate a 256-entry color palette from gradient stops
  * This is cached and used for fast lookups during rendering
  */
-export function generatePalette(stops: GradientStop[] = DEFAULT_GRADIENT): Uint8ClampedArray {
+export function generatePalette(
+    stops: GradientStop[] = DEFAULT_GRADIENT
+): Uint8ClampedArray {
     const palette = new Uint8ClampedArray(256 * 4);
 
     // Sort stops by offset
@@ -118,11 +122,11 @@ export function createGradientCanvas(
     stops: GradientStop[] = DEFAULT_GRADIENT,
     horizontal = true
 ): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
 
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext("2d")!;
     const gradient = ctx.createLinearGradient(
         0,
         0,

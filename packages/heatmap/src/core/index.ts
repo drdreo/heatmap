@@ -4,8 +4,8 @@
  * Exports the core renderer and types.
  */
 
-export { createCore } from './renderer';
-export { generatePalette, parseColor, createGradientCanvas } from './gradient';
+export { createCore } from "./renderer";
+export { generatePalette, parseColor, createGradientCanvas } from "./gradient";
 export type {
     Heatmap,
     HeatmapConfig,
@@ -17,5 +17,5 @@ export type {
     RenderablePoint,
     TooltipFeature,
     AnimationFeature
-} from './types';
-export { DEFAULT_CONFIG, DEFAULT_GRADIENT, FeatureKind } from './types';
+} from "./types";
+export { DEFAULT_CONFIG, DEFAULT_GRADIENT, FeatureKind } from "./types";

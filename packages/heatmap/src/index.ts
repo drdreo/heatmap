@@ -33,9 +33,14 @@
  * ```
  */
 
-import { createCore } from './core/renderer';
-import { AnimationFeature, Heatmap, HeatmapConfig, HeatmapFeature } from './core/types';
-import { AnimatedHeatmap } from './features/animation';
+import { createCore } from "./core/renderer";
+import type {
+    AnimationFeature,
+    Heatmap,
+    HeatmapConfig,
+    HeatmapFeature
+} from "./core/types";
+import type { AnimatedHeatmap } from "./features/animation";
 
 // Re-export core types
 export type {
@@ -49,15 +54,19 @@ export type {
     RenderablePoint,
     AnimationFeature,
     TooltipFeature
-} from './core/types';
+} from "./core/types";
 
-export { FeatureKind, DEFAULT_CONFIG, DEFAULT_GRADIENT } from './core/types';
+export { FeatureKind, DEFAULT_CONFIG, DEFAULT_GRADIENT } from "./core/types";
 
 // Re-export gradient utilities
-export { createGradientCanvas, generatePalette, parseColor } from './core/gradient';
+export {
+    createGradientCanvas,
+    generatePalette,
+    parseColor
+} from "./core/gradient";
 
 // Re-export features
-export { withTooltip, type TooltipConfig } from './features/tooltip';
+export { withTooltip, type TooltipConfig } from "./features/tooltip";
 export {
     withAnimation,
     type AnimationConfig,
@@ -65,7 +74,7 @@ export {
     type TemporalHeatmapPoint,
     type TemporalHeatmapData,
     type AnimationState
-} from './features/animation';
+} from "./features/animation";
 
 /**
  * Create a new heatmap instance with optional features
@@ -107,9 +116,15 @@ export function createHeatmap(
     ...features: HeatmapFeature[]
 ): AnimatedHeatmap;
 // Overload: without animation feature returns Heatmap
-export function createHeatmap(config: HeatmapConfig, ...features: HeatmapFeature[]): Heatmap;
+export function createHeatmap(
+    config: HeatmapConfig,
+    ...features: HeatmapFeature[]
+): Heatmap;
 // Implementation
-export function createHeatmap(config: HeatmapConfig, ...features: HeatmapFeature[]): Heatmap {
+export function createHeatmap(
+    config: HeatmapConfig,
+    ...features: HeatmapFeature[]
+): Heatmap {
     // Create core renderer
     const heatmap = createCore(config);
 

@@ -40,11 +40,13 @@
         "url": ""
     },
     "devDependencies": {
-        "vite": "npm:rolldown-vite@7.2.5",
-        "@vitest/coverage-v8": "^2.1.8",
-        "jsdom": "^27.2.0",
+        "@vitest/browser": "^4.0.15",
+        "@vitest/browser-playwright": "^4.0.15",
+        "@vitest/coverage-v8": "^4.0.15",
+        "playwright": "^1.57.0",
         "tsdown": "latest",
         "typescript": "~5.9.3",
-        "vitest": "^2.1.8"
+        "vite": "npm:rolldown-vite@7.2.5",
+        "vitest": "^4.0.15"
     }
 }

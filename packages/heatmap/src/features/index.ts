@@ -4,7 +4,7 @@
  * Tree-shakeable features that can be composed with the core heatmap.
  */
 
-export { withTooltip, type TooltipConfig } from './tooltip';
+export { withTooltip, type TooltipConfig } from "./tooltip";
 export {
     withAnimation,
     type AnimationConfig,
@@ -12,4 +12,4 @@ export {
     type TemporalHeatmapPoint,
     type TemporalHeatmapData,
     type AnimationState
-} from './animation';
+} from "./animation";
