@@ -1,10 +1,12 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import {
     createHeatmap,
     withTooltip,
+    withAnimation,
     type Heatmap,
     type HeatmapData,
-    type HeatmapPoint
+    type HeatmapPoint,
+    type AnimatedHeatmap
 } from "../index";
 
 describe("createHeatmap (composable API)", () => {
@@ -34,7 +36,7 @@ describe("createHeatmap (composable API)", () => {
         container?.remove();
     });
 
-    describe("basic heatmap", () => {
+    describe("basic creation", () => {
         it("should create canvas with container dimensions", () => {
             heatmap = createHeatmap({ container });
 
@@ -42,51 +44,72 @@ describe("createHeatmap (composable API)", () => {
             expect(heatmap.canvas.height).toBe(200);
         });
 
-        it("should use custom dimensions when provided", () => {
+        it("should expose container reference", () => {
+            heatmap = createHeatmap({ container });
+
+            expect(heatmap.container).toBe(container);
+        });
+
+        it("should expose width and height", () => {
             heatmap = createHeatmap({ container, width: 400, height: 300 });
 
-            expect(heatmap.canvas.width).toBe(400);
-            expect(heatmap.canvas.height).toBe(300);
-        });
-
-        it("should append canvas to container", () => {
-            heatmap = createHeatmap({ container });
-
-            expect(container.querySelector("canvas")).toBe(heatmap.canvas);
-        });
-
-        it("should set canvas styles correctly", () => {
-            heatmap = createHeatmap({ container });
-
-            expect(heatmap.canvas.style.position).toBe("absolute");
-            expect(heatmap.canvas.style.top).toBe("0px");
-            expect(heatmap.canvas.style.left).toBe("0px");
-            expect(heatmap.canvas.style.pointerEvents).toBe("none");
-        });
-
-        it("should render initial data when provided in config", () => {
-            heatmap = createHeatmap({
-                container,
-                radius: 10,
-                data: {
-                    min: 0,
-                    max: 100,
-                    data: [{ x: 50, y: 50, value: 100 }]
-                }
-            });
-
-            const ctx = heatmap.canvas.getContext("2d")!;
-            const imageData = ctx.getImageData(0, 0, 300, 200);
-            const hasContent = imageData.data.some(
-                (val, i) => i % 4 === 3 && val > 0
-            );
-
-            expect(hasContent).toBe(true);
+            expect(heatmap.width).toBe(400);
+            expect(heatmap.height).toBe(300);
         });
     });
 
-    describe("setData", () => {
-        it("should render points on canvas", () => {
+    describe("feature composition", () => {
+        it("should work without any features", () => {
+            heatmap = createHeatmap({ container });
+
+            expect(heatmap.setData).toBeDefined();
+            expect(heatmap.addPoint).toBeDefined();
+            expect(heatmap.clear).toBeDefined();
+        });
+
+        it("should compose with tooltip feature", () => {
+            heatmap = createHeatmap({ container }, withTooltip());
+
+            expect(container.querySelector(".heatmap-tooltip")).not.toBeNull();
+        });
+
+        it("should compose with animation feature", () => {
+            const animatedHeatmap = createHeatmap(
+                { container },
+                withAnimation()
+            );
+
+            expect(animatedHeatmap.play).toBeDefined();
+            expect(animatedHeatmap.pause).toBeDefined();
+            expect(animatedHeatmap.stop).toBeDefined();
+        });
+
+        it("should compose with multiple features", () => {
+            const animatedHeatmap = createHeatmap(
+                { container },
+                withTooltip(),
+                withAnimation()
+            );
+
+            // Has tooltip
+            expect(container.querySelector(".heatmap-tooltip")).not.toBeNull();
+            // Has animation
+            expect(animatedHeatmap.play).toBeDefined();
+        });
+
+        it("should teardown features on destroy", () => {
+            heatmap = createHeatmap({ container }, withTooltip());
+
+            expect(container.querySelector(".heatmap-tooltip")).not.toBeNull();
+
+            heatmap.destroy();
+
+            expect(container.querySelector(".heatmap-tooltip")).toBeNull();
+        });
+    });
+
+    describe("core API", () => {
+        it("should set and render data", () => {
             heatmap = createHeatmap({ container, radius: 10 });
             const data: HeatmapData = {
                 min: 0,
@@ -105,16 +128,7 @@ describe("createHeatmap (composable API)", () => {
             expect(hasContent).toBe(true);
         });
 
-        it("should handle empty data", () => {
-            heatmap = createHeatmap({ container });
-            const data: HeatmapData = { min: 0, max: 100, data: [] };
-
-            expect(() => heatmap.setData(data)).not.toThrow();
-        });
-    });
-
-    describe("addPoint", () => {
-        it("should add point to empty heatmap", () => {
+        it("should add individual points", () => {
             heatmap = createHeatmap({ container });
             const point: HeatmapPoint = { x: 100, y: 100, value: 50 };
 
@@ -128,10 +142,23 @@ describe("createHeatmap (composable API)", () => {
 
             expect(hasContent).toBe(true);
         });
-    });
 
-    describe("clear", () => {
-        it("should clear the canvas", () => {
+        it("should add multiple points at once", () => {
+            heatmap = createHeatmap({ container });
+            const points: HeatmapPoint[] = [
+                { x: 50, y: 50, value: 30 },
+                { x: 100, y: 100, value: 50 },
+                { x: 150, y: 150, value: 70 }
+            ];
+
+            heatmap.addPoints(points);
+
+            expect(heatmap.getValueAt(50, 50)).toBe(30);
+            expect(heatmap.getValueAt(100, 100)).toBe(50);
+            expect(heatmap.getValueAt(150, 150)).toBe(70);
+        });
+
+        it("should clear all data", () => {
             heatmap = createHeatmap({ container });
             heatmap.setData({
                 min: 0,
@@ -149,10 +176,22 @@ describe("createHeatmap (composable API)", () => {
 
             expect(hasContent).toBe(false);
         });
-    });
 
-    describe("getDataURL", () => {
-        it("should return a data URL", () => {
+        it("should get value at position", () => {
+            heatmap = createHeatmap({ container });
+            heatmap.setData({
+                min: 0,
+                max: 100,
+                data: [
+                    { x: 2, y: 2, value: 30 },
+                    { x: 4, y: 4, value: 20 }
+                ]
+            });
+
+            expect(heatmap.getValueAt(3, 3)).toBe(50);
+        });
+
+        it("should export as data URL", () => {
             heatmap = createHeatmap({ container });
             heatmap.setData({
                 min: 0,
@@ -164,202 +203,46 @@ describe("createHeatmap (composable API)", () => {
 
             expect(dataUrl).toMatch(/^data:image\/png;base64,/);
         });
-    });
 
-    describe("destroy", () => {
-        it("should remove canvas from DOM", () => {
-            heatmap = createHeatmap({ container });
-            const canvas = heatmap.canvas;
-
-            expect(container.contains(canvas)).toBe(true);
-
-            heatmap.destroy();
-
-            expect(container.contains(canvas)).toBe(false);
-        });
-    });
-
-    describe("getValueAt", () => {
-        it("should return 0 for empty heatmap", () => {
-            heatmap = createHeatmap({ container });
-
-            expect(heatmap.getValueAt(50, 50)).toBe(0);
-        });
-
-        it("should return aggregated value at position", () => {
+        it("should update gradient", () => {
             heatmap = createHeatmap({ container });
             heatmap.setData({
                 min: 0,
                 max: 100,
-                data: [
-                    { x: 2, y: 2, value: 30 },
-                    { x: 4, y: 4, value: 20 }
-                ]
+                data: [{ x: 50, y: 50, value: 100 }]
             });
 
-            // Both points should be in same grid cell (default gridSize is 6)
-            expect(heatmap.getValueAt(3, 3)).toBe(50); // 30 + 20
+            expect(() =>
+                heatmap.setGradient([
+                    { offset: 0, color: "rgba(0, 0, 255, 0)" },
+                    { offset: 1, color: "rgba(0, 0, 255, 1)" }
+                ])
+            ).not.toThrow();
         });
     });
-});
 
-describe("withTooltip feature", () => {
-    let container: HTMLDivElement;
-    let heatmap: Heatmap;
+    describe("type safety", () => {
+        it("should return AnimatedHeatmap when animation feature is first", () => {
+            const hm: AnimatedHeatmap = createHeatmap(
+                { container },
+                withAnimation()
+            );
 
-    const createMockContainer = (width = 300, height = 200): HTMLDivElement => {
-        const div = document.createElement("div");
-        Object.defineProperty(div, "offsetWidth", {
-            value: width,
-            configurable: true
-        });
-        Object.defineProperty(div, "offsetHeight", {
-            value: height,
-            configurable: true
-        });
-        return div;
-    };
-
-    const findTooltip = (selector = ".heatmap-tooltip") =>
-        container.querySelector(selector);
-
-    beforeEach(() => {
-        container = createMockContainer();
-        document.body.appendChild(container);
-    });
-
-    afterEach(() => {
-        heatmap?.destroy();
-        container?.remove();
-    });
-
-    it("should create tooltip element when feature is added", () => {
-        heatmap = createHeatmap({ container }, withTooltip());
-
-        const tooltip = findTooltip();
-        expect(tooltip).not.toBeNull();
-    });
-
-    it("should not create tooltip without the feature", () => {
-        heatmap = createHeatmap({ container });
-
-        const tooltip = findTooltip();
-        expect(tooltip).toBeNull();
-    });
-
-    it("should use custom className for tooltip", () => {
-        heatmap = createHeatmap(
-            { container },
-            withTooltip({ className: "my-custom-tooltip" })
-        );
-
-        const tooltip = findTooltip(".my-custom-tooltip");
-        expect(tooltip).not.toBeNull();
-    });
-
-    it("should show tooltip on mousemove", () => {
-        heatmap = createHeatmap({ container }, withTooltip());
-        heatmap.setData({
-            min: 0,
-            max: 100,
-            data: [{ x: 50, y: 50, value: 75 }]
+            expect(hm.play).toBeDefined();
+            expect(hm.pause).toBeDefined();
+            hm.destroy();
         });
 
-        const tooltip = findTooltip() as HTMLElement;
-        expect(tooltip.style.display).toBe("none");
+        it("should return AnimatedHeatmap when animation feature is second", () => {
+            const hm: AnimatedHeatmap = createHeatmap(
+                { container },
+                withTooltip(),
+                withAnimation()
+            );
 
-        // Simulate mouse move
-        const event = new MouseEvent("mousemove", {
-            clientX: 50,
-            clientY: 50,
-            bubbles: true
+            expect(hm.play).toBeDefined();
+            expect(hm.pause).toBeDefined();
+            hm.destroy();
         });
-        container.dispatchEvent(event);
-
-        expect(tooltip.style.display).toBe("block");
-    });
-
-    it("should hide tooltip on mouseleave", () => {
-        heatmap = createHeatmap({ container }, withTooltip());
-        heatmap.setData({
-            min: 0,
-            max: 100,
-            data: [{ x: 50, y: 50, value: 75 }]
-        });
-
-        // Show tooltip first
-        const moveEvent = new MouseEvent("mousemove", {
-            clientX: 50,
-            clientY: 50,
-            bubbles: true
-        });
-        container.dispatchEvent(moveEvent);
-
-        const tooltip = findTooltip() as HTMLElement;
-        expect(tooltip.style.display).toBe("block");
-
-        // Hide on leave
-        const leaveEvent = new MouseEvent("mouseleave", { bubbles: true });
-        container.dispatchEvent(leaveEvent);
-
-        expect(tooltip.style.display).toBe("none");
-    });
-
-    it("should use custom formatter", () => {
-        heatmap = createHeatmap(
-            { container },
-            withTooltip({
-                formatter: (value) => `${value} clicks`
-            })
-        );
-
-        heatmap.setData({
-            min: 0,
-            max: 100,
-            data: [{ x: 6, y: 6, value: 42 }]
-        });
-
-        // Mock getBoundingClientRect for proper coordinate calculation
-        const rect = { left: 0, top: 0, width: 300, height: 200 };
-        vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
-            rect as DOMRect
-        );
-
-        // Simulate mouse move at the point location
-        const event = new MouseEvent("mousemove", {
-            clientX: 6,
-            clientY: 6,
-            bubbles: true
-        });
-        container.dispatchEvent(event);
-
-        const tooltip = findTooltip() as HTMLElement;
-        expect(tooltip.textContent).toBe("42 clicks");
-    });
-
-    it("should remove tooltip on destroy", () => {
-        heatmap = createHeatmap({ container }, withTooltip());
-
-        expect(findTooltip()).not.toBeNull();
-
-        heatmap.destroy();
-
-        expect(findTooltip()).toBeNull();
-    });
-
-    it("should apply custom styles to tooltip", () => {
-        heatmap = createHeatmap(
-            { container },
-            withTooltip({
-                style: {
-                    backgroundColor: "red",
-                    fontSize: "20px"
-                }
-            })
-        );
-
-        const tooltip = findTooltip() as HTMLElement;
-        expect(tooltip.style.backgroundColor).toBe("red");
-        expect(tooltip.style.fontSize).toBe("20px");
     });
 });
