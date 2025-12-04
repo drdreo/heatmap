@@ -123,6 +123,16 @@ export interface HeatmapConfig {
      */
     blendMode?: GlobalCompositeOperation;
 
+    /**
+     * Exponent for intensity curve (default: 1)
+     *
+     * Controls how values map to visual intensity:
+     * - 1: Linear mapping (default)
+     * - < 1 (e.g., 0.5): Makes low values more visible (square root curve)
+     * - > 1 (e.g., 2): Emphasizes high values, dims low values (quadratic curve)
+     */
+    intensityExponent?: number;
+
     /** Initial data to render */
     data?: HeatmapData;
 }
@@ -216,5 +226,6 @@ export const DEFAULT_CONFIG = {
     minOpacity: 0,
     useOffscreenCanvas: true,
     gridSize: 10,
-    blendMode: "source-over" as GlobalCompositeOperation
+    blendMode: "source-over" as GlobalCompositeOperation,
+    intensityExponent: 1
 } as const;

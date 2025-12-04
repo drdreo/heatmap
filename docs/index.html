@@ -410,8 +410,8 @@ heatmap.setSpeed(2); // 2x speed</code></pre>
                                 <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.8">
                             </div>
                             <div class="control-group">
-                                <label for="gridsize-slider">Grid Size: <span id="gridsize-value">6</span></label>
-                                <input type="range" id="gridsize-slider" min="1" value="6" step="1">
+                                <label for="gridsize-slider">Grid Size: <span id="gridsize-value">20</span></label>
+                                <input type="range" id="gridsize-slider" min="1" value="20" step="1">
                             </div>
                             <div class="control-group">
                                 <label>Gradient Preset:</label>
@@ -429,6 +429,10 @@ heatmap.setSpeed(2); // 2x speed</code></pre>
                                     <option value="source-over">Source Over (Default layering)</option>
                                     <option value="lighter">Lighter (Additive - overlaps glow brighter)</option>
                                 </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="intensity-slider">Intensity Curve: <span id="intensity-value">1.0</span> <small style="opacity: 0.7">(< 1 = boost lows, > 1 = boost highs)</small></label>
+                                <input type="range" id="intensity-slider" min="0.1" max="3" step="0.1" value="1">
                             </div>
                             <div class="control-group">
                                 <button id="custom-random-btn" class="btn btn-primary btn-full">Generate Random Data</button>
@@ -458,7 +462,9 @@ const heatmap = createHeatmap({
     minOpacity: 0.1,
     gradient: customGradient,
     // 'lighter' makes overlapping points glow brighter (additive blending)
-    blendMode: 'lighter'
+    blendMode: 'lighter',
+    // < 1 boosts low values, > 1 emphasizes high values
+    intensityExponent: 0.7
 });
 
 // Update gradient dynamically
@@ -547,6 +553,12 @@ heatmap.setGradient(newGradient);</code></pre>
                                     <td><code>GlobalCompositeOperation</code></td>
                                     <td><code>'source-over'</code></td>
                                     <td>Canvas blend mode for overlapping points. Use <code>'lighter'</code> for additive blending where overlaps glow brighter.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>intensityExponent</code></td>
+                                    <td><code>number</code></td>
+                                    <td><code>1</code></td>
+                                    <td>Exponent for intensity curve. Values &lt; 1 boost low values, &gt; 1 emphasize high values.</td>
                                 </tr>
                             </tbody>
                         </table>

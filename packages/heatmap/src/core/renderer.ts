@@ -48,7 +48,7 @@ interface HeatmapState {
 export function createCore(config: HeatmapConfig): Heatmap {
     const { container, gradient = DEFAULT_GRADIENT } = config;
 
-    const { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode } = validateConfig(config);
+    const { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode, intensityExponent } = validateConfig(config);
 
     // Create main canvas
     const canvas = document.createElement("canvas");
@@ -125,13 +125,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         } else {
             // Incremental render - only draw the new point
             const { min, max } = state.data;
-            const range = max - min || 1;
-            const renderablePoint: RenderablePoint = {
-                x: point.x,
-                y: point.y,
-                alpha: Math.min(1, Math.max(0, (point.value - min) / range))
-            };
-            renderPoints([renderablePoint]);
+            renderPoints([toRenderablePoint(point, min, max)]);
         }
     }
 
@@ -161,12 +155,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         } else {
             // Incremental render - only draw the new points
             const { min, max } = state.data;
-            const range = max - min || 1;
-            const renderablePoints: RenderablePoint[] = points.map((point) => ({
-                x: point.x,
-                y: point.y,
-                alpha: Math.min(1, Math.max(0, (point.value - min) / range))
-            }));
+            const renderablePoints = points.map((p) => toRenderablePoint(p, min, max));
             renderPoints(renderablePoints);
         }
     }
@@ -226,6 +215,26 @@ export function createCore(config: HeatmapConfig): Heatmap {
 
     // --- Internal Helpers ---
 
+    /**
+     * Compute the alpha value for a point based on data range and intensity exponent
+     */
+    function computeAlpha(value: number, min: number, max: number): number {
+        const range = max - min || 1;
+        const normalized = Math.min(1, Math.max(0, (value - min) / range));
+        return Math.pow(normalized, intensityExponent);
+    }
+
+    /**
+     * Convert a HeatmapPoint to a RenderablePoint using current data range
+     */
+    function toRenderablePoint(point: HeatmapPoint, min: number, max: number): RenderablePoint {
+        return {
+            x: point.x,
+            y: point.y,
+            alpha: computeAlpha(point.value, min, max)
+        };
+    }
+
     function updateValueGrid(points: HeatmapPoint[]): void {
         state.valueGrid.clear();
         for (const point of points) {
@@ -254,13 +263,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
 
     function computeRenderablePoints(data: HeatmapData): RenderablePoint[] {
         const { min, max, data: points } = data;
-        const range = max - min || 1;
-
-        return points.map((point) => ({
-            x: point.x,
-            y: point.y,
-            alpha: Math.min(1, Math.max(0, (point.value - min) / range))
-        }));
+        return points.map((point) => toRenderablePoint(point, min, max));
     }
 
     /**

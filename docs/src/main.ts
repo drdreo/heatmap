@@ -392,9 +392,10 @@ const customContainer = document.querySelector<HTMLElement>(
 let customRadius = 25;
 let customBlur = 0.85;
 let customOpacity = 0.8;
-let customGridSize = 6;
+let customGridSize = 20;
 let currentGradient = "cool";
 let currentBlendMode: GlobalCompositeOperation = "source-over";
+let currentIntensityExponent = 1;
 
 let customPoints: HeatmapPoint[] = generateRandomPoints(
     200,
@@ -414,7 +415,8 @@ function createCustomHeatmap() {
             maxOpacity: customOpacity,
             gridSize: customGridSize,
             gradient: gradientPresets[currentGradient],
-            blendMode: currentBlendMode
+            blendMode: currentBlendMode,
+            intensityExponent: currentIntensityExponent
         },
         withTooltip()
     );
@@ -487,6 +489,18 @@ const blendModeSelect = document.getElementById(
 
 blendModeSelect?.addEventListener("change", () => {
     currentBlendMode = blendModeSelect.value as GlobalCompositeOperation;
+    createCustomHeatmap();
+});
+
+// Intensity exponent slider
+const intensitySlider = document.getElementById(
+    "intensity-slider"
+) as HTMLInputElement;
+const intensityValue = document.getElementById("intensity-value");
+
+intensitySlider?.addEventListener("input", () => {
+    currentIntensityExponent = parseFloat(intensitySlider.value);
+    if (intensityValue) intensityValue.textContent = currentIntensityExponent.toFixed(1);
     createCustomHeatmap();
 });
 

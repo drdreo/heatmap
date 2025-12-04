@@ -973,4 +973,118 @@ describe("createHeatmap renderer", () => {
             expect(imageData.data[3]).toBeGreaterThan(0);
         });
     });
+
+    describe("intensityExponent", () => {
+        it("should use default linear intensity (exponent = 1)", () => {
+            heatmap = createHeatmap({ container, radius: 20 });
+            heatmap.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 50 }]
+            });
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+            const imageData = ctx.getImageData(150, 100, 1, 1);
+            expect(imageData.data[3]).toBeGreaterThan(0);
+        });
+
+        it("should accept custom intensityExponent", () => {
+            heatmap = createHeatmap({ container, radius: 20, intensityExponent: 2 });
+            heatmap.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 50 }]
+            });
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+            const imageData = ctx.getImageData(150, 100, 1, 1);
+            expect(imageData.data[3]).toBeGreaterThan(0);
+        });
+
+        it("should make low values more visible with exponent < 1", () => {
+            // With exponent 0.5 (square root), a value of 0.25 becomes 0.5
+            const heatmap1 = createHeatmap({ container, radius: 20, intensityExponent: 1 });
+            heatmap1.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 25 }] // 25% intensity
+            });
+            const ctx1 = heatmap1.canvas.getContext("2d")!;
+            const alpha1 = ctx1.getImageData(150, 100, 1, 1).data[3];
+            heatmap1.destroy();
+
+            const heatmap2 = createHeatmap({ container, radius: 20, intensityExponent: 0.5 });
+            heatmap2.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 25 }] // 25% -> 50% with sqrt
+            });
+            const ctx2 = heatmap2.canvas.getContext("2d")!;
+            const alpha2 = ctx2.getImageData(150, 100, 1, 1).data[3];
+            heatmap2.destroy();
+
+            // Lower exponent should produce higher alpha for same low value
+            expect(alpha2).toBeGreaterThan(alpha1);
+
+            heatmap = null as unknown as Heatmap;
+        });
+
+        it("should emphasize high values with exponent > 1", () => {
+            // With exponent 2 (quadratic), a value of 0.5 becomes 0.25
+            const heatmap1 = createHeatmap({ container, radius: 20, intensityExponent: 1 });
+            heatmap1.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 50 }] // 50% intensity
+            });
+            const ctx1 = heatmap1.canvas.getContext("2d")!;
+            const alpha1 = ctx1.getImageData(150, 100, 1, 1).data[3];
+            heatmap1.destroy();
+
+            const heatmap2 = createHeatmap({ container, radius: 20, intensityExponent: 2 });
+            heatmap2.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 50 }] // 50% -> 25% with square
+            });
+            const ctx2 = heatmap2.canvas.getContext("2d")!;
+            const alpha2 = ctx2.getImageData(150, 100, 1, 1).data[3];
+            heatmap2.destroy();
+
+            // Higher exponent should produce lower alpha for mid-range values
+            expect(alpha2).toBeLessThan(alpha1);
+
+            heatmap = null as unknown as Heatmap;
+        });
+
+        it("should work with addPoint", () => {
+            heatmap = createHeatmap({ container, radius: 20, intensityExponent: 0.5 });
+            heatmap.addPoint({ x: 150, y: 100, value: 25 });
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+            const imageData = ctx.getImageData(150, 100, 1, 1);
+            expect(imageData.data[3]).toBeGreaterThan(0);
+        });
+
+        it("should work with addPoints", () => {
+            heatmap = createHeatmap({ container, radius: 20, intensityExponent: 2 });
+            heatmap.addPoints([
+                { x: 150, y: 100, value: 50 },
+                { x: 200, y: 100, value: 75 }
+            ]);
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+            expect(ctx.getImageData(150, 100, 1, 1).data[3]).toBeGreaterThan(0);
+            expect(ctx.getImageData(200, 100, 1, 1).data[3]).toBeGreaterThan(0);
+        });
+
+        it("should throw error when intensityExponent is 0 or negative", () => {
+            expect(() => createHeatmap({ container, intensityExponent: 0 })).toThrow(
+                "Invalid intensityExponent value: 0. Must be greater than 0."
+            );
+            expect(() => createHeatmap({ container, intensityExponent: -1 })).toThrow(
+                "Invalid intensityExponent value: -1. Must be greater than 0."
+            );
+        });
+    });
 });

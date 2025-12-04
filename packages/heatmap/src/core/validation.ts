@@ -18,6 +18,7 @@ export interface ResolvedConfig {
     minOpacity: number;
     gridSize: number;
     blendMode: GlobalCompositeOperation;
+    intensityExponent: number;
 }
 
 /**
@@ -37,13 +38,15 @@ export function validateConfig(config: HeatmapConfig): ResolvedConfig {
     const minOpacity = config.minOpacity ?? DEFAULT_CONFIG.minOpacity;
     const gridSize = config.gridSize ?? DEFAULT_CONFIG.gridSize;
     const blendMode = config.blendMode ?? DEFAULT_CONFIG.blendMode;
+    const intensityExponent = config.intensityExponent ?? DEFAULT_CONFIG.intensityExponent;
 
     validateBlur(blur);
     validateRadius(radius);
     validateOpacity(minOpacity, maxOpacity);
     validateGridSize(gridSize);
+    validateIntensityExponent(intensityExponent);
 
-    return { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode };
+    return { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode, intensityExponent };
 }
 
 /**
@@ -96,6 +99,17 @@ function validateGridSize(gridSize: number): void {
     if (gridSize <= 0 || !Number.isInteger(gridSize)) {
         throw new Error(
             `Invalid gridSize value: ${gridSize}. Must be a positive integer.`
+        );
+    }
+}
+
+/**
+ * Validate intensity exponent is a positive number
+ */
+function validateIntensityExponent(intensityExponent: number): void {
+    if (intensityExponent <= 0) {
+        throw new Error(
+            `Invalid intensityExponent value: ${intensityExponent}. Must be greater than 0.`
         );
     }
 }
