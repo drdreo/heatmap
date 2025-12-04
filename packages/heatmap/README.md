@@ -4,11 +4,10 @@ A lightweight, high-performance, **composable** heatmap rendering library built 
 
 ## Features
 
-- **Composable** – Add features via `withXXX()` pattern (similar to Angular's `provideRouter`)
 - **Tree-shakeable** – Only include what you use
-- **Fast rendering** – Pre-computed radial gradient stamps, palette lookup colorization
-- **OffscreenCanvas support** – Better performance in supported browsers
-- **Customizable** – Define your own colors
+- **Performant** – Pre-computed values, offscreen canvas
+- **Zero dependencies** – Don't drag in the whole React ecosystem
+- **Customizable** – You define what you need with a composable API - via a `withXXX()` pattern
 
 ## Usage
 
@@ -163,23 +162,6 @@ const gradient: GradientStop[] = [
 ];
 
 const heatmap = createHeatmap({ container, gradient });
-```
-
-## File Structure
-
-```
-lib/
-├── core/
-│   ├── types.ts          # Core types (Heatmap, HeatmapFeature, etc.)
-│   ├── renderer.ts       # Core renderer (createCore)
-│   ├── gradient.ts       # Gradient utilities
-│   └── index.ts          # Core exports
-├── features/
-│   ├── tooltip.ts        # withTooltip() feature
-│   ├── animation.ts      # withAnimation() feature
-│   └── index.ts          # Features exports
-├── index.ts              # Main entry point
-└── README.md
 ```
 
 ## License
