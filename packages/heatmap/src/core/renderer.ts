@@ -16,6 +16,7 @@ import {
     type HeatmapStats,
     type RenderablePoint
 } from "./types";
+import { validateConfig } from "./validation";
 
 /**
  * Render boundaries for dirty rectangle optimization
@@ -27,6 +28,8 @@ interface RenderBoundaries {
     maxY: number;
 }
 
+type GridKey = `${number},${number}`;
+
 /**
  * Internal state for the heatmap renderer
  */
@@ -35,7 +38,7 @@ interface HeatmapState {
     palette: Uint8ClampedArray;
     opacityLUT: Uint8ClampedArray;
     defaultTemplate: HTMLCanvasElement;
-    valueGrid: Map<string, number>;
+    valueGrid: Map<GridKey, number>;
     renderBoundaries: RenderBoundaries;
 }
 
@@ -45,13 +48,7 @@ interface HeatmapState {
 export function createCore(config: HeatmapConfig): Heatmap {
     const { container, gradient = DEFAULT_GRADIENT } = config;
 
-    // Resolve dimensions
-    const width = config.width ?? container.offsetWidth;
-    const height = config.height ?? container.offsetHeight;
-    const radius = config.radius ?? DEFAULT_CONFIG.radius;
-    const blur = config.blur ?? DEFAULT_CONFIG.blur;
-    const maxOpacity = config.maxOpacity ?? DEFAULT_CONFIG.maxOpacity;
-    const minOpacity = config.minOpacity ?? DEFAULT_CONFIG.minOpacity;
+    const { width, height, radius, blur, maxOpacity, minOpacity } = validateConfig(config);
     const gridSize = 6; // Default grid size for value lookups
 
     // Create main canvas
@@ -92,8 +89,6 @@ export function createCore(config: HeatmapConfig): Heatmap {
         renderBoundaries: { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 }
     };
 
-
-    // Append canvas to container
     container.appendChild(canvas);
 
     // Render initial data if provided
@@ -191,7 +186,8 @@ export function createCore(config: HeatmapConfig): Heatmap {
     function getValueAt(x: number, y: number): number {
         const gridX = Math.floor(x / gridSize);
         const gridY = Math.floor(y / gridSize);
-        return state.valueGrid.get(`${gridX},${gridY}`) ?? 0;
+        const key = `${gridX},${gridY}` as const;
+        return state.valueGrid.get(key) ?? 0;
     }
 
     function getDataURL(type = "image/png", quality?: number): string {
@@ -236,7 +232,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         for (const point of points) {
             const gridX = Math.floor(point.x / gridSize);
             const gridY = Math.floor(point.y / gridSize);
-            const key = `${gridX},${gridY}`;
+            const key = `${gridX},${gridY}` as const;
             const existing = state.valueGrid.get(key) ?? 0;
             state.valueGrid.set(key, existing + point.value);
         }
@@ -379,28 +375,45 @@ function generatePointTemplate(
     radius: number,
     blur: number
 ): HTMLCanvasElement {
-    const size = radius * 2 + blur * 2;
-    const center = size / 2;
+    const size = radius * 2;
+    const center = radius;
 
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
 
     const ctx = canvas.getContext("2d")!;
-    const gradient = ctx.createRadialGradient(
-        center,
-        center,
-        0,
-        center,
-        center,
-        radius
-    );
 
-    gradient.addColorStop(0, "rgba(0, 0, 0, 1)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    // blur config is inverted to get blurFactor (matching heatmap.js behavior):
+    // - blur = 0 means no blur (solid circle, blurFactor = 1)
+    // - blur = 1 means maximum blur (gradient from center to edge, blurFactor = 0)
+    // The blurFactor determines the inner radius where the opaque part ends
+    const blurFactor = 1 - blur;
+    const innerRadius = radius * blurFactor;
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size, size);
+    if (blurFactor === 1) {
+        // No blur - draw solid circle
+        ctx.beginPath();
+        ctx.arc(center, center, radius, 0, 2 * Math.PI, false);
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.fill();
+    } else {
+        // Create gradient from inner radius (opaque) to outer radius (transparent)
+        const gradient = ctx.createRadialGradient(
+            center,
+            center,
+            innerRadius,
+            center,
+            center,
+            radius
+        );
+
+        gradient.addColorStop(0, "rgba(0, 0, 0, 1)");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+    }
 
     return canvas;
 }

@@ -20,9 +20,7 @@ const basicHeight = basicContainer.clientHeight;
 const basicConfig = {
     container: basicContainer,
     width: basicWidth,
-    height: basicHeight,
-    radius: 25,
-    blur: 15
+    height: basicHeight
 };
 
 const basicHeatmap = createHeatmap(basicConfig);
@@ -186,14 +184,13 @@ document.getElementById("tooltip-random-btn")?.addEventListener("click", () => {
 // ANIMATION DEMO
 // ============================================================================
 
+const animationContainer = document.querySelector<HTMLElement>(
+    "#animation-heatmap-container"
+)!;
 const animationConfig = {
-    container: document.querySelector<HTMLElement>(
-        "#animation-heatmap-container"
-    )!,
-    width: 800,
-    height: 400,
-    radius: 25,
-    blur: 15
+    container: animationContainer,
+    width: animationContainer.clientWidth,
+    height: animationContainer.clientHeight,
 };
 
 const animatedHeatmap = createHeatmap(
@@ -382,7 +379,7 @@ const gradientPresets: Record<string, GradientStop[]> = {
 };
 
 let customRadius = 25;
-let customBlur = 15;
+let customBlur = 0.85;
 let customOpacity = 0.8;
 let currentGradient = "cool";
 
@@ -433,8 +430,8 @@ const blurSlider = document.getElementById("blur-slider") as HTMLInputElement;
 const blurValue = document.getElementById("blur-value");
 
 blurSlider?.addEventListener("input", () => {
-    customBlur = parseInt(blurSlider.value);
-    if (blurValue) blurValue.textContent = String(customBlur);
+    customBlur = parseFloat(blurSlider.value);
+    if (blurValue) blurValue.textContent = customBlur.toFixed(1);
     createCustomHeatmap();
 });
 

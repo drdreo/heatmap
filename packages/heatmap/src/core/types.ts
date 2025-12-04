@@ -93,7 +93,7 @@ export interface HeatmapConfig {
     /** Radius of each data point's influence in pixels (default: 25) */
     radius?: number;
 
-    /** Blur amount for smoothing (default: 15) */
+    /** Blur factor (0-1): 0 = no blur (solid circle), 1 = maximum blur (default: 0.85) */
     blur?: number;
 
     /** Maximum opacity of the heatmap layer (0-1, default: 0.8) */
@@ -206,7 +206,7 @@ export const DEFAULT_GRADIENT: GradientStop[] = [
 /** Default configuration values */
 export const DEFAULT_CONFIG = {
     radius: 25,
-    blur: 15,
+    blur: 0.85,
     maxOpacity: 0.8,
     minOpacity: 0,
     useOffscreenCanvas: true

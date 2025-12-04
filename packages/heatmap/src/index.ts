@@ -66,6 +66,9 @@ export {
     parseColor
 } from "./core/gradient";
 
+// Re-export validation utilities
+export { validateConfig, type ResolvedConfig } from "./core/validation";
+
 // Re-export features
 export { withTooltip, type TooltipConfig } from "./features/tooltip";
 export {

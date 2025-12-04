@@ -462,7 +462,7 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should use custom blur", () => {
-            heatmap = createHeatmap({ container, blur: 30, radius: 20 });
+            heatmap = createHeatmap({ container, blur: 0.5, radius: 20 });
             heatmap.setData({
                 min: 0,
                 max: 100,
@@ -677,6 +677,166 @@ describe("createHeatmap renderer", () => {
                         { x: 100, y: 100, value: 999999 }
                     ]
                 })
+            ).not.toThrow();
+        });
+    });
+
+    describe("blur behavior", () => {
+        it("should render solid circle when blur is 0 (no blur)", () => {
+            heatmap = createHeatmap({ container, blur: 0, radius: 30 });
+            heatmap.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 100 }]
+            });
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+
+            // With blur=0 (solid circle), pixels inside the radius should have similar intensity
+            // Check center and a point inside the radius
+            const centerData = ctx.getImageData(150, 100, 1, 1).data;
+            const insideData = ctx.getImageData(150 + 15, 100, 1, 1).data; // Inside radius
+
+            // Both should have content
+            expect(centerData[3]).toBeGreaterThan(0);
+            expect(insideData[3]).toBeGreaterThan(0);
+
+            // Point just outside radius should have no/very low content
+            const outsideData = ctx.getImageData(150 + 31, 100, 1, 1).data;
+            expect(outsideData[3]).toBe(0);
+        });
+
+        it("should render gradient falloff when blur > 0", () => {
+            heatmap = createHeatmap({ container, blur: 0.5, radius: 30 });
+            heatmap.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 100 }]
+            });
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+
+            // With blur=0.5, blurFactor=0.5, the inner 50% is opaque, then gradient to edge
+            // Center should have full intensity
+            const centerData = ctx.getImageData(150, 100, 1, 1).data;
+            expect(centerData[3]).toBeGreaterThan(0);
+
+            // Edge of radius should have lower intensity (gradient falloff)
+            const edgeData = ctx.getImageData(150 + 28, 100, 1, 1).data;
+            // Edge should be visible but less intense than center
+            expect(edgeData[3]).toBeLessThan(centerData[3]);
+        });
+
+        it("should have maximum blur when blur is 1", () => {
+            heatmap = createHeatmap({ container, blur: 1, radius: 30 });
+            heatmap.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 100 }]
+            });
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+
+            // With blur=1, blurFactor=0, gradient starts from center (0 inner radius)
+            // There should be visible content
+            const centerData = ctx.getImageData(150, 100, 1, 1).data;
+            expect(centerData[3]).toBeGreaterThan(0);
+
+            // Intensity should decrease towards edge
+            const midData = ctx.getImageData(150 + 15, 100, 1, 1).data;
+            expect(midData[3]).toBeLessThan(centerData[3]);
+        });
+
+        it("should produce different visual output for different blur values", () => {
+            // Create heatmap with blur=0 (no blur)
+            const heatmap1 = createHeatmap({ container, blur: 0, radius: 30 });
+            heatmap1.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 100 }]
+            });
+            const dataUrl1 = heatmap1.getDataURL();
+            heatmap1.destroy();
+
+            // Create heatmap with blur=0.5 (with blur)
+            const heatmap2 = createHeatmap({ container, blur: 0.5, radius: 30 });
+            heatmap2.setData({
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 100 }]
+            });
+            const dataUrl2 = heatmap2.getDataURL();
+            heatmap2.destroy();
+
+            // The outputs should be different
+            expect(dataUrl1).not.toBe(dataUrl2);
+
+            // Set heatmap to null so afterEach doesn't try to destroy it again
+            heatmap = null as unknown as Heatmap;
+        });
+    });
+
+    describe("option validation", () => {
+        it("should throw error when blur is less than 0", () => {
+            expect(() => createHeatmap({ container, blur: -0.5 })).toThrow(
+                "Invalid blur value: -0.5. Must be between 0 and 1."
+            );
+        });
+
+        it("should throw error when blur is greater than 1", () => {
+            expect(() => createHeatmap({ container, blur: 1.5 })).toThrow(
+                "Invalid blur value: 1.5. Must be between 0 and 1."
+            );
+        });
+
+        it("should throw error when radius is 0 or negative", () => {
+            expect(() => createHeatmap({ container, radius: 0 })).toThrow(
+                "Invalid radius value: 0. Must be greater than 0."
+            );
+            expect(() => createHeatmap({ container, radius: -10 })).toThrow(
+                "Invalid radius value: -10. Must be greater than 0."
+            );
+        });
+
+        it("should throw error when maxOpacity is out of range", () => {
+            expect(() => createHeatmap({ container, maxOpacity: -0.1 })).toThrow(
+                "Invalid maxOpacity value: -0.1. Must be between 0 and 1."
+            );
+            expect(() => createHeatmap({ container, maxOpacity: 1.5 })).toThrow(
+                "Invalid maxOpacity value: 1.5. Must be between 0 and 1."
+            );
+        });
+
+        it("should throw error when minOpacity is out of range", () => {
+            expect(() => createHeatmap({ container, minOpacity: -0.1 })).toThrow(
+                "Invalid minOpacity value: -0.1. Must be between 0 and 1."
+            );
+            expect(() => createHeatmap({ container, minOpacity: 1.5 })).toThrow(
+                "Invalid minOpacity value: 1.5. Must be between 0 and 1."
+            );
+        });
+
+        it("should throw error when minOpacity is greater than maxOpacity", () => {
+            expect(() =>
+                createHeatmap({ container, minOpacity: 0.8, maxOpacity: 0.5 })
+            ).toThrow(
+                "Invalid opacity values: minOpacity (0.8) cannot be greater than maxOpacity (0.5)."
+            );
+        });
+
+        it("should accept valid edge values", () => {
+            // blur = 0 and blur = 1 should be valid
+            expect(() => createHeatmap({ container, blur: 0 })).not.toThrow();
+            expect(() => createHeatmap({ container, blur: 1 })).not.toThrow();
+
+            // opacity = 0 and opacity = 1 should be valid
+            expect(() =>
+                createHeatmap({ container, minOpacity: 0, maxOpacity: 1 })
+            ).not.toThrow();
+
+            // minOpacity === maxOpacity should be valid
+            expect(() =>
+                createHeatmap({ container, minOpacity: 0.5, maxOpacity: 0.5 })
             ).not.toThrow();
         });
     });
