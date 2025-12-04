@@ -111,6 +111,18 @@ export interface HeatmapConfig {
     /** Grid cell size for value lookups in pixels (default: 10) */
     gridSize?: number;
 
+    /**
+     * Canvas blend mode for overlapping points (default: 'source-over')
+     *
+     * Useful values:
+     * - 'source-over': Default compositing (standard layering)
+     * - 'lighter': Additive blending (overlapping areas glow brighter)
+     *
+     * Note: Most other blend modes (multiply, screen, etc.) won't produce
+     * visible differences due to how the heatmap uses grayscale intensity.
+     */
+    blendMode?: GlobalCompositeOperation;
+
     /** Initial data to render */
     data?: HeatmapData;
 }
@@ -203,5 +215,6 @@ export const DEFAULT_CONFIG = {
     maxOpacity: 0.8,
     minOpacity: 0,
     useOffscreenCanvas: true,
-    gridSize: 10
+    gridSize: 10,
+    blendMode: "source-over" as GlobalCompositeOperation
 } as const;

@@ -394,6 +394,7 @@ let customBlur = 0.85;
 let customOpacity = 0.8;
 let customGridSize = 6;
 let currentGradient = "cool";
+let currentBlendMode: GlobalCompositeOperation = "source-over";
 
 let customPoints: HeatmapPoint[] = generateRandomPoints(
     200,
@@ -412,7 +413,8 @@ function createCustomHeatmap() {
             blur: customBlur,
             maxOpacity: customOpacity,
             gridSize: customGridSize,
-            gradient: gradientPresets[currentGradient]
+            gradient: gradientPresets[currentGradient],
+            blendMode: currentBlendMode
         },
         withTooltip()
     );
@@ -475,6 +477,16 @@ const gradientSelect = document.getElementById(
 
 gradientSelect?.addEventListener("change", () => {
     currentGradient = gradientSelect.value;
+    createCustomHeatmap();
+});
+
+// Blend mode select
+const blendModeSelect = document.getElementById(
+    "blendmode-select"
+) as HTMLSelectElement;
+
+blendModeSelect?.addEventListener("change", () => {
+    currentBlendMode = blendModeSelect.value as GlobalCompositeOperation;
     createCustomHeatmap();
 });
 

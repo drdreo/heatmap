@@ -424,6 +424,13 @@ heatmap.setSpeed(2); // 2x speed</code></pre>
                                 </select>
                             </div>
                             <div class="control-group">
+                                <label>Blend Mode: <small style="opacity: 0.7">(how points combine)</small></label>
+                                <select id="blendmode-select">
+                                    <option value="source-over">Source Over (Default layering)</option>
+                                    <option value="lighter">Lighter (Additive - overlaps glow brighter)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
                                 <button id="custom-random-btn" class="btn btn-primary btn-full">Generate Random Data</button>
                             </div>
                         </div>
@@ -446,10 +453,12 @@ const heatmap = createHeatmap({
     width: 800,
     height: 400,
     radius: 30,
-    blur: 20,
+    blur: 0.85,
     maxOpacity: 0.9,
     minOpacity: 0.1,
-    gradient: customGradient
+    gradient: customGradient,
+    // 'lighter' makes overlapping points glow brighter (additive blending)
+    blendMode: 'lighter'
 });
 
 // Update gradient dynamically
@@ -532,6 +541,12 @@ heatmap.setGradient(newGradient);</code></pre>
                                     <td><code>number</code></td>
                                     <td><code>6</code></td>
                                     <td>Grid cell size for value lookups (affects tooltip precision)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>blendMode</code></td>
+                                    <td><code>GlobalCompositeOperation</code></td>
+                                    <td><code>'source-over'</code></td>
+                                    <td>Canvas blend mode for overlapping points. Use <code>'lighter'</code> for additive blending where overlaps glow brighter.</td>
                                 </tr>
                             </tbody>
                         </table>

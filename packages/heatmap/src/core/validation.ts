@@ -17,6 +17,7 @@ export interface ResolvedConfig {
     maxOpacity: number;
     minOpacity: number;
     gridSize: number;
+    blendMode: GlobalCompositeOperation;
 }
 
 /**
@@ -35,13 +36,14 @@ export function validateConfig(config: HeatmapConfig): ResolvedConfig {
     const maxOpacity = config.maxOpacity ?? DEFAULT_CONFIG.maxOpacity;
     const minOpacity = config.minOpacity ?? DEFAULT_CONFIG.minOpacity;
     const gridSize = config.gridSize ?? DEFAULT_CONFIG.gridSize;
+    const blendMode = config.blendMode ?? DEFAULT_CONFIG.blendMode;
 
     validateBlur(blur);
     validateRadius(radius);
     validateOpacity(minOpacity, maxOpacity);
     validateGridSize(gridSize);
 
-    return { width, height, radius, blur, maxOpacity, minOpacity, gridSize };
+    return { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode };
 }
 
 /**

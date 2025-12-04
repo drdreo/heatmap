@@ -48,7 +48,7 @@ interface HeatmapState {
 export function createCore(config: HeatmapConfig): Heatmap {
     const { container, gradient = DEFAULT_GRADIENT } = config;
 
-    const { width, height, radius, blur, maxOpacity, minOpacity, gridSize } = validateConfig(config);
+    const { width, height, radius, blur, maxOpacity, minOpacity, gridSize, blendMode } = validateConfig(config);
 
     // Create main canvas
     const canvas = document.createElement("canvas");
@@ -276,6 +276,9 @@ export function createCore(config: HeatmapConfig): Heatmap {
         const templateSize = template.width;
         const offset = templateSize / 2;
 
+        // Apply blend mode for how overlapping points combine
+        shadowCtx.globalCompositeOperation = blendMode;
+
         let len = points.length;
         while (len--) {
             const point = points[len];
@@ -296,6 +299,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
             shadowCtx.drawImage(template, pointMinX, pointMinY, templateSize, templateSize);
         }
         shadowCtx.globalAlpha = 1;
+        shadowCtx.globalCompositeOperation = "source-over";
 
         // Clamp boundaries to canvas dimensions
         state.renderBoundaries.minX = Math.max(0, Math.floor(state.renderBoundaries.minX));
