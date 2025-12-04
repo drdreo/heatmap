@@ -81,29 +81,29 @@ Locally run:
 ## Usage
 
 ```typescript
-import { Heatmap } from "@drdreo/heatmap"
+import { Heatmap } from "@drdreo/heatmap";
 
 const heatmap = new Heatmap("#container", {
     width: 800,
     height: 600,
     radius: 25,
     maxValue: 100
-})
+});
 
 // Add a single point
-heatmap.addPoint({ x: 100, y: 100, value: 50 })
+heatmap.addPoint({ x: 100, y: 100, value: 50 });
 
 // Add multiple points
 heatmap.addPoints([
     { x: 200, y: 150, value: 80 },
     { x: 300, y: 200, value: 60 }
-])
+]);
 
 // Render the heatmap
-heatmap.render()
+heatmap.render();
 
 // Clear all points
-heatmap.clear()
+heatmap.clear();
 ```
 
 ## API

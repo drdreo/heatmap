@@ -88,11 +88,7 @@ heatmap.play();
 import { createHeatmap, withTooltip, withAnimation } from "@drdreo/heatmap";
 
 // Returns AnimatedHeatmap when withAnimation is included
-const heatmap = createHeatmap(
-    { container },
-    withTooltip(),
-    withAnimation()
-);
+const heatmap = createHeatmap({ container }, withTooltip(), withAnimation());
 ```
 
 ## API
@@ -117,13 +113,13 @@ const heatmap = createHeatmap(
 
 ### TooltipConfig
 
-| Option          | Type                           | Default            | Description                    |
-| --------------- | ------------------------------ | ------------------ | ------------------------------ |
-| `formatter`     | `(value, x, y) => string`      | `(v) => v`         | Tooltip text formatter         |
-| `offset`        | `{ x, y }`                     | `{ x: 15, y: 15 }` | Offset from cursor             |
-| `enforceBounds` | `boolean`                      | `false`            | Keep tooltip in container      |
-| `className`     | `string`                       | -                  | CSS class for tooltip element  |
-| `style`         | `Partial<CSSStyleDeclaration>` | -                  | Inline styles                  |
+| Option          | Type                           | Default            | Description                   |
+| --------------- | ------------------------------ | ------------------ | ----------------------------- |
+| `formatter`     | `(value, x, y) => string`      | `(v) => v`         | Tooltip text formatter        |
+| `offset`        | `{ x, y }`                     | `{ x: 15, y: 15 }` | Offset from cursor            |
+| `enforceBounds` | `boolean`                      | `false`            | Keep tooltip in container     |
+| `className`     | `string`                       | -                  | CSS class for tooltip element |
+| `style`         | `Partial<CSSStyleDeclaration>` | -                  | Inline styles                 |
 
 ### AnimationConfig
 

@@ -20,4 +20,3 @@ export const DEFAULT_CONFIG = {
     blendMode: "source-over" as GlobalCompositeOperation,
     intensityExponent: 1
 } as const;
-

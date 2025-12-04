@@ -465,7 +465,8 @@ const intensityValue = document.getElementById("intensity-value");
 
 intensitySlider?.addEventListener("input", () => {
     currentIntensityExponent = parseFloat(intensitySlider.value);
-    if (intensityValue) intensityValue.textContent = currentIntensityExponent.toFixed(1);
+    if (intensityValue)
+        intensityValue.textContent = currentIntensityExponent.toFixed(1);
     createCustomHeatmap();
 });
 
