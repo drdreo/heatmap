@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { validateConfig } from "./validation";
-import { DEFAULT_CONFIG } from "./types";
+import { DEFAULT_CONFIG } from "./defaults";
 
 describe("validateConfig", () => {
     let container: HTMLDivElement;

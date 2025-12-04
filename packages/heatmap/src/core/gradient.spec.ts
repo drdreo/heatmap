@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { generatePalette, parseColor, createGradientCanvas } from "./gradient";
-import { DEFAULT_GRADIENT, type GradientStop } from "./types";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DEFAULT_GRADIENT } from "./defaults";
+import { createGradientCanvas, generatePalette, parseColor } from "./gradient";
+import type { GradientStop } from "./types";
 
 describe("gradient", () => {
     describe("parseColor", () => {
@@ -51,10 +52,10 @@ describe("gradient", () => {
         it("should have opaque color at index 255", () => {
             const palette = generatePalette(DEFAULT_GRADIENT);
             const lastIdx = 255 * 4;
-            // Last color should be red (from DEFAULT_GRADIENT)
-            expect(palette[lastIdx]).toBe(255); // R
-            expect(palette[lastIdx + 1]).toBe(0); // G
-            expect(palette[lastIdx + 2]).toBe(0); // B
+            // Last color should be rose (from DEFAULT_GRADIENT: rgba(244, 63, 94, 1))
+            expect(palette[lastIdx]).toBe(244); // R
+            expect(palette[lastIdx + 1]).toBe(63); // G
+            expect(palette[lastIdx + 2]).toBe(94); // B
             expect(palette[lastIdx + 3]).toBe(255); // A
         });
 
