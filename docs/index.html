@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Heatmap - Documentation & Examples</title>
+    </head>
+    <body>
+        <div id="app">
+            <header>
+                <h1>🔥 Heatmap</h1>
+                <p>
+                    A lightweight heatmap library for visualizing data intensity
+                </p>
+            </header>
+
+            <main>
+                <section id="demo">
+                    <h2>Live Demo</h2>
+                    <p>
+                        Click anywhere on the canvas below to add data points:
+                    </p>
+                    <div id="heatmap-container"></div>
+                    <div class="controls">
+                        <button id="clear-btn">Clear</button>
+                        <button id="random-btn">Add Random Points</button>
+                    </div>
+                </section>
+
+                <section id="installation">
+                    <h2>Installation</h2>
+                    <pre><code>npm install @drdreo/heatmap</code></pre>
+                </section>
+
+                <section id="usage">
+                    <h2>Basic Usage</h2>
+                    <pre><code>import { Heatmap } from '@drdreo/heatmap';
+
+const heatmap = new Heatmap('#container', {
+  width: 800,
+  height: 600,
+  radius: 25,
+});
+
+heatmap.addPoint({ x: 100, y: 100, value: 50 });
+heatmap.render();</code></pre>
+                </section>
+            </main>
+        </div>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>

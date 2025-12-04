@@ -1,20 +1,26 @@
 {
-  "name": "heatmap",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "typescript": "~5.9.3",
-    "vite": "npm:rolldown-vite@7.2.5"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "npm:rolldown-vite@7.2.5"
+    "name": "heatmap-monorepo",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "pnpm --filter docs dev",
+        "dev:lib": "pnpm --filter @drdreo/heatmap dev",
+        "build": "pnpm --filter @drdreo/heatmap build && pnpm --filter docs build",
+        "build:lib": "pnpm --filter @drdreo/heatmap build",
+        "build:docs": "pnpm --filter docs build",
+        "preview": "pnpm --filter docs preview",
+        "test": "pnpm --filter @drdreo/heatmap test",
+        "test:run": "pnpm --filter @drdreo/heatmap test:run",
+        "test:coverage": "pnpm --filter @drdreo/heatmap test:coverage"
+    },
+    "devDependencies": {
+        "prettier": "3.7.4",
+        "typescript": "~5.9.3"
+    },
+    "pnpm": {
+        "overrides": {
+            "vite": "npm:rolldown-vite@7.2.5"
+        }
     }
-  }
 }
