@@ -1,11 +1,9 @@
 ## 1.2.0 (2025-12-05)
 
-This was a version bump only for @drdreo/heatmap to align it with other projects, there were no code changes.
+feat: improve initial data configuration
 
-## v1.2.0 (2025-12-05)
-
-This was a version bump only for @drdreo/heatmap to align it with other projects, there were no code changes.
-
+static and animated heatmaps can provide the initial data at creation
+now, as well as later through setData and setTemporalData
 ## 1.1.0 (2025-12-04)
 
 This was a version bump only, there were no code changes.

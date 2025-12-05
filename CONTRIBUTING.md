@@ -116,6 +116,21 @@ fix(renderer): correct gradient calculation for edge cases
 docs: update installation instructions
 ```
 
+## Releasing
+
+Using Nx release
+
+```bash
+nx release publish --otp=<OTP>
+```
+
+```bash
+nx release version 1.420.69
+```
+
+```bash
+nx release changelog 1.420.69
+```
 ## Questions?
 
 Feel free to open an issue if you have questions or run into problems. Happy coding! 🚀
