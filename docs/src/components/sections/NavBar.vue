@@ -12,6 +12,7 @@ const navItems: NavItem[] = [
     { id: "basic-demo", label: "Basic Demo" },
     { id: "tooltip-demo", label: "Tooltip" },
     { id: "animation-demo", label: "Animation" },
+    { id: "legend-demo", label: "Legend" },
     { id: "api", label: "API" }
 ];
 

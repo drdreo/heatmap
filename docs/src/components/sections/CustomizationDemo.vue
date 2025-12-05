@@ -6,6 +6,7 @@ import {
     type GradientPresetName,
     type Heatmap,
     type HeatmapPoint,
+    withLegend,
     withTooltip
 } from "@drdreo/heatmap";
 import CodeBlock from "../ui/CodeBlock.vue";
@@ -103,7 +104,10 @@ function createCustomHeatmap() {
             blendMode: currentBlendMode.value,
             intensityExponent: currentIntensityExponent.value
         },
-        withTooltip()
+        withTooltip(),
+        withLegend({
+            className: "demo-legend",
+        })
     );
 
     customHeatmap.setData({ min: 0, max: 100, data: customPoints });

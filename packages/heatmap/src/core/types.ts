@@ -68,6 +68,36 @@ export interface RenderablePoint {
     alpha: number;
 }
 
+/** Event payload for data changes */
+export interface DataChangeEvent {
+    /** The new data that was set */
+    data: HeatmapData;
+}
+
+/** Event payload for gradient changes */
+export interface GradientChangeEvent {
+    /** The new gradient stops */
+    stops: GradientStop[];
+}
+
+/** Map of heatmap event names to their payload types */
+export interface HeatmapEventMap {
+    /** Fired when setData() is called */
+    datachange: DataChangeEvent;
+    /** Fired when setGradient() is called */
+    gradientchange: GradientChangeEvent;
+    /** Fired when clear() is called */
+    clear: void;
+    /** Fired when destroy() is called (before cleanup) */
+    destroy: void;
+}
+
+/** Event listener callback type */
+export type HeatmapEventListener<K extends keyof HeatmapEventMap> =
+    HeatmapEventMap[K] extends void
+        ? () => void
+        : (event: HeatmapEventMap[K]) => void;
+
 /** Debug statistics for performance monitoring */
 export interface HeatmapStats {
     /** Total number of data points */
@@ -205,10 +235,31 @@ export interface Heatmap {
 
     /** Clean up resources */
     destroy(): void;
+
+    /**
+     * Subscribe to heatmap events
+     * @param event - Event name to listen for
+     * @param listener - Callback function
+     */
+    on<K extends keyof HeatmapEventMap>(
+        event: K,
+        listener: HeatmapEventListener<K>
+    ): void;
+
+    /**
+     * Unsubscribe from heatmap events
+     * @param event - Event name to stop listening for
+     * @param listener - Callback function to remove
+     */
+    off<K extends keyof HeatmapEventMap>(
+        event: K,
+        listener: HeatmapEventListener<K>
+    ): void;
 }
 
 export const FeatureKind = {
     Tooltip: Symbol("tooltip"),
+    Legend: Symbol("legend"),
     Animation: Symbol("animation")
 } as const;
 
@@ -224,6 +275,7 @@ export interface HeatmapFeature<K extends symbol = symbol> {
 }
 
 export type TooltipFeature = HeatmapFeature<typeof FeatureKind.Tooltip>;
+export type LegendFeature = HeatmapFeature<typeof FeatureKind.Legend>;
 export type AnimationFeature = HeatmapFeature<typeof FeatureKind.Animation>;
 
 /**

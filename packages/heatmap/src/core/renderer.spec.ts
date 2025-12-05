@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import {
     createHeatmap,
     type Heatmap,
@@ -1165,6 +1165,98 @@ describe("createHeatmap renderer", () => {
             ).toThrow(
                 "Invalid intensityExponent value: -1. Must be greater than 0."
             );
+        });
+    });
+
+    describe("event system", () => {
+        it("should emit datachange event when setData is called", () => {
+            heatmap = createHeatmap({ container });
+            const listener = vi.fn();
+            heatmap.on("datachange", listener);
+
+            const data: HeatmapData = {
+                min: 0,
+                max: 100,
+                data: [{ x: 50, y: 50, value: 75 }]
+            };
+            heatmap.setData(data);
+
+            expect(listener).toHaveBeenCalledTimes(1);
+            expect(listener).toHaveBeenCalledWith({ data });
+        });
+
+        it("should emit gradientchange event when setGradient is called", () => {
+            heatmap = createHeatmap({ container });
+            const listener = vi.fn();
+            heatmap.on("gradientchange", listener);
+
+            const stops: GradientStop[] = [
+                { offset: 0, color: "blue" },
+                { offset: 1, color: "red" }
+            ];
+            heatmap.setGradient(stops);
+
+            expect(listener).toHaveBeenCalledTimes(1);
+            expect(listener).toHaveBeenCalledWith({ stops });
+        });
+
+        it("should emit clear event when clear is called", () => {
+            heatmap = createHeatmap({ container });
+            const listener = vi.fn();
+            heatmap.on("clear", listener);
+
+            heatmap.clear();
+
+            expect(listener).toHaveBeenCalledTimes(1);
+            expect(listener).toHaveBeenCalledWith();
+        });
+
+        it("should emit destroy event when destroy is called", () => {
+            heatmap = createHeatmap({ container });
+            const listener = vi.fn();
+            heatmap.on("destroy", listener);
+
+            heatmap.destroy();
+
+            expect(listener).toHaveBeenCalledTimes(1);
+            expect(listener).toHaveBeenCalledWith();
+
+            // Prevent afterEach from calling destroy again
+            heatmap = null as unknown as Heatmap;
+        });
+
+        it("should allow multiple listeners for the same event", () => {
+            heatmap = createHeatmap({ container });
+            const listener1 = vi.fn();
+            const listener2 = vi.fn();
+
+            heatmap.on("datachange", listener1);
+            heatmap.on("datachange", listener2);
+
+            heatmap.setData({ min: 0, max: 100, data: [] });
+
+            expect(listener1).toHaveBeenCalledTimes(1);
+            expect(listener2).toHaveBeenCalledTimes(1);
+        });
+
+        it("should remove listener with off", () => {
+            heatmap = createHeatmap({ container });
+            const listener = vi.fn();
+
+            heatmap.on("datachange", listener);
+            heatmap.setData({ min: 0, max: 50, data: [] });
+            expect(listener).toHaveBeenCalledTimes(1);
+
+            heatmap.off("datachange", listener);
+            heatmap.setData({ min: 0, max: 100, data: [] });
+            expect(listener).toHaveBeenCalledTimes(1); // Still 1, not called again
+        });
+
+        it("should not throw when removing non-existent listener", () => {
+            heatmap = createHeatmap({ container });
+            const listener = vi.fn();
+
+            expect(() => heatmap.off("datachange", listener)).not.toThrow();
         });
     });
 });

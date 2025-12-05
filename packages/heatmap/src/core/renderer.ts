@@ -11,6 +11,8 @@ import type {
     Heatmap,
     HeatmapConfig,
     HeatmapData,
+    HeatmapEventListener,
+    HeatmapEventMap,
     HeatmapPoint,
     HeatmapStats,
     RenderablePoint
@@ -39,6 +41,48 @@ interface HeatmapState {
     defaultTemplate: HTMLCanvasElement;
     valueGrid: Map<GridKey, number>;
     renderBoundaries: RenderBoundaries;
+}
+
+/**
+ * Simple typed event emitter for heatmap events
+ */
+function createEventEmitter() {
+    const listeners = new Map<keyof HeatmapEventMap, Set<Function>>();
+
+    return {
+        on<K extends keyof HeatmapEventMap>(
+            event: K,
+            listener: HeatmapEventListener<K>
+        ): void {
+            if (!listeners.has(event)) {
+                listeners.set(event, new Set());
+            }
+            listeners.get(event)!.add(listener);
+        },
+
+        off<K extends keyof HeatmapEventMap>(
+            event: K,
+            listener: HeatmapEventListener<K>
+        ): void {
+            listeners.get(event)?.delete(listener);
+        },
+
+        emit<K extends keyof HeatmapEventMap>(
+            event: K,
+            ...args: HeatmapEventMap[K] extends void ? [] : [HeatmapEventMap[K]]
+        ): void {
+            const eventListeners = listeners.get(event);
+            if (eventListeners) {
+                for (const listener of eventListeners) {
+                    listener(...args);
+                }
+            }
+        },
+
+        clear(): void {
+            listeners.clear();
+        }
+    };
 }
 
 /**
@@ -97,6 +141,9 @@ export function createCore(config: HeatmapConfig): Heatmap {
         renderBoundaries: { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 }
     };
 
+    // Event emitter for reactive features
+    const events = createEventEmitter();
+
     container.appendChild(canvas);
 
     // Render initial data if provided (only static data, not temporal)
@@ -110,6 +157,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         state.data = data;
         updateValueGrid(data.data);
         render();
+        events.emit("datachange", { data });
     }
 
     function addPoint(point: HeatmapPoint): void {
@@ -174,12 +222,14 @@ export function createCore(config: HeatmapConfig): Heatmap {
     function setGradient(stops: GradientStop[]): void {
         state.palette = generatePalette(stops);
         render();
+        events.emit("gradientchange", { stops });
     }
 
     function clear(): void {
         state.data = null;
         state.valueGrid.clear();
         clearCanvases();
+        events.emit("clear");
     }
 
     function getValueAt(x: number, y: number): number {
@@ -222,6 +272,8 @@ export function createCore(config: HeatmapConfig): Heatmap {
     }
 
     function destroy(): void {
+        events.emit("destroy");
+        events.clear();
         canvas.remove();
         state.valueGrid.clear();
         state.data = null;
@@ -425,7 +477,9 @@ export function createCore(config: HeatmapConfig): Heatmap {
         getValueAt,
         getDataURL,
         getStats,
-        destroy
+        destroy,
+        on: events.on,
+        off: events.off
     };
 }
 
