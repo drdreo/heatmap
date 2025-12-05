@@ -1,67 +1,67 @@
 {
-    "name": "@drdreo/heatmap",
-    "version": "1.1.0",
-    "description": "A lightweight heatmap library for visualizing data intensity",
-    "sideEffects": false,
-    "type": "module",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.mjs",
-    "types": "./dist/index.d.mts",
-    "exports": {
-        ".": {
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            },
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            }
-        }
-    },
-    "scripts": {
-        "dev": "tsdown --watch",
-        "build": "tsdown",
-        "test": "vitest",
-        "test:run": "vitest run",
-        "test:coverage": "vitest run --coverage"
-    },
-    "devDependencies": {
-        "@vitest/browser": "^4.0.15",
-        "@vitest/browser-playwright": "^4.0.15",
-        "@vitest/coverage-v8": "^4.0.15",
-        "playwright": "^1.57.0",
-        "tsdown": "latest",
-        "typescript": "~5.9.3",
-        "vite": "npm:rolldown-vite@7.2.5",
-        "vitest": "^4.0.15"
-    },
-    "author": "DrDreo",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/drdreo/heatmap.git",
-        "directory": "packages/heatmap"
-    },
-    "bugs": {
-        "url": "https://github.com/drdreo/heatmap/issues"
-    },
-    "homepage": "https://github.com/drdreo/heatmap#readme",
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
-    "keywords": [
-        "heatmap",
-        "visualization",
-        "canvas",
-        "typescript",
-        "data-visualization",
-        "heat-map",
-        "intensity-map"
-    ],
-    "publishConfig": {
-        "access": "public"
+  "name": "@drdreo/heatmap",
+  "version": "1.2.0",
+  "description": "A lightweight heatmap library for visualizing data intensity",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
+  },
+  "scripts": {
+    "dev": "tsdown --watch",
+    "build": "tsdown",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/browser": "^4.0.15",
+    "@vitest/browser-playwright": "^4.0.15",
+    "@vitest/coverage-v8": "^4.0.15",
+    "playwright": "^1.57.0",
+    "tsdown": "latest",
+    "typescript": "~5.9.3",
+    "vite": "npm:rolldown-vite@7.2.5",
+    "vitest": "^4.0.15"
+  },
+  "author": "DrDreo",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drdreo/heatmap.git",
+    "directory": "packages/heatmap"
+  },
+  "bugs": {
+    "url": "https://github.com/drdreo/heatmap/issues"
+  },
+  "homepage": "https://github.com/drdreo/heatmap#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "heatmap",
+    "visualization",
+    "canvas",
+    "typescript",
+    "data-visualization",
+    "heat-map",
+    "intensity-map"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
