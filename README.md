@@ -1,17 +1,23 @@
-![Banner](docs/public/heatmap_demo.gif)
+![Banner](https://drdreo.github.io/heatmap/heatmap_demo.gif)
 
 # 🔥 Heatmap
 
 `@drdreo/heatmap` is a lightweight TypeScript library for visualizing data intensity as a heatmap on a HTML canvas.
 
-The motivation is simple: create a neat looking heatmap with zero dependencies that is built on modern technologies, easy to use, customizable and fast.
+The motivation is simple: create a neat-looking heatmap with zero dependencies that is built on modern technologies, easy to use, customizable and fast.
+
+This project got to run since existing libraries walked. Unfortunately, some are no longer maintained.
+
+Still big thanks for carrying heatmaps for so long:
+
+- https://github.com/pa7/heatmap.js and the several forks.
 
 ## Features
 
 - **Performant**
 - **Customizable**: composable features via `withXXX()` pattern
 - **ESM first**
-- **Tree-shakable**: only include what you use. Total is ~5kB gzipped
+- **Tree-shakable**: only include what you use. Total is ~6kB gzipped
 - **Zero Dependencies**: Pure TypeScript. Don't drag in the whole React ecosystem
 - TypeScript, vite, vitest, rolldown inside.
 
@@ -55,6 +61,24 @@ const heatmap = createHeatmap(
 );
 ```
 
+### With Legend
+
+```typescript
+import { createHeatmap, withLegend, GRADIENT_THERMAL } from "@drdreo/heatmap";
+
+const heatmap = createHeatmap(
+    { container, gradient: GRADIENT_THERMAL },
+    withLegend({
+        position: "bottom-right",
+        orientation: "horizontal",
+        labelCount: 5,
+        formatter: (value) => `${value.toFixed(0)}°C`
+    })
+);
+```
+
+The legend automatically updates when data or gradient changes. Available positions: `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
+
 ### With Animation
 
 ```typescript
@@ -87,10 +111,19 @@ heatmap.play();
 ### Composing Features
 
 ```typescript
-import { createHeatmap, withTooltip, withAnimation } from "@drdreo/heatmap";
+import {
+    createHeatmap,
+    withTooltip,
+    withLegend,
+    withAnimation
+} from "@drdreo/heatmap";
 
-// Returns AnimatedHeatmap when `withAnimation` is included
-const heatmap = createHeatmap({ container }, withTooltip(), withAnimation());
+const heatmap = createHeatmap(
+    { container },
+    withTooltip(),
+    withLegend(),
+    withAnimation()
+);
 ```
 
 ### Custom Gradient

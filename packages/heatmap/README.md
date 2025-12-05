@@ -1,14 +1,25 @@
-# Heatmap Library
+![Banner](https://drdreo.github.io/heatmap/heatmap_demo.gif)
 
-A lightweight, composable heatmap rendering library built with TypeScript and Canvas2D. Zero dependencies.
+# 🔥 Heatmap
+
+`@drdreo/heatmap` is a lightweight TypeScript library for visualizing data intensity as a heatmap on a HTML canvas.
+
+The motivation is simple: create a neat-looking heatmap with zero dependencies that is built on modern technologies, easy to use, customizable and fast.
+
+This project got to run since existing libraries walked. Unfortunately, some are no longer maintained.
+
+Still big thanks for carrying heatmaps for so long:
+
+- https://github.com/pa7/heatmap.js and the several forks.
 
 ## Features
 
-- ESM first
-- Tree-shakeable: only include what you use. ~5kb gzipped
-- Customizable: composable features via `withXXX()` pattern
-- Zero Dependency: Pure TypeScript. Don't drag in the whole React ecosystem
-- High-performance
+- **Performant**
+- **Customizable**: composable features via `withXXX()` pattern
+- **ESM first**
+- **Tree-shakable**: only include what you use. Total is ~6kB gzipped
+- **Zero Dependencies**: Pure TypeScript. Don't drag in the whole React ecosystem
+- TypeScript, vite, vitest, rolldown inside.
 
 ## Installation
 
@@ -25,9 +36,6 @@ import { createHeatmap } from "@drdreo/heatmap";
 
 const heatmap = createHeatmap({
     container: document.getElementById("heatmap")!,
-    radius: 20,
-    blur: 0.85,
-    maxOpacity: 0.8,
     data: {
         min: 0,
         max: 100,
@@ -52,6 +60,24 @@ const heatmap = createHeatmap(
     })
 );
 ```
+
+### With Legend
+
+```typescript
+import { createHeatmap, withLegend, GRADIENT_THERMAL } from "@drdreo/heatmap";
+
+const heatmap = createHeatmap(
+    { container, gradient: GRADIENT_THERMAL },
+    withLegend({
+        position: "bottom-right",
+        orientation: "horizontal",
+        labelCount: 5,
+        formatter: (value) => `${value.toFixed(0)}°C`
+    })
+);
+```
+
+The legend automatically updates when data or gradient changes. Available positions: `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
 
 ### With Animation
 
@@ -85,10 +111,33 @@ heatmap.play();
 ### Composing Features
 
 ```typescript
-import { createHeatmap, withTooltip, withAnimation } from "@drdreo/heatmap";
+import {
+    createHeatmap,
+    withTooltip,
+    withLegend,
+    withAnimation
+} from "@drdreo/heatmap";
 
-// Returns AnimatedHeatmap when withAnimation is included
-const heatmap = createHeatmap({ container }, withTooltip(), withAnimation());
+const heatmap = createHeatmap(
+    { container },
+    withTooltip(),
+    withLegend(),
+    withAnimation()
+);
+```
+
+### Custom Gradient
+
+```typescript
+import { createHeatmap, type GradientStop } from "@drdreo/heatmap";
+
+const gradient: GradientStop[] = [
+    { offset: 0, color: "rgba(0, 0, 255, 0)" },
+    { offset: 0.5, color: "rgba(0, 255, 0, 1)" },
+    { offset: 1, color: "rgba(255, 0, 0, 1)" }
+];
+
+const heatmap = createHeatmap({ container, gradient });
 ```
 
 ## API
@@ -132,6 +181,20 @@ const heatmap = createHeatmap({ container }, withTooltip(), withAnimation());
 | `onFrame`         | `(timestamp, progress) => void` | -       | Frame callback           |
 | `onComplete`      | `() => void`                    | -       | Completion callback      |
 
+### LegendConfig
+
+| Option        | Type                           | Default                | Description                                                                                        |
+| ------------- | ------------------------------ | ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `position`    | `LegendPosition`               | `'bottom-right'`       | Position: `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right` |
+| `orientation` | `'horizontal' \| 'vertical'`   | `'horizontal'`         | Gradient bar orientation                                                                           |
+| `width`       | `number`                       | `150` / `20`           | Width in pixels (default varies by orientation)                                                    |
+| `height`      | `number`                       | `15` / `100`           | Height in pixels (default varies by orientation)                                                   |
+| `labelCount`  | `number`                       | `5`                    | Number of value labels to display                                                                  |
+| `showMinMax`  | `boolean`                      | `true`                 | Always include min/max in labels                                                                   |
+| `formatter`   | `(value, index) => string`     | `(v) => Math.round(v)` | Custom label formatter                                                                             |
+| `className`   | `string`                       | `'heatmap-legend'`     | Custom CSS class name                                                                              |
+| `style`       | `Partial<CSSStyleDeclaration>` | -                      | Custom inline styles                                                                               |
+
 ### Heatmap Methods
 
 ```typescript
@@ -161,21 +224,3 @@ getAnimationState(): AnimationState   // 'idle' | 'playing' | 'paused'
 getCurrentTime(): number
 getProgress(): number                  // 0-1
 ```
-
-### Custom Gradient
-
-```typescript
-import { createHeatmap, type GradientStop } from "@drdreo/heatmap";
-
-const gradient: GradientStop[] = [
-    { offset: 0, color: "rgba(0, 0, 255, 0)" },
-    { offset: 0.5, color: "rgba(0, 255, 0, 1)" },
-    { offset: 1, color: "rgba(255, 0, 0, 1)" }
-];
-
-const heatmap = createHeatmap({ container, gradient });
-```
-
-## License
-
-MIT

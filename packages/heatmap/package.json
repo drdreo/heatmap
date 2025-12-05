@@ -46,7 +46,7 @@
     "bugs": {
         "url": "https://github.com/drdreo/heatmap/issues"
     },
-    "homepage": "https://github.com/drdreo/heatmap#readme",
+    "homepage": "https://drdreo.github.io/heatmap/",
     "files": [
         "dist",
         "README.md",
