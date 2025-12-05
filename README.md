@@ -1,4 +1,4 @@
-[![Banner](https://codecrafters.io/images/updated-byox-banner.gif)](https://codecrafters.io/github-banner)
+![Banner](docs/public/heatmap_demo.gif)
 
 # 🔥 Heatmap
 
