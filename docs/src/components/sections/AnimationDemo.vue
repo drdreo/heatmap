@@ -58,7 +58,7 @@ const animationOptions: ConfigOption[] = [
         name: "timeWindow",
         type: "number",
         default: "5000",
-        description: "Time window for point accumulation"
+        description: "The duration to keep points visible"
     },
     {
         name: "playbackSpeed",
