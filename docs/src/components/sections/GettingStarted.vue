@@ -7,9 +7,6 @@ const quickStartCode = `import { createHeatmap } from '@drdreo/heatmap';
 
 const heatmap = createHeatmap({
     container: document.getElementById('heatmap')!,
-    width: 800,
-    height: 400,
-    radius: 25,
     data: {
         min: 0,
         max: 100,

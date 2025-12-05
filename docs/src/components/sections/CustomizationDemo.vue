@@ -24,7 +24,6 @@ const heatmap = createHeatmap({
 });
 
 // Option 2: Access any preset via GRADIENT_PRESETS object
-// Available: default, thermal, cool, fire, ocean, grayscale, sunset, viridis, plasma
 const fireHeatmap = createHeatmap({
     container: document.querySelector('#fire-container')!,
     gradient: GRADIENT_PRESETS.fire

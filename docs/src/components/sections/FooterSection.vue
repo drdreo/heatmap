@@ -5,7 +5,7 @@
 <template>
     <footer class="footer">
         <p>
-            Built with care by
+            Built with recklessness by
             <a href="https://github.com/drdreo" target="_blank">@drdreo</a>
         </p>
         <p class="footer-links">

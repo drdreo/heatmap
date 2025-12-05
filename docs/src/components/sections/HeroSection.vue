@@ -1,11 +1,9 @@
-<script setup lang="ts">
-// HeroSection - main landing hero with title, badges, and CTA buttons
-</script>
+<script setup lang="ts"></script>
 
 <template>
     <header class="hero">
         <div class="hero-content">
-            <h1>Heatmap</h1>
+            <h1>🔥 Heatmap</h1>
             <p class="tagline">
                 A modern, performant, tree-shakeable heatmap rendering library
             </p>
@@ -16,9 +14,6 @@
                 <span class="badge">Canvas2D</span>
             </div>
             <div class="hero-actions">
-                <a href="#getting-started" class="btn btn-primary"
-                    >Get Started</a
-                >
                 <a
                     href="https://github.com/drdreo/heatmap"
                     target="_blank"
