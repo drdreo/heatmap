@@ -88,6 +88,93 @@ describe("withAnimation feature", () => {
         });
     });
 
+    describe("data in config", () => {
+        it("should initialize with temporal data from config", () => {
+            const data = createTemporalData(5, 5000);
+            heatmap = createHeatmap({ container, data }, withAnimation());
+
+            expect(heatmap.getCurrentTime()).toBe(data.startTime);
+            expect(heatmap.getProgress()).toBe(0);
+        });
+
+        it("should be ready to play immediately when data in config", () => {
+            const data = createTemporalData(5, 5000);
+            heatmap = createHeatmap({ container, data }, withAnimation());
+
+            heatmap.play();
+            expect(heatmap.getAnimationState()).toBe("playing");
+        });
+
+        it("should render initial frame when data in config", () => {
+            const data: TemporalHeatmapData = {
+                min: 0,
+                max: 100,
+                startTime: 0,
+                endTime: 5000,
+                data: [{ x: 150, y: 100, value: 100, timestamp: 0 }]
+            };
+            heatmap = createHeatmap(
+                { container, data },
+                withAnimation({ timeWindow: 1000 })
+            );
+
+            // Should have rendered the initial frame
+            const ctx = heatmap.canvas.getContext("2d")!;
+            const imageData = ctx.getImageData(0, 0, 300, 200);
+            const hasContent = imageData.data.some(
+                (val, i) => i % 4 === 3 && val > 0
+            );
+            expect(hasContent).toBe(true);
+        });
+
+        it("should work with animation config options and data in config", () => {
+            const onFrame = vi.fn();
+            const data = createTemporalData(5, 5000);
+            heatmap = createHeatmap(
+                { container, data },
+                withAnimation({ loop: true, playbackSpeed: 2, onFrame })
+            );
+
+            heatmap.play();
+            vi.advanceTimersByTime(100);
+
+            expect(onFrame).toHaveBeenCalled();
+            // At 2x speed, 100ms real time = 200ms animation time, so currentTime should be ~200ms
+            expect(heatmap.getCurrentTime()).toBeGreaterThanOrEqual(100);
+        });
+
+        it("should allow replacing data via setTemporalData after config data", () => {
+            const initialData = createTemporalData(3, 3000);
+            heatmap = createHeatmap(
+                { container, data: initialData },
+                withAnimation()
+            );
+
+            const newData: TemporalHeatmapData = {
+                min: 0,
+                max: 50,
+                startTime: 1000,
+                endTime: 6000,
+                data: [{ x: 100, y: 100, value: 25, timestamp: 2000 }]
+            };
+            heatmap.setTemporalData(newData);
+
+            expect(heatmap.getCurrentTime()).toBe(1000);
+        });
+
+        it("should expose config on heatmap instance", () => {
+            const data = createTemporalData(5, 5000);
+            heatmap = createHeatmap(
+                { container, data, radius: 30 },
+                withAnimation()
+            );
+
+            expect(heatmap.config).toBeDefined();
+            expect(heatmap.config.data).toBe(data);
+            expect(heatmap.config.radius).toBe(30);
+        });
+    });
+
     describe("setTemporalData", () => {
         it("should accept temporal data", () => {
             heatmap = createHeatmap({ container }, withAnimation());

@@ -206,7 +206,7 @@ onMounted(() => {
                 animationState.value = "Idle";
             }
         })
-    ) as AnimatedHeatmap;
+    );
 
     animatedHeatmap.setTemporalData(generateTemporalData());
 });

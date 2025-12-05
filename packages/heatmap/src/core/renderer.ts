@@ -99,8 +99,8 @@ export function createCore(config: HeatmapConfig): Heatmap {
 
     container.appendChild(canvas);
 
-    // Render initial data if provided
-    if (config.data) {
+    // Render initial data if provided (only static data, not temporal)
+    if (config.data && !("startTime" in config.data)) {
         setData(config.data);
     }
 
@@ -412,6 +412,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
 
     // Return the public API
     return {
+        config,
         container,
         canvas,
         width,

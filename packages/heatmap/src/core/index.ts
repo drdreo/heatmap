@@ -18,7 +18,9 @@ export type {
     RGBAColor,
     RenderablePoint,
     TooltipFeature,
-    AnimationFeature
+    AnimationFeature,
+    TemporalHeatmapPoint,
+    TemporalHeatmapData
 } from "./types";
 export { FeatureKind } from "./types";
 export { DEFAULT_CONFIG, DEFAULT_GRADIENT } from "./defaults";
