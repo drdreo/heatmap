@@ -96,3 +96,4 @@ export const GRADIENT_PRESETS = {
 
 /** Available gradient preset names */
 export type GradientPresetName = keyof typeof GRADIENT_PRESETS;
+

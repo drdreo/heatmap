@@ -107,96 +107,9 @@ const gradient: GradientStop[] = [
 const heatmap = createHeatmap({ container, gradient });
 ```
 
-## Development
+## Contributing
 
-### Project Structure
-
-```
-heatmap/
-├── packages/
-│   └── heatmap/          # npm package (TypeScript library)
-│       ├── src/          # Source files
-├── docs/                 # Documentation project
-    │   ├── src/          # Source files
-├── package.json          # Root workspace configuration
-├── pnpm-workspace.yaml   # pnpm workspace definition
-```
-
-### Install Dependencies
-
-```bash
-pnpm install
-```
-
-### Run locally
-
-Run the dev modes:
-
-```bash
-# Start the docs dev server (with live reload)
-pnpm dev
-
-# Build the library in watch mode
-pnpm dev:lib
-```
-
-Nx is also available:
-
-```bash
-# Start the docs dev server (with live reload)
-nx dev docs
-
-# Build the library in watch mode
-nx dev heatmap
-```
-
-### Build
-
-```bash
-# Build everything (library + docs)
-pnpm build
-
-# Build only the library
-pnpm build:lib
-
-# Build only the docs
-pnpm build:docs
-```
-
-Nx is also available:
-
-```bash
-# Start the docs dev server (with live reload)
-nx build docs
-
-# Build the library in watch mode
-nx build heatmap
-```
-
-### Testing
-
-```bash
-# Run tests in watch mode
-pnpm test
-
-# Run tests once
-pnpm test:run
-
-# Run tests with coverage
-pnpm test:coverage
-```
-
-Nx is also available:
-
-```bash
-# Run library
-nx test heatmap
-```
-
-### Releasing
-
-Locally run:
-`nx release publish --otp=<OTP>`
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
