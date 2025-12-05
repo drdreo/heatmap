@@ -1,135 +1,112 @@
+[![Banner](https://codecrafters.io/images/updated-byox-banner.gif)](https://codecrafters.io/github-banner)
+
 # 🔥 Heatmap
 
-A lightweight heatmap library for visualizing data intensity.
+`@drdreo/heatmap` is a lightweight TypeScript library for visualizing data intensity as a heatmap on a HTML canvas.
 
-## Project Structure
+The motivation is simple: create a neat looking heatmap with zero dependencies that is built on modern technologies, easy to use, customizable and fast.
 
-```
-heatmap/
-├── packages/
-│   └── heatmap/          # The npm package (pure TypeScript library)
-│       ├── src/
-│       │   ├── index.ts      # Main entry point
-│       │   ├── heatmap.ts    # Core Heatmap class
-│       │   ├── types.ts      # Type definitions
-│       │   └── *.test.ts     # Unit tests
-│       ├── package.json
-│       ├── tsconfig.json
-│       ├── tsup.config.ts    # Build configuration
-│       └── vitest.config.ts  # Test configuration
-├── docs/                 # Documentation & examples website
-│   ├── src/
-│   │   ├── main.ts
-│   │   └── style.css
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.ts
-├── package.json          # Root workspace configuration
-├── pnpm-workspace.yaml   # pnpm workspace definition
-└── tsconfig.json         # Root TypeScript configuration
-```
+## Features
 
-## Getting Started
+- **Performant**
+- **Customizable**: composable features via `withXXX()` pattern
+- **ESM first**
+- **Tree-shakable**: only include what you use. Total is ~5kB gzipped
+- **Zero Dependencies**: Pure TypeScript. Don't drag in the whole React ecosystem
+- TypeScript, vite, vitest, rolldown inside.
 
-### Install Dependencies
+## Installation
 
 ```bash
-pnpm install
+npm install @drdreo/heatmap
 ```
-
-### Development
-
-```bash
-# Start the docs dev server (with live reload)
-pnpm dev
-
-# Build the library in watch mode
-pnpm dev:lib
-```
-
-### Build
-
-```bash
-# Build everything (library + docs)
-pnpm build
-
-# Build only the library
-pnpm build:lib
-
-# Build only the docs
-pnpm build:docs
-```
-
-### Testing
-
-```bash
-# Run tests in watch mode
-pnpm test
-
-# Run tests once
-pnpm test:run
-
-# Run tests with coverage
-pnpm test:coverage
-```
-
-### Releasing
-
-Locally run:
-`nx release publish --otp=<OTP>`
 
 ## Usage
 
+### Basic Heatmap
+
 ```typescript
-import { Heatmap } from "@drdreo/heatmap";
+import { createHeatmap } from "@drdreo/heatmap";
 
-const heatmap = new Heatmap("#container", {
-    width: 800,
-    height: 600,
-    radius: 25,
-    maxValue: 100
+const heatmap = createHeatmap({
+    container: document.getElementById("heatmap")!,
+    data: {
+        min: 0,
+        max: 100,
+        data: [
+            { x: 100, y: 150, value: 80 },
+            { x: 200, y: 100, value: 50 }
+        ]
+    }
 });
-
-// Add a single point
-heatmap.addPoint({ x: 100, y: 100, value: 50 });
-
-// Add multiple points
-heatmap.addPoints([
-    { x: 200, y: 150, value: 80 },
-    { x: 300, y: 200, value: 60 }
-]);
-
-// Render the heatmap
-heatmap.render();
-
-// Clear all points
-heatmap.clear();
 ```
 
-## API
+### With Tooltip
 
-### `new Heatmap(container, options?)`
+```typescript
+import { createHeatmap, withTooltip } from "@drdreo/heatmap";
 
-Creates a new heatmap instance.
+const heatmap = createHeatmap(
+    { container },
+    withTooltip({
+        formatter: (value, x, y) => `${value} clicks`,
+        enforceBounds: true
+    })
+);
+```
 
-- `container`: `HTMLElement | string` - Container element or CSS selector
-- `options`: `HeatmapOptions` (optional)
-    - `width`: Width of the canvas (default: 800)
-    - `height`: Height of the canvas (default: 600)
-    - `radius`: Radius of each data point (default: 25)
-    - `maxValue`: Maximum value for color scaling (default: 100)
-    - `blur`: Blur amount for smoothing (default: 15)
-    - `gradient`: Color gradient from cold to hot
+### With Animation
 
-### Methods
+```typescript
+import { createHeatmap, withAnimation } from "@drdreo/heatmap";
 
-- `addPoint(point)` - Add a single data point
-- `addPoints(points)` - Add multiple data points
-- `clear()` - Clear all data points
-- `render()` - Render the heatmap
-- `getCanvas()` - Get the canvas element
-- `getPoints()` - Get current data points
+const heatmap = createHeatmap(
+    { container },
+    withAnimation({
+        fadeOutDuration: 2000,
+        timeWindow: 5000,
+        loop: true,
+        onFrame: (time, progress) =>
+            console.log(`${(progress * 100).toFixed(0)}%`)
+    })
+);
+heatmap.setTemporalData({
+    min: 0,
+    max: 100,
+    startTime: 0,
+    endTime: 60000,
+    data: [
+        { x: 100, y: 150, value: 80, timestamp: 1000 },
+        { x: 200, y: 100, value: 50, timestamp: 2500 }
+    ]
+});
 
-## License
+heatmap.play();
+```
 
-MIT
+### Composing Features
+
+```typescript
+import { createHeatmap, withTooltip, withAnimation } from "@drdreo/heatmap";
+
+// Returns AnimatedHeatmap when `withAnimation` is included
+const heatmap = createHeatmap({ container }, withTooltip(), withAnimation());
+```
+
+### Custom Gradient
+
+```typescript
+import { createHeatmap, type GradientStop } from "@drdreo/heatmap";
+
+const gradient: GradientStop[] = [
+    { offset: 0, color: "rgba(0, 0, 255, 0)" },
+    { offset: 0.5, color: "rgba(0, 255, 0, 1)" },
+    { offset: 1, color: "rgba(255, 0, 0, 1)" }
+];
+
+const heatmap = createHeatmap({ container, gradient });
+```
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
