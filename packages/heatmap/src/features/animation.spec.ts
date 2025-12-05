@@ -91,10 +91,7 @@ describe("withAnimation feature", () => {
     describe("data in config", () => {
         it("should initialize with temporal data from config", () => {
             const data = createTemporalData(5, 5000);
-            heatmap = createHeatmap(
-                { container, data },
-                withAnimation()
-            );
+            heatmap = createHeatmap({ container, data }, withAnimation());
 
             expect(heatmap.getCurrentTime()).toBe(data.startTime);
             expect(heatmap.getProgress()).toBe(0);
@@ -102,10 +99,7 @@ describe("withAnimation feature", () => {
 
         it("should be ready to play immediately when data in config", () => {
             const data = createTemporalData(5, 5000);
-            heatmap = createHeatmap(
-                { container, data },
-                withAnimation()
-            );
+            heatmap = createHeatmap({ container, data }, withAnimation());
 
             heatmap.play();
             expect(heatmap.getAnimationState()).toBe("playing");
@@ -117,9 +111,7 @@ describe("withAnimation feature", () => {
                 max: 100,
                 startTime: 0,
                 endTime: 5000,
-                data: [
-                    { x: 150, y: 100, value: 100, timestamp: 0 }
-                ]
+                data: [{ x: 150, y: 100, value: 100, timestamp: 0 }]
             };
             heatmap = createHeatmap(
                 { container, data },
