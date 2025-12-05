@@ -372,9 +372,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         displayLabels.forEach((value, index) => {
             // Use original index for formatter (0 = min, last = max)
             const originalIndex =
-                orientation === "vertical"
-                    ? labels.length - 1 - index
-                    : index;
+                orientation === "vertical" ? labels.length - 1 - index : index;
             const label = document.createElement("span");
             label.textContent = resolvedConfig.formatter(value, originalIndex);
             Object.assign(label.style, {

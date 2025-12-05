@@ -106,7 +106,7 @@ function createCustomHeatmap() {
         },
         withTooltip(),
         withLegend({
-            className: "demo-legend",
+            className: "demo-legend"
         })
     );
 

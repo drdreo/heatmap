@@ -241,7 +241,7 @@ onUnmounted(() => {
             </div>
             <div class="demo-controls animation-controls">
                 <button class="btn btn-primary" @click="handleTogglePlayPause">
-                    {{ animationState === 'Playing' ? 'Pause' : 'Play' }}
+                    {{ animationState === "Playing" ? "Pause" : "Play" }}
                 </button>
                 <button class="btn" @click="handleStop">Stop</button>
                 <div class="speed-control">
