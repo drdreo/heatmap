@@ -34,7 +34,11 @@ export type {
     AnimationFeature,
     TooltipFeature,
     TemporalHeatmapPoint,
-    TemporalHeatmapData
+    TemporalHeatmapData,
+    HeatmapEventMap,
+    HeatmapEventListener,
+    DataChangeEvent,
+    GradientChangeEvent
 } from "./core/types";
 
 export { FeatureKind } from "./core/types";
@@ -66,6 +70,12 @@ export { validateConfig, type ResolvedConfig } from "./core/validation";
 
 // Re-export features
 export { withTooltip, type TooltipConfig } from "./features/tooltip";
+export {
+    withLegend,
+    type LegendConfig,
+    type LegendPosition,
+    type LegendOrientation
+} from "./features/legend";
 export {
     withAnimation,
     type AnimationConfig,

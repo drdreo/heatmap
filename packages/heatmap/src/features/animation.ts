@@ -28,7 +28,7 @@ export interface AnimationConfig {
     fadeOutDuration?: number;
 
     /**
-     * Time window in milliseconds to accumulate points (default: 5000)
+     * The duration in milliseconds to keep points visible (default: 5000ms). Points older than this are excluded.
      */
     timeWindow?: number;
 

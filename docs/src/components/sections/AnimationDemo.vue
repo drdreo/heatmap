@@ -58,7 +58,7 @@ const animationOptions: ConfigOption[] = [
         name: "timeWindow",
         type: "number",
         default: "5000",
-        description: "Time window for point accumulation"
+        description: "The duration to keep points visible"
     },
     {
         name: "playbackSpeed",
@@ -158,14 +158,14 @@ function updateAnimationUI(timestamp: number, progress: number) {
     animationTime.value = `${String(seconds).padStart(2, "0")}:${String(ms).padStart(2, "0")}`;
 }
 
-function handlePlay() {
-    animatedHeatmap?.play();
-    animationState.value = "Playing";
-}
-
-function handlePause() {
-    animatedHeatmap?.pause();
-    animationState.value = "Paused";
+function handleTogglePlayPause() {
+    if (animationState.value === "Playing") {
+        animatedHeatmap?.pause();
+        animationState.value = "Paused";
+    } else {
+        animatedHeatmap?.play();
+        animationState.value = "Playing";
+    }
 }
 
 function handleStop() {
@@ -240,10 +240,9 @@ onUnmounted(() => {
                 <div ref="containerRef" class="heatmap-container"></div>
             </div>
             <div class="demo-controls animation-controls">
-                <button class="btn btn-primary" @click="handlePlay">
-                    Play
+                <button class="btn btn-primary" @click="handleTogglePlayPause">
+                    {{ animationState === "Playing" ? "Pause" : "Play" }}
                 </button>
-                <button class="btn" @click="handlePause">Pause</button>
                 <button class="btn" @click="handleStop">Stop</button>
                 <div class="speed-control">
                     <label for="animation-speed">Speed:</label>

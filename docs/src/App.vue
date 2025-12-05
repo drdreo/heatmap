@@ -6,6 +6,7 @@ import CustomizationDemo from "./components/sections/CustomizationDemo.vue";
 import BasicDemo from "./components/sections/BasicDemo.vue";
 import TooltipDemo from "./components/sections/TooltipDemo.vue";
 import AnimationDemo from "./components/sections/AnimationDemo.vue";
+import LegendDemo from "./components/sections/LegendDemo.vue";
 import ApiReference from "./components/sections/ApiReference.vue";
 import FooterSection from "./components/sections/FooterSection.vue";
 </script>
@@ -20,6 +21,7 @@ import FooterSection from "./components/sections/FooterSection.vue";
             <BasicDemo />
             <TooltipDemo />
             <AnimationDemo />
+            <LegendDemo />
             <ApiReference />
             <FooterSection />
         </main>
