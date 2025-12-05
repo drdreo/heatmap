@@ -40,6 +40,26 @@ export interface HeatmapData {
     data: HeatmapPoint[];
 }
 
+/** Temporal data point with timestamp */
+export interface TemporalHeatmapPoint extends HeatmapPoint {
+    /** Timestamp in milliseconds */
+    timestamp: number;
+}
+
+/** Temporal data for animated heatmaps */
+export interface TemporalHeatmapData {
+    /** Minimum value in the dataset */
+    min: number;
+    /** Maximum value in the dataset */
+    max: number;
+    /** Start timestamp of the data range */
+    startTime: number;
+    /** End timestamp of the data range */
+    endTime: number;
+    /** Array of temporal data points */
+    data: TemporalHeatmapPoint[];
+}
+
 /** Point ready to be rendered with computed alpha */
 export interface RenderablePoint {
     x: number;
@@ -73,7 +93,9 @@ export interface HeatmapStats {
     dataRange: { min: number; max: number } | null;
 }
 
-/** Configuration options for the heatmap */
+/**
+ * Base configuration options for the heatmap (shared between static and animated)
+ */
 export interface HeatmapConfig {
     /** Container element to render the heatmap canvas into */
     container: HTMLElement;
@@ -133,12 +155,18 @@ export interface HeatmapConfig {
      */
     intensityExponent?: number;
 
-    /** Initial data to render */
-    data?: HeatmapData;
+    /**
+     * Initial data to render.
+     * Use HeatmapData for static heatmaps, TemporalHeatmapData for animated heatmaps.
+     */
+    data?: HeatmapData | TemporalHeatmapData;
 }
 
 /** Core heatmap instance returned by createHeatmap */
 export interface Heatmap {
+    /** The original configuration */
+    readonly config: HeatmapConfig;
+
     /** The container element */
     readonly container: HTMLElement;
 
@@ -209,4 +237,3 @@ export type HasFeature<
         ? true
         : false
     : false;
-

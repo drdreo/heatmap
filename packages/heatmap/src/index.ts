@@ -9,28 +9,6 @@
  * - Tree-shakeable (only include what you use)
  * - Zero external dependencies
  *
- * Basic Usage:
- * ```ts
- * import { createHeatmap } from './lib';
- *
- * const heatmap = createHeatmap({
- *     container: document.getElementById('heatmap')!,
- *     radius: 25,
- *     maxOpacity: 0.8,
- *     data: { min: 0, max: 100, data: [...] }
- * });
- * ```
- *
- * With Features:
- * ```ts
- * import { createHeatmap, withTooltip, withAnimation } from './lib';
- *
- * const heatmap = createHeatmap(
- *     { container, radius: 25 },
- *     withTooltip({ formatter: (v) => `${v} clicks` }),
- *     withAnimation({ fadeOutDuration: 3000 })
- * );
- * ```
  */
 
 import { createCore } from "./core/renderer";
@@ -54,7 +32,9 @@ export type {
     RGBAColor,
     RenderablePoint,
     AnimationFeature,
-    TooltipFeature
+    TooltipFeature,
+    TemporalHeatmapPoint,
+    TemporalHeatmapData
 } from "./core/types";
 
 export { FeatureKind } from "./core/types";
@@ -90,8 +70,6 @@ export {
     withAnimation,
     type AnimationConfig,
     type AnimatedHeatmap,
-    type TemporalHeatmapPoint,
-    type TemporalHeatmapData,
     type AnimationState
 } from "./features/animation";
 
@@ -104,21 +82,24 @@ export {
  *
  * @example
  * ```ts
- * // Basic heatmap
- * const heatmap = createHeatmap({ container });
+ * // Basic static heatmap
+ * const heatmap = createHeatmap({
+ *     container,
+ *     data: { min: 0, max: 100, data: points }
+ * });
  *
- * // With tooltip
+ * // Static heatmap with tooltip
  * const heatmap = createHeatmap(
- *     { container },
+ *     { container, data: staticData },
  *     withTooltip({ formatter: (v) => `${v} clicks` })
  * );
  *
- * // With animation - automatically typed as AnimatedHeatmap!
+ * // Animated heatmap with temporal data
  * const heatmap = createHeatmap(
- *     { container },
+ *     { container, data: temporalData },
  *     withAnimation({ loop: true })
  * );
- * heatmap.play(); // No cast needed!
+ * heatmap.play();
  * ```
  */
 // Overload: animation feature first returns AnimatedHeatmap
@@ -127,14 +108,14 @@ export function createHeatmap(
     animation: AnimationFeature,
     ...features: HeatmapFeature[]
 ): AnimatedHeatmap;
-// Overload: animation feature second (e.g., after tooltip) returns AnimatedHeatmap
+// Overload: animation feature second returns AnimatedHeatmap
 export function createHeatmap(
     config: HeatmapConfig,
     first: HeatmapFeature,
     animation: AnimationFeature,
     ...features: HeatmapFeature[]
 ): AnimatedHeatmap;
-// Overload: without animation feature returns Heatmap
+// Overload: no animation feature returns Heatmap
 export function createHeatmap(
     config: HeatmapConfig,
     ...features: HeatmapFeature[]

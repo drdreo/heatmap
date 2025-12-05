@@ -8,30 +8,14 @@ import {
     type AnimationFeature,
     FeatureKind,
     type Heatmap,
-    type HeatmapPoint,
-    type RenderablePoint
+    type RenderablePoint,
+    type TemporalHeatmapData,
+    type TemporalHeatmapPoint
 } from "../core/types";
 import { generatePalette } from "../core/gradient";
 
-/** A temporal data point with timestamp */
-export interface TemporalHeatmapPoint extends HeatmapPoint {
-    /** Timestamp in milliseconds */
-    timestamp: number;
-}
-
-/** Temporal data for animated heatmaps */
-export interface TemporalHeatmapData {
-    /** Minimum value in the dataset */
-    min: number;
-    /** Maximum value in the dataset */
-    max: number;
-    /** Start timestamp of the data range */
-    startTime: number;
-    /** End timestamp of the data range */
-    endTime: number;
-    /** Array of temporal data points (should be sorted by timestamp) */
-    data: TemporalHeatmapPoint[];
-}
+/** Re-export temporal types from core */
+export type { TemporalHeatmapPoint, TemporalHeatmapData } from "../core/types";
 
 /** Animation state */
 export type AnimationState = "idle" | "playing" | "paused";
@@ -110,10 +94,10 @@ const DEFAULT_ANIMATION_CONFIG = {
  * ```ts
  * const heatmap = createHeatmap(
  *     { container },
+ *     temporalData,
  *     withAnimation({ fadeOutDuration: 3000, loop: true })
- * ) as AnimatedHeatmap;
+ * );
  *
- * heatmap.setTemporalData(data);
  * heatmap.play();
  * ```
  */
@@ -458,6 +442,12 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
             animatedHeatmap.getAnimationState = getAnimationState;
             animatedHeatmap.getCurrentTime = getCurrentTime;
             animatedHeatmap.getProgress = getProgress;
+
+            // Check for initial temporal data in config
+            const configData = heatmap.config.data;
+            if (configData && "startTime" in configData) {
+                setTemporalData(configData);
+            }
         },
 
         teardown(): void {

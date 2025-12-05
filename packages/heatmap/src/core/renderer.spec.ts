@@ -83,6 +83,22 @@ describe("createHeatmap renderer", () => {
 
             expect(hasContent).toBe(true);
         });
+
+        it("should render static data when provided in config", () => {
+            const staticData = {
+                min: 0,
+                max: 100,
+                data: [{ x: 150, y: 100, value: 100 }]
+            };
+            heatmap = createHeatmap({ container, data: staticData });
+
+            const ctx = heatmap.canvas.getContext("2d")!;
+            const imageData = ctx.getImageData(0, 0, 300, 200);
+            const hasContent = imageData.data.some(
+                (val, i) => i % 4 === 3 && val > 0
+            );
+            expect(hasContent).toBe(true);
+        });
     });
 
     describe("setData", () => {
