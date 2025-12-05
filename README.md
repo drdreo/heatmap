@@ -110,7 +110,3 @@ const heatmap = createHeatmap({ container, gradient });
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-MIT

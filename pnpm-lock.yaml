@@ -35,6 +35,9 @@ importers:
                 specifier: ^3.5.13
                 version: 3.5.25(typescript@5.9.3)
         devDependencies:
+            "@types/node":
+                specifier: ^24.10.1
+                version: 24.10.1
             "@vitejs/plugin-vue":
                 specifier: ^6.0.2
                 version: 6.0.2(rolldown-vite@7.2.5(@types/node@24.10.1)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
@@ -4918,7 +4921,6 @@ snapshots:
     "@types/node@24.10.1":
         dependencies:
             undici-types: 7.16.0
-        optional: true
 
     "@types/parse-json@4.0.2": {}
 
@@ -6183,8 +6185,7 @@ snapshots:
             "@quansync/fs": 0.1.6
             quansync: 0.2.11
 
-    undici-types@7.16.0:
-        optional: true
+    undici-types@7.16.0: {}
 
     unicode-canonical-property-names-ecmascript@2.0.1: {}
 
