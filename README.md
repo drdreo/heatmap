@@ -1,4 +1,4 @@
-![Banner](https://drdreo.github.io/heatmap/heatmap_demo.gif)
+![Banner](/docs/public/heatmap_demo.gif)
 
 # 🔥 Heatmap
 
