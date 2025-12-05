@@ -95,6 +95,7 @@ type(scope): description
 
 [optional body]
 ```
+
 At least the PR title should follow this convention when we squash and merge.
 
 **Types:**
