@@ -11,25 +11,20 @@
     },
     "release": {
         "projects": ["packages/heatmap"],
+        "git": {
+            "commit": true,
+            "tag": true,
+            "push": true
+        },
         "version": {
             "conventionalCommits": true,
-            "fallbackCurrentVersionResolver": "disk",
-            "git": {
-                "commit": true,
-                "tag": true
-            }
+            "fallbackCurrentVersionResolver": "disk"
         },
         "changelog": {
             "workspaceChangelog": {
                 "createRelease": "github"
             },
-            "projectChangelogs": {
-                "file": "{projectRoot}/CHANGELOG.md"
-            },
-            "git": {
-                "commit": true,
-                "tag": false
-            }
+            "projectChangelogs": false
         }
     },
     "namedInputs": {

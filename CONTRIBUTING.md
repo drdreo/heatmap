@@ -118,19 +118,17 @@ docs: update installation instructions
 
 ## Releasing
 
-Using Nx release
+Using Nx release, all we have to do is checkout latest master and run:
 
+This generates the version bump, changelog, and GitHub release.
+```bash
+nx release
+```
+Then publish the package to npm:
 ```bash
 nx release publish --otp=<OTP>
 ```
 
-```bash
-nx release version 1.420.69
-```
-
-```bash
-nx release changelog 1.420.69
-```
 
 ## Questions?
 
