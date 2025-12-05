@@ -1,6 +1,7 @@
 MIT License
 
 Copyright (c) 2015 Patrick Wied
+
 Copyright (c) 2025 Andreas Hahn
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
