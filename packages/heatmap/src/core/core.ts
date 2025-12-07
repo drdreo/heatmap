@@ -13,6 +13,7 @@ import { FeatureKind } from "./types";
  * Create a new heatmap instance with optional features
  *
  * @param config - Heatmap configuration
+ * @param animation - Optional animation feature (withAnimation)
  * @param features - Optional features to apply (withCanvas2DRenderer, withAnimation, etc.)
  * @returns Heatmap instance (extended to AnimatedHeatmap when withAnimation is used)
  *
@@ -68,8 +69,7 @@ export function createHeatmap(
 
     // Auto-create Canvas2D renderer if none provided
     if (!hasRenderer) {
-        const defaultRenderer = withCanvas2DRenderer();
-        defaultRenderer.setup(heatmap);
+        features.push(withCanvas2DRenderer());
     }
 
     // Apply features (renderer features first, then others)

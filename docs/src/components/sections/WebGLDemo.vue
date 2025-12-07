@@ -127,7 +127,7 @@ function measureFps(
             heatmap.setData({
                 min: 0,
                 max: 100,
-                data: frameVariants[variantIdx]
+                data: frameVariants[variantIdx]!
             });
             frameCount++;
 
