@@ -14,11 +14,14 @@ export type {
     HeatmapFeature,
     HeatmapPoint,
     HeatmapStats,
+    HeatmapRenderer,
     GradientStop,
     RGBAColor,
     RenderablePoint,
+    RenderBoundaries,
     TooltipFeature,
     AnimationFeature,
+    RendererFeature,
     TemporalHeatmapPoint,
     TemporalHeatmapData
 } from "./types";
@@ -36,3 +39,19 @@ export {
     GRADIENT_PRESETS,
     type GradientPresetName
 } from "./presets";
+
+export {
+    withCanvas2DRenderer,
+    createCanvas2DRenderer,
+    generatePointTemplate,
+    generateOpacityLUT,
+    type Canvas2DRendererConfig,
+    type PointTemplate
+} from "./render-pipeline";
+
+export {
+    withWebGLRenderer,
+    createWebGLRenderer,
+    isWebGLAvailable,
+    type WebGLRendererConfig
+} from "./webgl-renderer";

@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { createHeatmap, GRADIENT_FIRE, type Heatmap } from "@drdreo/heatmap";
+import {
+    createHeatmap,
+    GRADIENT_FIRE,
+    type Heatmap,
+    withWebGLRenderer
+} from "@drdreo/heatmap";
 
 const heroRef = ref<HTMLElement | null>(null);
 const heatmapContainerRef = ref<HTMLElement | null>(null);
@@ -57,15 +62,18 @@ function initHeatmap() {
     const width = heatmapContainerRef.value.clientWidth;
     const height = heatmapContainerRef.value.clientHeight;
 
-    heatmap = createHeatmap({
-        container: heatmapContainerRef.value,
-        width,
-        height,
-        radius: 40,
-        blur: 0.9,
-        maxOpacity: 0.7,
-        gradient: GRADIENT_FIRE
-    });
+    heatmap = createHeatmap(
+        {
+            container: heatmapContainerRef.value,
+            width,
+            height,
+            radius: 40,
+            blur: 0.9,
+            maxOpacity: 0.7,
+            gradient: GRADIENT_FIRE
+        },
+        withWebGLRenderer()
+    );
 
     // Add some initial points for visual appeal
     const initialPoints = [];

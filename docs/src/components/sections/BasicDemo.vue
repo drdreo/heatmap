@@ -3,7 +3,8 @@ import { ref, onMounted, onUnmounted } from "vue";
 import {
     createHeatmap,
     type Heatmap,
-    type HeatmapPoint
+    type HeatmapPoint,
+    withWebGLRenderer
 } from "@drdreo/heatmap";
 import CodeBlock from "../ui/CodeBlock.vue";
 
@@ -116,11 +117,14 @@ onMounted(() => {
     const width = containerRef.value.clientWidth;
     const height = containerRef.value.clientHeight;
 
-    basicHeatmap = createHeatmap({
-        container: containerRef.value,
-        width,
-        height
-    });
+    basicHeatmap = createHeatmap(
+        {
+            container: containerRef.value,
+            width,
+            height
+        },
+        withWebGLRenderer()
+    );
 
     const initialData: HeatmapPoint[] = [
         { x: 200, y: 20, value: 80 },
