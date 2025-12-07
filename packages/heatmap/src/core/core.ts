@@ -1,5 +1,5 @@
 import type { AnimatedHeatmap } from "../features";
-import { withCanvas2DRenderer } from "./render-pipeline.ts";
+import { withCanvas2DRenderer } from "./render-pipeline";
 import { createCore } from "./renderer.ts";
 import { FeatureKind } from "./types.ts";
 import type {
