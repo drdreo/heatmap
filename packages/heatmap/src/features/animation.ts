@@ -12,7 +12,6 @@ import {
     type TemporalHeatmapData,
     type TemporalHeatmapPoint
 } from "../core/types";
-import { generatePalette } from "../core/gradient";
 
 /** Re-export temporal types from core */
 export type { TemporalHeatmapPoint, TemporalHeatmapData } from "../core/types";
@@ -93,8 +92,7 @@ const DEFAULT_ANIMATION_CONFIG = {
  * @example
  * ```ts
  * const heatmap = createHeatmap(
- *     { container },
- *     temporalData,
+ *     { container, data: temporalData },
  *     withAnimation({ fadeOutDuration: 3000, loop: true })
  * );
  *
@@ -102,8 +100,6 @@ const DEFAULT_ANIMATION_CONFIG = {
  * ```
  */
 export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
-    let heatmapRef: Heatmap | null = null;
-
     // Animation config
     const fadeOutDuration =
         config.fadeOutDuration ?? DEFAULT_ANIMATION_CONFIG.fadeOutDuration;
@@ -122,17 +118,8 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     let animationFrameId: number | null = null;
     let lastSearchIndex = 0;
 
-    // Canvas contexts for animation rendering
-    let shadowCanvas: HTMLCanvasElement | OffscreenCanvas | null = null;
-    let shadowCtx:
-        | CanvasRenderingContext2D
-        | OffscreenCanvasRenderingContext2D
-        | null = null;
-    let ctx: CanvasRenderingContext2D | null = null;
-    let pointTemplate: HTMLCanvasElement | null = null;
-    let palette: Uint8ClampedArray | null = null;
-    let maxOpacity = 0.8;
-    let minOpacity = 0;
+    // Reference to heatmap
+    let heatmapRef: Heatmap | null = null;
 
     function setTemporalData(newData: TemporalHeatmapData): void {
         // Sort data by timestamp
@@ -245,65 +232,17 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     }
 
     function renderFrame(timestamp: number): void {
-        if (
-            !data ||
-            !heatmapRef ||
-            !shadowCtx ||
-            !ctx ||
-            !pointTemplate ||
-            !palette
-        )
+        if (!data || !heatmapRef) return;
+
+        const { renderer } = heatmapRef;
+
+        if (data.data.length === 0) {
+            renderer.clear();
             return;
-
-        const { width, height } = heatmapRef;
-
-        // Clear canvases
-        ctx.clearRect(0, 0, width, height);
-        shadowCtx.clearRect(0, 0, width, height);
-
-        if (data.data.length === 0) return;
+        }
 
         const points = getActivePoints(timestamp);
-
-        if (points.length === 0) return;
-
-        // Draw points
-        const templateSize = pointTemplate.width;
-        const offset = templateSize / 2;
-
-        for (const point of points) {
-            shadowCtx.globalAlpha = point.alpha;
-            shadowCtx.drawImage(
-                pointTemplate,
-                point.x - offset,
-                point.y - offset,
-                templateSize,
-                templateSize
-            );
-        }
-        shadowCtx.globalAlpha = 1;
-
-        // Colorize
-        const imageData = shadowCtx.getImageData(0, 0, width, height);
-        const pixels = imageData.data;
-        const opacityRange = maxOpacity - minOpacity;
-
-        for (let i = 0; i < pixels.length; i += 4) {
-            const alpha = pixels[i + 3];
-            if (alpha > 0) {
-                const paletteIdx = alpha * 4;
-                pixels[i] = palette[paletteIdx];
-                pixels[i + 1] = palette[paletteIdx + 1];
-                pixels[i + 2] = palette[paletteIdx + 2];
-
-                const normalizedAlpha = alpha / 255;
-                const scaledOpacity =
-                    minOpacity + normalizedAlpha * opacityRange;
-                pixels[i + 3] = Math.round(scaledOpacity * 255);
-            }
-        }
-
-        ctx.putImageData(imageData, 0, 0);
+        renderer.render(points);
     }
 
     function getActivePoints(timestamp: number): RenderablePoint[] {
@@ -371,63 +310,11 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
         return t * (2 - t);
     }
 
-    function generatePointTemplate(
-        radius: number,
-        blur: number
-    ): HTMLCanvasElement {
-        const size = radius * 2 + blur * 2;
-        const center = size / 2;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-
-        const templateCtx = canvas.getContext("2d")!;
-        const gradient = templateCtx.createRadialGradient(
-            center,
-            center,
-            0,
-            center,
-            center,
-            radius
-        );
-
-        gradient.addColorStop(0, "rgba(0, 0, 0, 1)");
-        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-        templateCtx.fillStyle = gradient;
-        templateCtx.fillRect(0, 0, size, size);
-
-        return canvas;
-    }
-
     return {
         kind: FeatureKind.Animation,
 
         setup(heatmap: Heatmap): void {
             heatmapRef = heatmap;
-
-            const { width, height, canvas } = heatmap;
-            ctx = canvas.getContext("2d", { willReadFrequently: false })!;
-
-            // Create shadow canvas
-            if (typeof OffscreenCanvas !== "undefined") {
-                shadowCanvas = new OffscreenCanvas(width, height);
-                shadowCtx = shadowCanvas.getContext("2d", {
-                    willReadFrequently: true
-                })!;
-            } else {
-                shadowCanvas = document.createElement("canvas");
-                shadowCanvas.width = width;
-                shadowCanvas.height = height;
-                shadowCtx = shadowCanvas.getContext("2d", {
-                    willReadFrequently: true
-                })!;
-            }
-
-            // Generate point template (use reasonable defaults)
-            pointTemplate = generatePointTemplate(25, 15);
-            palette = generatePalette();
 
             // Extend heatmap with animation methods
             const animatedHeatmap = heatmap as AnimatedHeatmap;
@@ -453,11 +340,6 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
         teardown(): void {
             pause();
             heatmapRef = null;
-            shadowCanvas = null;
-            shadowCtx = null;
-            ctx = null;
-            pointTemplate = null;
-            palette = null;
             data = null;
         }
     };

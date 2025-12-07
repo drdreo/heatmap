@@ -68,6 +68,14 @@ export interface RenderablePoint {
     alpha: number;
 }
 
+/** Render boundaries for dirty-rect optimization */
+export interface RenderBoundaries {
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+}
+
 /** Event payload for data changes */
 export interface DataChangeEvent {
     /** The new data that was set */
@@ -192,6 +200,41 @@ export interface HeatmapConfig {
     data?: HeatmapData | TemporalHeatmapData;
 }
 
+/**
+ * Renderer interface - the abstraction for rendering heatmaps.
+ * Can be implemented by Canvas2D, WebGL, etc.
+ */
+export interface HeatmapRenderer {
+    /** The canvas element */
+    readonly canvas: HTMLCanvasElement;
+    /** Canvas width */
+    readonly width: number;
+    /** Canvas height */
+    readonly height: number;
+    /** Color palette for the gradient */
+    readonly palette: Uint8ClampedArray;
+    /** Opacity lookup table */
+    readonly opacityLUT: Uint8ClampedArray;
+
+    /** Clear the canvas */
+    clear(): void;
+
+    /** Draw points to the shadow canvas, returns boundaries */
+    drawPoints(points: RenderablePoint[]): RenderBoundaries;
+
+    /** Apply colorization from shadow canvas to main canvas */
+    colorize(bounds?: RenderBoundaries): void;
+
+    /** Convenience: clear + draw + colorize in one call */
+    render(points: RenderablePoint[]): void;
+
+    /** Update the color palette */
+    setPalette(palette: Uint8ClampedArray): void;
+
+    /** Clean up resources */
+    dispose(): void;
+}
+
 /** Core heatmap instance returned by createHeatmap */
 export interface Heatmap {
     /** The original configuration */
@@ -208,6 +251,9 @@ export interface Heatmap {
 
     /** Canvas height */
     readonly height: number;
+
+    /** The renderer instance (shared across features) */
+    renderer: HeatmapRenderer;
 
     /** Set the data to render */
     setData(data: HeatmapData): void;
@@ -260,7 +306,8 @@ export interface Heatmap {
 export const FeatureKind = {
     Tooltip: Symbol("tooltip"),
     Legend: Symbol("legend"),
-    Animation: Symbol("animation")
+    Animation: Symbol("animation"),
+    Renderer: Symbol("renderer")
 } as const;
 
 export interface HeatmapFeature<K extends symbol = symbol> {
@@ -277,6 +324,7 @@ export interface HeatmapFeature<K extends symbol = symbol> {
 export type TooltipFeature = HeatmapFeature<typeof FeatureKind.Tooltip>;
 export type LegendFeature = HeatmapFeature<typeof FeatureKind.Legend>;
 export type AnimationFeature = HeatmapFeature<typeof FeatureKind.Animation>;
+export type RendererFeature = HeatmapFeature<typeof FeatureKind.Renderer>;
 
 /**
  * Helper type to check if a feature array contains a specific feature kind

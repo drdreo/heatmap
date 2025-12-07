@@ -11,15 +11,6 @@
  *
  */
 
-import { createCore } from "./core/renderer";
-import type {
-    AnimationFeature,
-    Heatmap,
-    HeatmapConfig,
-    HeatmapFeature
-} from "./core/types";
-import type { AnimatedHeatmap } from "./features/animation";
-
 // Re-export core types
 export type {
     Heatmap,
@@ -31,8 +22,11 @@ export type {
     GradientStop,
     RGBAColor,
     RenderablePoint,
+    RenderBoundaries,
+    HeatmapRenderer,
     AnimationFeature,
     TooltipFeature,
+    RendererFeature,
     TemporalHeatmapPoint,
     TemporalHeatmapData,
     HeatmapEventMap,
@@ -68,6 +62,23 @@ export {
 // Re-export validation utilities
 export { validateConfig, type ResolvedConfig } from "./core/validation";
 
+export { createHeatmap } from "./core/core";
+
+// Re-export renderer utilities
+export {
+    withCanvas2DRenderer,
+    generatePointTemplate,
+    generateOpacityLUT,
+    type Canvas2DRendererConfig,
+    type PointTemplate
+} from "./core/render-pipeline";
+
+export {
+    withWebGLRenderer,
+    isWebGLAvailable,
+    type WebGLRendererConfig
+} from "./core/webgl-renderer";
+
 // Re-export features
 export { withTooltip, type TooltipConfig } from "./features/tooltip";
 export {
@@ -82,75 +93,3 @@ export {
     type AnimatedHeatmap,
     type AnimationState
 } from "./features/animation";
-
-/**
- * Create a new heatmap instance with optional features
- *
- * @param config - Heatmap configuration
- * @param features - Optional features to apply (withTooltip, withAnimation, etc.)
- * @returns Heatmap instance (extended to AnimatedHeatmap when withAnimation is used)
- *
- * @example
- * ```ts
- * // Basic static heatmap
- * const heatmap = createHeatmap({
- *     container,
- *     data: { min: 0, max: 100, data: points }
- * });
- *
- * // Static heatmap with tooltip
- * const heatmap = createHeatmap(
- *     { container, data: staticData },
- *     withTooltip({ formatter: (v) => `${v} clicks` })
- * );
- *
- * // Animated heatmap with temporal data
- * const heatmap = createHeatmap(
- *     { container, data: temporalData },
- *     withAnimation({ loop: true })
- * );
- * heatmap.play();
- * ```
- */
-// Overload: animation feature first returns AnimatedHeatmap
-export function createHeatmap(
-    config: HeatmapConfig,
-    animation: AnimationFeature,
-    ...features: HeatmapFeature[]
-): AnimatedHeatmap;
-// Overload: animation feature second returns AnimatedHeatmap
-export function createHeatmap(
-    config: HeatmapConfig,
-    first: HeatmapFeature,
-    animation: AnimationFeature,
-    ...features: HeatmapFeature[]
-): AnimatedHeatmap;
-// Overload: no animation feature returns Heatmap
-export function createHeatmap(
-    config: HeatmapConfig,
-    ...features: HeatmapFeature[]
-): Heatmap;
-// Implementation
-export function createHeatmap(
-    config: HeatmapConfig,
-    ...features: HeatmapFeature[]
-): Heatmap {
-    // Create core renderer
-    const heatmap = createCore(config);
-
-    // Apply features
-    for (const feature of features) {
-        feature.setup(heatmap);
-    }
-
-    // Wrap destroy to teardown features
-    const originalDestroy = heatmap.destroy;
-    heatmap.destroy = () => {
-        for (const feature of features) {
-            feature.teardown?.();
-        }
-        originalDestroy();
-    };
-
-    return heatmap;
-}
