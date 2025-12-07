@@ -88,7 +88,10 @@ function generateRandomPoints(
     return points;
 }
 
-function measureRenderTime(heatmap: Heatmap, points: HeatmapPoint[]): Promise<number> {
+function measureRenderTime(
+    heatmap: Heatmap,
+    points: HeatmapPoint[]
+): Promise<number> {
     return new Promise((resolve) => {
         const start = performance.now();
         heatmap.setData({ min: 0, max: 100, data: points });
@@ -121,7 +124,11 @@ function measureFps(
         function frame() {
             // Use pre-generated points, cycling through variants
             const variantIdx = frameCount % frameVariants.length;
-            heatmap.setData({ min: 0, max: 100, data: frameVariants[variantIdx] });
+            heatmap.setData({
+                min: 0,
+                max: 100,
+                data: frameVariants[variantIdx]
+            });
             frameCount++;
 
             if (performance.now() - startTime < duration) {
