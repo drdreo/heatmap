@@ -1,13 +1,13 @@
 import type { AnimatedHeatmap } from "../features";
 import { withCanvas2DRenderer } from "./render-pipeline";
-import { createCore } from "./renderer.ts";
-import { FeatureKind } from "./types.ts";
+import { createCore } from "./renderer";
 import type {
     AnimationFeature,
     Heatmap,
     HeatmapConfig,
     HeatmapFeature
-} from "./types.ts";
+} from "./types";
+import { FeatureKind } from "./types";
 
 /**
  * Create a new heatmap instance with optional features
