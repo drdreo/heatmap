@@ -112,6 +112,8 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
 
     // Animation state
     let data: TemporalHeatmapData | null = null;
+    let dataMin = 0;
+    let dataMax = 0;
     let state: AnimationState = "idle";
     let currentTime = 0;
     let lastFrameTime = 0;
@@ -121,12 +123,36 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     // Reference to heatmap
     let heatmapRef: Heatmap | null = null;
 
+    function computeDataBounds(points: TemporalHeatmapPoint[]): {
+        min: number;
+        max: number;
+    } {
+        if (points.length === 0) return { min: 0, max: 0 };
+        let min = Infinity;
+        let max = -Infinity;
+        for (const p of points) {
+            if (p.value < min) min = p.value;
+            if (p.value > max) max = p.value;
+        }
+        return { min, max };
+    }
+
+    function syncDataBounds(): void {
+        if (!data || !heatmapRef) return;
+
+        const detected = computeDataBounds(data.data);
+
+        dataMin = heatmapRef.config.valueMin ?? detected.min;
+        dataMax = heatmapRef.config.valueMax ?? detected.max;
+    }
+
     function setTemporalData(newData: TemporalHeatmapData): void {
         // Sort data by timestamp
         const sortedData = [...newData.data].sort(
             (a, b) => a.timestamp - b.timestamp
         );
         data = { ...newData, data: sortedData };
+        syncDataBounds();
         currentTime = newData.startTime;
         lastSearchIndex = 0;
         renderFrame(currentTime);
@@ -248,8 +274,8 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     function getActivePoints(timestamp: number): RenderablePoint[] {
         if (!data) return [];
 
-        const { min, max, data: points } = data;
-        const range = max - min || 1;
+        const points = data.data;
+        const range = dataMax - dataMin || 1;
         const windowStart = timestamp - timeWindow;
         const result: RenderablePoint[] = [];
 
@@ -268,7 +294,7 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
 
             const normalizedValue = Math.min(
                 1,
-                Math.max(0, (point.value - min) / range)
+                Math.max(0, (point.value - dataMin) / range)
             );
             const decayMultiplier = 1 - easeOutQuad(age);
 

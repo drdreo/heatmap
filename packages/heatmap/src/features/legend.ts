@@ -11,6 +11,7 @@ import {
     FeatureKind,
     type DataChangeEvent,
     type GradientChangeEvent,
+    type ScaleChangeEvent,
     type GradientStop,
     type Heatmap,
     type LegendFeature
@@ -115,6 +116,12 @@ const DEFAULT_LEGEND_CONFIG: Required<
  * const heatmap = createHeatmap(
  *     { container, data },
  *     withLegend({ formatter: (v) => `${v.toFixed(1)}°C`, labelCount: 3 })
+ * );
+ *
+ * // Fixed min/max scale (use HeatmapConfig.valueMin/valueMax)
+ * const heatmap = createHeatmap(
+ *     { container, valueMin: 0, valueMax: 100, data },
+ *     withLegend()
  * );
  *
  * // Custom theme
@@ -397,8 +404,8 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
      * Handle data change event - update min/max values and labels
      */
     function handleDataChange(event: DataChangeEvent): void {
-        state.minValue = event.data.min;
-        state.maxValue = event.data.max;
+        state.minValue = event.dataMin;
+        state.maxValue = event.dataMax;
         updateLabelsDisplay();
     }
 
@@ -412,14 +419,29 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     }
 
     /**
+     * Handle scale change event - update min/max values and labels
+     */
+    function handleScaleChange(event: ScaleChangeEvent): void {
+        state.minValue = event.dataMin;
+        state.maxValue = event.dataMax;
+        updateLabelsDisplay();
+    }
+
+    // Bound handlers for cleanup
+    let boundScaleChangeHandler: ((event: ScaleChangeEvent) => void) | null =
+        null;
+
+    /**
      * Subscribe to heatmap events for reactivity
      */
     function subscribeToEvents(heatmap: Heatmap): void {
         boundDataChangeHandler = handleDataChange;
         boundGradientChangeHandler = handleGradientChange;
+        boundScaleChangeHandler = handleScaleChange;
 
         heatmap.on("datachange", boundDataChangeHandler);
         heatmap.on("gradientchange", boundGradientChangeHandler);
+        heatmap.on("scalechange", boundScaleChangeHandler);
     }
 
     /**
@@ -432,6 +454,9 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         if (boundGradientChangeHandler) {
             heatmap.off("gradientchange", boundGradientChangeHandler);
         }
+        if (boundScaleChangeHandler) {
+            heatmap.off("scalechange", boundScaleChangeHandler);
+        }
     }
 
     /**
@@ -440,11 +465,12 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     function initializeState(heatmap: Heatmap): void {
         state.gradientStops = heatmap.config.gradient ?? DEFAULT_GRADIENT;
 
-        // Get initial data range from config if available
-        const configData = heatmap.config.data;
-        if (configData && !("startTime" in configData)) {
-            state.minValue = configData.min;
-            state.maxValue = configData.max;
+        // Initialize min/max from heatmap config if provided
+        if (heatmap.config.valueMin !== undefined) {
+            state.minValue = heatmap.config.valueMin;
+        }
+        if (heatmap.config.valueMax !== undefined) {
+            state.maxValue = heatmap.config.valueMax;
         }
     }
 

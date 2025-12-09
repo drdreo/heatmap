@@ -85,11 +85,7 @@ describe("withTooltip feature", () => {
     describe("mouse interactions", () => {
         it("should show tooltip on mousemove", () => {
             heatmap = createHeatmap({ container }, withTooltip());
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 75 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 75 }]);
 
             const tooltip = findTooltip() as HTMLElement;
             expect(tooltip.style.display).toBe("none");
@@ -106,11 +102,7 @@ describe("withTooltip feature", () => {
 
         it("should hide tooltip on mouseleave", () => {
             heatmap = createHeatmap({ container }, withTooltip());
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 75 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 75 }]);
 
             // Show tooltip first
             const moveEvent = new MouseEvent("mousemove", {
@@ -132,11 +124,7 @@ describe("withTooltip feature", () => {
 
         it("should update tooltip position on mousemove", () => {
             heatmap = createHeatmap({ container }, withTooltip());
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 75 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 75 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -164,11 +152,7 @@ describe("withTooltip feature", () => {
                 })
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 6, y: 6, value: 42 }]
-            });
+            heatmap.setData([{ x: 6, y: 6, value: 42 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -196,11 +180,7 @@ describe("withTooltip feature", () => {
                 withTooltip({ formatter: formatterSpy })
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 75 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 75 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -224,11 +204,7 @@ describe("withTooltip feature", () => {
         it("should use default formatter when none provided", () => {
             heatmap = createHeatmap({ container }, withTooltip());
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 6, y: 6, value: 42 }]
-            });
+            heatmap.setData([{ x: 6, y: 6, value: 42 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -254,11 +230,7 @@ describe("withTooltip feature", () => {
                 withTooltip({ enforceBounds: true })
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 290, y: 50, value: 75 }]
-            });
+            heatmap.setData([{ x: 290, y: 50, value: 75 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -285,11 +257,7 @@ describe("withTooltip feature", () => {
                 withTooltip({ enforceBounds: true })
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 190, value: 75 }]
-            });
+            heatmap.setData([{ x: 50, y: 190, value: 75 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -314,11 +282,7 @@ describe("withTooltip feature", () => {
                 withTooltip({ enforceBounds: true })
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 295, y: 195, value: 75 }]
-            });
+            heatmap.setData([{ x: 295, y: 195, value: 75 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -343,11 +307,7 @@ describe("withTooltip feature", () => {
                 withTooltip({ enforceBounds: false })
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 290, y: 50, value: 75 }]
-            });
+            heatmap.setData([{ x: 290, y: 50, value: 75 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -373,11 +333,7 @@ describe("withTooltip feature", () => {
                 withTooltip({ offset: { x: 30, y: 30 } })
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 75 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 75 }]);
 
             const rect = { left: 0, top: 0, width: 300, height: 200 };
             vi.spyOn(container, "getBoundingClientRect").mockReturnValue(
@@ -447,11 +403,7 @@ describe("withTooltip feature", () => {
                 withTooltip()
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 100, y: 100, value: 50 }]
-            });
+            heatmap.setData([{ x: 100, y: 100, value: 50 }]);
 
             // Container is 300x200 but canvas is 600x400 (2x scale)
             const rect = { left: 0, top: 0, width: 300, height: 200 };

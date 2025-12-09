@@ -94,7 +94,7 @@ function measureRenderTime(
 ): Promise<number> {
     return new Promise((resolve) => {
         const start = performance.now();
-        heatmap.setData({ min: 0, max: 100, data: points });
+        heatmap.setData(points);
         // Wait for actual paint to complete (double rAF)
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -124,11 +124,7 @@ function measureFps(
         function frame() {
             // Use pre-generated points, cycling through variants
             const variantIdx = frameCount % frameVariants.length;
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: frameVariants[variantIdx]!
-            });
+            heatmap.setData(frameVariants[variantIdx]!);
             frameCount++;
 
             if (performance.now() - startTime < duration) {
@@ -254,8 +250,8 @@ onMounted(() => {
             withWebGLRenderer()
         );
 
-        canvas2DHeatmap.setData({ min: 0, max: 100, data: demoPoints });
-        webglHeatmap.setData({ min: 0, max: 100, data: demoPoints });
+        canvas2DHeatmap.setData(demoPoints);
+        webglHeatmap.setData(demoPoints);
     }
 });
 

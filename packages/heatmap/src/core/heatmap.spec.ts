@@ -4,7 +4,6 @@ import {
     withTooltip,
     withAnimation,
     type Heatmap,
-    type HeatmapData,
     type HeatmapPoint,
     type AnimatedHeatmap
 } from "../index";
@@ -111,13 +110,9 @@ describe("createHeatmap (composable API)", () => {
     describe("core API", () => {
         it("should set and render data", () => {
             heatmap = createHeatmap({ container, radius: 10 });
-            const data: HeatmapData = {
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            };
+            const points: HeatmapPoint[] = [{ x: 50, y: 50, value: 100 }];
 
-            heatmap.setData(data);
+            heatmap.setData(points);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -160,11 +155,7 @@ describe("createHeatmap (composable API)", () => {
 
         it("should clear all data", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             heatmap.clear();
 
@@ -179,25 +170,17 @@ describe("createHeatmap (composable API)", () => {
 
         it("should get value at position", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 2, y: 2, value: 30 },
-                    { x: 4, y: 4, value: 20 }
-                ]
-            });
+            heatmap.setData([
+                { x: 2, y: 2, value: 30 },
+                { x: 4, y: 4, value: 20 }
+            ]);
 
             expect(heatmap.getValueAt(3, 3)).toBe(50);
         });
 
         it("should export as data URL", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             const dataUrl = heatmap.getDataURL();
 
@@ -206,11 +189,7 @@ describe("createHeatmap (composable API)", () => {
 
         it("should update gradient", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             expect(() =>
                 heatmap.setGradient([

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
 import {
-    createHeatmap,
     type AnimatedHeatmap,
+    createHeatmap,
     type TemporalHeatmapPoint,
     withAnimation
 } from "@drdreo/heatmap";
+import { onMounted, onUnmounted, ref } from "vue";
 import CodeBlock from "../ui/CodeBlock.vue";
 import ConfigTable, { type ConfigOption } from "../ui/ConfigTable.vue";
 
@@ -30,8 +30,6 @@ const heatmap = createHeatmap(
 
 // Set temporal data
 heatmap.setTemporalData({
-    min: 0,
-    max: 100,
     startTime: 0,
     endTime: 30000,
     data: [
@@ -353,7 +351,6 @@ onUnmounted(() => {
     background: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
-    overflow: hidden;
     display: flex;
     justify-content: center;
 }
