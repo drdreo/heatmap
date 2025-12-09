@@ -148,12 +148,9 @@ export function createCore(config: HeatmapConfig): Heatmap {
         if (points.length === 0) return;
 
         const newMin = Math.min(...points.map((p) => p.value));
-        const newMax = Math.max(...points.map((p) => p.value));
-
-        const needsFullRender =
-            state.points.length === 0 ||
-            newMin < state.dataMin ||
-            newMax > state.gridMax;
+        const oldDataMin = state.dataMin;
+        const oldGridMax = state.gridMax;
+        const hadNoPoints = state.points.length === 0;
 
         state.points.push(...points);
 
@@ -161,7 +158,13 @@ export function createCore(config: HeatmapConfig): Heatmap {
             state.dataMin = newMin;
         }
 
-        state.gridMax = updateValueGrid(state.points);
+        const newGridMax = updateValueGrid(state.points);
+        state.gridMax = newGridMax;
+
+        const needsFullRender =
+            hadNoPoints ||
+            newMin < oldDataMin ||
+            newGridMax > oldGridMax;
 
         if (needsFullRender) {
             render();
