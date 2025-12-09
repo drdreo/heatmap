@@ -88,6 +88,7 @@ interface LegendState {
     maxValue: number;
     gradientStops: GradientStop[];
     gradientCanvas: HTMLCanvasElement | null;
+    currentScale: number;
 }
 
 /** Default legend configuration */
@@ -136,6 +137,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     let boundGradientChangeHandler:
         | ((event: GradientChangeEvent) => void)
         | null = null;
+    let resizeObserver: ResizeObserver | null = null;
 
     const resolvedConfig = {
         position: config.position ?? DEFAULT_LEGEND_CONFIG.position,
@@ -161,7 +163,8 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         minValue: 0,
         maxValue: 100,
         gradientStops: DEFAULT_GRADIENT,
-        gradientCanvas: null
+        gradientCanvas: null,
+        currentScale: 1
     };
 
     /**
@@ -225,6 +228,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
 
     /**
      * Apply position-specific styles to the legend element
+     * Note: Transform is handled separately by applyScaleTransform to combine with scale
      */
     function applyPositionStyles(
         element: HTMLDivElement,
@@ -235,7 +239,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         element.style.bottom = "";
         element.style.left = "";
         element.style.right = "";
-        element.style.transform = "";
+        element.style.transformOrigin = "top left";
 
         const margin = "10px";
 
@@ -243,7 +247,6 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
             case "top":
                 element.style.top = margin;
                 element.style.left = "50%";
-                element.style.transform = "translateX(-50%)";
                 break;
             case "top-left":
                 element.style.top = margin;
@@ -252,29 +255,31 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
             case "top-right":
                 element.style.top = margin;
                 element.style.right = margin;
+                element.style.transformOrigin = "top right";
                 break;
             case "bottom":
                 element.style.bottom = margin;
                 element.style.left = "50%";
-                element.style.transform = "translateX(-50%)";
+                element.style.transformOrigin = "bottom left";
                 break;
             case "bottom-left":
                 element.style.bottom = margin;
                 element.style.left = margin;
+                element.style.transformOrigin = "bottom left";
                 break;
             case "bottom-right":
                 element.style.bottom = margin;
                 element.style.right = margin;
+                element.style.transformOrigin = "bottom right";
                 break;
             case "left":
                 element.style.top = "50%";
                 element.style.left = margin;
-                element.style.transform = "translateY(-50%)";
                 break;
             case "right":
                 element.style.top = "50%";
                 element.style.right = margin;
-                element.style.transform = "translateY(-50%)";
+                element.style.transformOrigin = "top right";
                 break;
         }
     }
@@ -394,6 +399,78 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     }
 
     /**
+     * Calculate and apply scale correction for transformed containers.
+     * This ensures the legend maintains its visual size even when the
+     * parent container is CSS-transformed (e.g., scaled).
+     */
+    function updateScale(): void {
+        if (!legendElement || !heatmapRef) {
+            return;
+        }
+
+        const containerRect = heatmapRef.container.getBoundingClientRect();
+
+        // Skip if container has no dimensions (not rendered yet)
+        if (containerRect.width === 0 || containerRect.height === 0) {
+            // Still apply position transform even without scale
+            applyScaleTransform();
+            return;
+        }
+
+        // Calculate the scale factor (container may be CSS transformed)
+        const scaleX = heatmapRef.width / containerRect.width;
+        const scaleY = heatmapRef.height / containerRect.height;
+        const scale = Math.max(scaleX, scaleY);
+
+        // Skip invalid scale values
+        if (!Number.isFinite(scale) || scale <= 0) {
+            applyScaleTransform();
+            return;
+        }
+
+        // Only update if scale has changed
+        if (scale !== state.currentScale) {
+            state.currentScale = scale;
+            applyScaleTransform();
+        }
+    }
+
+    /**
+     * Apply the scale transform to the legend element while preserving position transforms
+     */
+    function applyScaleTransform(): void {
+        if (!legendElement) {
+            return;
+        }
+
+        // Get the position-based transform (if any) and combine with scale
+        const positionTransform = getPositionTransform(resolvedConfig.position);
+
+        if (state.currentScale !== 1) {
+            legendElement.style.transform =
+                `scale(${state.currentScale}) ${positionTransform}`.trim();
+        } else {
+            legendElement.style.transform = positionTransform;
+        }
+    }
+
+    /**
+     * Get the transform string for the current position (for centering)
+     */
+    function getPositionTransform(position: LegendPosition): string {
+        switch (position) {
+            case "top":
+            case "bottom":
+                return "translateX(-50%)";
+            case "left":
+            case "right":
+                return "translateY(-50%)";
+            default:
+                return "";
+        }
+    }
+
+    /**
      * Handle data change event - update min/max values and labels
      */
     function handleDataChange(event: DataChangeEvent): void {
@@ -461,13 +538,28 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
 
             subscribeToEvents(heatmap);
 
+            // Set up ResizeObserver to handle dynamic scaling
+            resizeObserver = new ResizeObserver(() => {
+                updateScale();
+            });
+            resizeObserver.observe(heatmap.container);
+
             // Initial render
             updateLegend();
+
+            // Initial scale calculation
+            updateScale();
         },
 
         teardown(): void {
             if (heatmapRef) {
                 unsubscribeFromEvents(heatmapRef);
+            }
+
+            // Clean up ResizeObserver
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+                resizeObserver = null;
             }
 
             legendElement?.remove();
@@ -480,6 +572,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
             heatmapRef = null;
 
             state.gradientCanvas = null;
+            state.currentScale = 1;
         }
     };
 }
