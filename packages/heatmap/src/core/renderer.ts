@@ -9,7 +9,6 @@ import type {
     GradientStop,
     Heatmap,
     HeatmapConfig,
-    HeatmapData,
     HeatmapEventListener,
     HeatmapEventMap,
     HeatmapPoint,
@@ -26,7 +25,11 @@ type GridKey = `${number},${number}`;
  * Internal state for the heatmap
  */
 interface HeatmapState {
-    data: HeatmapData | null;
+    points: HeatmapPoint[];
+    /** Auto-detected minimum value from data points */
+    dataMin: number;
+    /** Maximum aggregated value from the grid (may exceed max individual point) */
+    gridMax: number;
     valueGrid: Map<GridKey, number>;
     renderBoundaries: RenderBoundaries;
 }
@@ -87,7 +90,9 @@ export function createCore(config: HeatmapConfig): Heatmap {
 
     // Internal state
     const state: HeatmapState = {
-        data: null,
+        points: [],
+        dataMin: 0,
+        gridMax: 0,
         valueGrid: new Map(),
         renderBoundaries: { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 }
     };
@@ -97,11 +102,42 @@ export function createCore(config: HeatmapConfig): Heatmap {
 
     // --- Core Methods ---
 
-    function setData(data: HeatmapData): void {
-        state.data = data;
-        updateValueGrid(data.data);
-        render();
-        events.emit("datachange", { data });
+    /**
+     * Get effective min value for rendering.
+     * Defaults to 0 for intuitive behavior (value 50 out of max 100 = 50% intensity).
+     * Can be overridden via config.valueMin for special cases (e.g., negative values).
+     */
+    function getEffectiveMin(): number {
+        return config.valueMin ?? 0;
+    }
+
+    /**
+     * Get effective max value for rendering (config override or gridMax)
+     */
+    function getEffectiveMax(): number {
+        return config.valueMax ?? state.gridMax;
+    }
+
+    /**
+     * Compute min value from data points (for reporting in events)
+     */
+    function computeDataMin(points: HeatmapPoint[]): number {
+        if (points.length === 0) return 0;
+        return Math.min(...points.map((p) => p.value));
+    }
+
+    function setData(points: HeatmapPoint[]): void {
+        state.points = points;
+        state.dataMin = computeDataMin(points);
+        state.gridMax = renderAndGetGridMax();
+
+        events.emit("datachange", {
+            points,
+            dataMin: state.dataMin,
+            gridMax: state.gridMax,
+            effectiveMin: getEffectiveMin(),
+            effectiveMax: getEffectiveMax()
+        });
     }
 
     function addPoint(point: HeatmapPoint): void {
@@ -111,29 +147,27 @@ export function createCore(config: HeatmapConfig): Heatmap {
     function addPoints(points: HeatmapPoint[]): void {
         if (points.length === 0) return;
 
+        const newMin = Math.min(...points.map((p) => p.value));
         const newMax = Math.max(...points.map((p) => p.value));
 
-        if (!state.data) {
-            state.data = { min: 0, max: newMax, data: [...points] };
-            updateValueGrid(state.data.data);
-            render();
-            return;
+        const needsFullRender =
+            state.points.length === 0 ||
+            newMin < state.dataMin ||
+            newMax > state.gridMax;
+
+        state.points.push(...points);
+
+        if (newMin < state.dataMin) {
+            state.dataMin = newMin;
         }
 
-        state.data.data.push(...points);
-        const needsFullRender = newMax > state.data.max;
-        if (needsFullRender) {
-            state.data.max = newMax;
-        }
-
-        updateValueGrid(state.data.data);
+        state.gridMax = updateValueGrid(state.points);
 
         if (needsFullRender) {
             render();
         } else {
-            const { min, max } = state.data;
             const renderablePoints = points.map((p) =>
-                toRenderablePoint(p, min, max)
+                toRenderablePoint(p, getEffectiveMin(), getEffectiveMax())
             );
             renderPoints(renderablePoints);
         }
@@ -147,7 +181,9 @@ export function createCore(config: HeatmapConfig): Heatmap {
     }
 
     function clear(): void {
-        state.data = null;
+        state.points = [];
+        state.dataMin = 0;
+        state.gridMax = 0;
         state.valueGrid.clear();
         renderer?.clear();
         events.emit("clear");
@@ -174,7 +210,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         const resolved = validateConfig(config);
 
         return {
-            pointCount: state.data?.data.length ?? 0,
+            pointCount: state.points.length,
             radius: resolved.radius,
             renderBoundaries: {
                 minX,
@@ -188,9 +224,10 @@ export function createCore(config: HeatmapConfig): Heatmap {
             renderCoveragePercent:
                 canvasArea > 0 ? (renderArea / canvasArea) * 100 : 0,
             valueGridSize: state.valueGrid.size,
-            dataRange: state.data
-                ? { min: state.data.min, max: state.data.max }
-                : null
+            dataRange:
+                state.points.length > 0
+                    ? { min: state.dataMin, max: state.gridMax }
+                    : null
         };
     }
 
@@ -200,7 +237,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         renderer?.dispose();
         renderer?.canvas.remove();
         state.valueGrid.clear();
-        state.data = null;
+        state.points = [];
     }
 
     // --- Internal Helpers ---
@@ -223,32 +260,60 @@ export function createCore(config: HeatmapConfig): Heatmap {
         };
     }
 
-    function updateValueGrid(points: HeatmapPoint[]): void {
+    /**
+     * Updates the value grid and returns the maximum aggregated value.
+     * Multiple points in the same grid cell have their values summed,
+     * so the gridMax may exceed the max individual point value.
+     */
+    function updateValueGrid(points: HeatmapPoint[]): number {
         state.valueGrid.clear();
+        let gridMax = 0;
         for (const point of points) {
             const gridX = Math.floor(point.x / gridSize);
             const gridY = Math.floor(point.y / gridSize);
             const key = `${gridX},${gridY}` as const;
             const existing = state.valueGrid.get(key) ?? 0;
-            state.valueGrid.set(key, existing + point.value);
+            const newValue = existing + point.value;
+            state.valueGrid.set(key, newValue);
+            if (newValue > gridMax) {
+                gridMax = newValue;
+            }
         }
+        return gridMax;
+    }
+
+    /**
+     * Render the heatmap and return the gridMax value.
+     * Returns 0 if there's no data or renderer.
+     */
+    function renderAndGetGridMax(): number {
+        if (!renderer) return 0;
+
+        if (state.points.length === 0) {
+            renderer.clear();
+            return 0;
+        }
+
+        const gridMax = updateValueGrid(state.points);
+        const points = computeRenderablePoints(gridMax);
+        renderer.render(points);
+        return gridMax;
     }
 
     function render(): void {
-        if (!renderer) return;
-
-        if (!state.data || state.data.data.length === 0) {
-            renderer.clear();
-            return;
-        }
-
-        const points = computeRenderablePoints(state.data);
-        renderer.render(points);
+        renderAndGetGridMax();
     }
 
-    function computeRenderablePoints(data: HeatmapData): RenderablePoint[] {
-        const { min, max, data: points } = data;
-        return points.map((point) => toRenderablePoint(point, min, max));
+    /**
+     * Compute renderable points with normalized alpha values.
+     * Uses effectiveMin/effectiveMax from config if set, otherwise uses auto-detected values.
+     */
+    function computeRenderablePoints(gridMax: number): RenderablePoint[] {
+        const effectiveMin = getEffectiveMin();
+        const effectiveMax = config.valueMax ?? gridMax;
+        return state.points.map((point) =>
+            toRenderablePoint(point, effectiveMin, effectiveMax)
+        );
     }
 
     function renderPoints(points: RenderablePoint[]): void {

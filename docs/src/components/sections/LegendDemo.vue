@@ -10,7 +10,8 @@ import {
     GRADIENT_COOL,
     GRADIENT_VIRIDIS,
     GRADIENT_OCEAN,
-    GRADIENT_DEFAULT
+    GRADIENT_DEFAULT,
+    withTooltip
 } from "@drdreo/heatmap";
 import CodeBlock from "../ui/CodeBlock.vue";
 import ConfigTable, { type ConfigOption } from "../ui/ConfigTable.vue";
@@ -34,10 +35,29 @@ const heatmap = createHeatmap(
 );
 
 // Legend updates automatically when data changes
-heatmap.setData({ min: 0, max: 100, data: points });
+// Min/max are auto-detected from points
+heatmap.setData(points);
 
 // Legend updates automatically when gradient changes
-heatmap.setGradient(GRADIENT_COOL);`;
+heatmap.setGradient(GRADIENT_COOL);
+
+// Fixed scale for RENDERING (affects color intensity)
+// Value 100 at valueMax 500 renders at 20% intensity
+const fixedRenderScale = createHeatmap({
+    container,
+    valueMin: 0,    // Fixed min for rendering (default)
+    valueMax: 500   // Fixed max for rendering (value 100 = 20% intensity)
+}, withLegend());   // Legend shows actual data range by default
+
+// Fixed scale for LEGEND ONLY (display purposes)
+// Rendering uses actual data range, legend shows custom scale
+const fixedLegendScale = createHeatmap(
+    { container, gradient: GRADIENT_THERMAL },
+    withLegend({
+        min: 0,    // Override legend min (display only)
+        max: 100   // Override legend max (display only)
+    })
+);`;
 
 const legendOptions: ConfigOption[] = [
     {
@@ -64,6 +84,20 @@ const legendOptions: ConfigOption[] = [
         type: "number",
         default: "15 / 100",
         description: "Height in pixels (default varies by orientation)"
+    },
+    {
+        name: "min",
+        type: "number",
+        default: "auto",
+        description:
+            "Fixed minimum value for the legend scale. When not set, uses effectiveMin (0 by default, or config.valueMin if set)"
+    },
+    {
+        name: "max",
+        type: "number",
+        default: "auto",
+        description:
+            "Fixed maximum value for the legend scale. When not set, uses effectiveMax (gridMax by default, or config.valueMax if set)"
     },
     {
         name: "labelCount",
@@ -100,7 +134,8 @@ const featureHighlights = [
     { icon: "1", label: "Auto-updating" },
     { icon: "2", label: "8 Positions" },
     { icon: "3", label: "Custom Formatters" },
-    { icon: "4", label: "CSS Themeable" }
+    { icon: "4", label: "Fixed Scale" },
+    { icon: "5", label: "CSS Themeable" }
 ];
 
 type GradientPreset = {
@@ -141,43 +176,57 @@ const containerRef = ref<HTMLElement | null>(null);
 const selectedGradient = ref<string>("Default");
 const selectedPosition = ref<Position>("bottom-right");
 const selectedOrientation = ref<"horizontal" | "vertical">("horizontal");
+const useFixedScale = ref(false);
+const fixedScaleMode = ref<"render" | "legend">("render");
+const fixedMin = ref(0);
+const fixedMax = ref(200);
 const dataMin = ref(0);
 const dataMax = ref(100);
 
 let legendHeatmap: Heatmap | null = null;
 
-function generateClusteredPoints(
-    count: number,
-    width: number,
-    height: number
-): HeatmapPoint[] {
-    const points: HeatmapPoint[] = [];
+/**
+ * Generate deterministic clustered points for consistent comparison.
+ * Points are fixed so changing settings shows the same data with different rendering.
+ */
+function generateClusteredPoints(): HeatmapPoint[] {
+    return [
+        // High value cluster (top-left area)
+        { x: 160, y: 130, value: 95 },
+        { x: 180, y: 140, value: 88 },
+        { x: 200, y: 120, value: 82 },
+        { x: 170, y: 160, value: 78 },
+        { x: 190, y: 150, value: 90 },
+        { x: 210, y: 135, value: 85 },
+        { x: 175, y: 145, value: 92 },
+        { x: 195, y: 125, value: 75 },
+        { x: 185, y: 155, value: 80 },
+        { x: 165, y: 170, value: 72 },
 
-    for (let i = 0; i < count; i++) {
-        const cluster = Math.floor(Math.random() * 3);
-        let x: number, y: number, value: number;
+        // Medium value cluster (right area)
+        { x: 480, y: 200, value: 55 },
+        { x: 500, y: 220, value: 48 },
+        { x: 520, y: 190, value: 62 },
+        { x: 490, y: 240, value: 45 },
+        { x: 510, y: 210, value: 58 },
+        { x: 470, y: 230, value: 52 },
+        { x: 530, y: 205, value: 50 },
+        { x: 495, y: 195, value: 65 },
+        { x: 515, y: 225, value: 42 },
+        { x: 485, y: 215, value: 60 },
 
-        switch (cluster) {
-            case 0: // High value cluster
-                x = 150 + Math.random() * 100;
-                y = 120 + Math.random() * 80;
-                value = 70 + Math.random() * 30;
-                break;
-            case 1: // Medium value cluster
-                x = 450 + Math.random() * 120;
-                y = 180 + Math.random() * 100;
-                value = 40 + Math.random() * 30;
-                break;
-            default: // Low value scattered
-                x = Math.random() * width;
-                y = Math.random() * height;
-                value = Math.random() * 40;
-        }
-
-        points.push({ x, y, value });
-    }
-
-    return points;
+        // Low value scattered points
+        { x: 50, y: 50, value: 15 },
+        { x: 350, y: 80, value: 25 },
+        { x: 100, y: 280, value: 18 },
+        { x: 400, y: 300, value: 30 },
+        { x: 300, y: 150, value: 22 },
+        { x: 550, y: 100, value: 35 },
+        { x: 80, y: 200, value: 12 },
+        { x: 420, y: 50, value: 28 },
+        { x: 250, y: 250, value: 20 },
+        { x: 600, y: 280, value: 10 }
+    ];
 }
 
 function handleGradientChange() {
@@ -200,14 +249,15 @@ function handleOrientationChange() {
     recreateHeatmap();
 }
 
+function handleFixedScaleChange() {
+    // Need to recreate heatmap to change legend min/max config
+    recreateHeatmap();
+}
+
 function handleDataRangeChange() {
     if (!legendHeatmap || !containerRef.value) return;
 
-    const points = generateClusteredPoints(
-        80,
-        containerRef.value.clientWidth,
-        containerRef.value.clientHeight
-    );
+    const points = generateClusteredPoints();
 
     // Scale points to new range
     const scaledPoints = points.map((p) => ({
@@ -215,11 +265,7 @@ function handleDataRangeChange() {
         value: dataMin.value + (p.value / 100) * (dataMax.value - dataMin.value)
     }));
 
-    legendHeatmap.setData({
-        min: dataMin.value,
-        max: dataMax.value,
-        data: scaledPoints
-    });
+    legendHeatmap.setData(scaledPoints);
 }
 
 function recreateHeatmap() {
@@ -233,59 +279,50 @@ function recreateHeatmap() {
         (p) => p.name === selectedGradient.value
     );
 
-    // Create new heatmap with updated legend config
+    // Build heatmap config
+    const heatmapConfig: Parameters<typeof createHeatmap>[0] = {
+        container: containerRef.value,
+        gradient: preset?.value
+    };
+
+    // Build legend config
+    const legendConfig: Parameters<typeof withLegend>[0] = {
+        position: selectedPosition.value,
+        orientation: selectedOrientation.value,
+        labelCount: 5,
+        formatter: (value) => `${Math.round(value)}`,
+        className: "demo-legend"
+    };
+
+    // Apply fixed scale based on mode
+    if (useFixedScale.value) {
+        if (fixedScaleMode.value === "render") {
+            // Fixed scale for RENDERING - affects color intensity AND legend
+            heatmapConfig.valueMin = fixedMin.value;
+            heatmapConfig.valueMax = fixedMax.value;
+        } else {
+            // Fixed scale for LEGEND ONLY - display purposes
+            legendConfig.min = fixedMin.value;
+            legendConfig.max = fixedMax.value;
+        }
+    }
+
+    // Create new heatmap with updated config
     legendHeatmap = createHeatmap(
-        {
-            container: containerRef.value,
-            gradient: preset?.value
-        },
-        withLegend({
-            position: selectedPosition.value,
-            orientation: selectedOrientation.value,
-            labelCount: 5,
-            formatter: (value) => `${Math.round(value)}`,
-            className: "demo-legend"
-        })
+        heatmapConfig,
+        withTooltip(),
+        withLegend(legendConfig)
     );
 
     // Set initial data
-    const points = generateClusteredPoints(
-        80,
-        containerRef.value.clientWidth,
-        containerRef.value.clientHeight
-    );
+    const points = generateClusteredPoints();
 
     const scaledPoints = points.map((p) => ({
         ...p,
         value: dataMin.value + (p.value / 100) * (dataMax.value - dataMin.value)
     }));
 
-    legendHeatmap.setData({
-        min: dataMin.value,
-        max: dataMax.value,
-        data: scaledPoints
-    });
-}
-
-function handleRandomize() {
-    if (!legendHeatmap || !containerRef.value) return;
-
-    const points = generateClusteredPoints(
-        80,
-        containerRef.value.clientWidth,
-        containerRef.value.clientHeight
-    );
-
-    const scaledPoints = points.map((p) => ({
-        ...p,
-        value: dataMin.value + (p.value / 100) * (dataMax.value - dataMin.value)
-    }));
-
-    legendHeatmap.setData({
-        min: dataMin.value,
-        max: dataMax.value,
-        data: scaledPoints
-    });
+    legendHeatmap.setData(scaledPoints);
 }
 
 onMounted(() => {
@@ -295,6 +332,7 @@ onMounted(() => {
         {
             container: containerRef.value
         },
+        withTooltip(),
         withLegend({
             position: selectedPosition.value,
             orientation: selectedOrientation.value,
@@ -305,17 +343,9 @@ onMounted(() => {
     );
 
     // Initialize with clustered data
-    const points = generateClusteredPoints(
-        80,
-        containerRef.value.clientWidth,
-        containerRef.value.clientHeight
-    );
+    const points = generateClusteredPoints();
 
-    legendHeatmap.setData({
-        min: dataMin.value,
-        max: dataMax.value,
-        data: points
-    });
+    legendHeatmap.setData(points);
 });
 
 onUnmounted(() => {
@@ -391,13 +421,10 @@ onUnmounted(() => {
                         <option value="vertical">Vertical</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" @click="handleRandomize">
-                    Randomize Data
-                </button>
             </div>
             <div class="range-controls">
                 <div class="range-control">
-                    <label for="data-min">Min Value: {{ dataMin }}</label>
+                    <label for="data-min">Data Min Value: {{ dataMin }}</label>
                     <input
                         type="range"
                         id="data-min"
@@ -408,7 +435,7 @@ onUnmounted(() => {
                     />
                 </div>
                 <div class="range-control">
-                    <label for="data-max">Max Value: {{ dataMax }}</label>
+                    <label for="data-max">Data Max Value: {{ dataMax }}</label>
                     <input
                         type="range"
                         id="data-max"
@@ -418,6 +445,87 @@ onUnmounted(() => {
                         @change="handleDataRangeChange"
                     />
                 </div>
+            </div>
+            <div class="fixed-scale-controls">
+                <div class="control-group">
+                    <label for="fixed-scale-toggle">
+                        <input
+                            type="checkbox"
+                            id="fixed-scale-toggle"
+                            v-model="useFixedScale"
+                            @change="handleFixedScaleChange"
+                        />
+                        Use Fixed Scale
+                    </label>
+                </div>
+                <div v-if="useFixedScale" class="fixed-scale-mode">
+                    <div class="control-group">
+                        <label for="mode-render">
+                            <input
+                                type="radio"
+                                id="mode-render"
+                                value="render"
+                                v-model="fixedScaleMode"
+                                @change="handleFixedScaleChange"
+                            />
+                            Render Scale (valueMin/valueMax)
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label for="mode-legend">
+                            <input
+                                type="radio"
+                                id="mode-legend"
+                                value="legend"
+                                v-model="fixedScaleMode"
+                                @change="handleFixedScaleChange"
+                            />
+                            Legend Only (min/max)
+                        </label>
+                    </div>
+                </div>
+                <div v-if="useFixedScale" class="range-controls">
+                    <div class="range-control">
+                        <label for="fixed-min">Fixed Min: {{ fixedMin }}</label>
+                        <input
+                            type="range"
+                            id="fixed-min"
+                            min="-100"
+                            max="50"
+                            v-model.number="fixedMin"
+                            @change="handleFixedScaleChange"
+                        />
+                    </div>
+                    <div class="range-control">
+                        <label for="fixed-max">Fixed Max: {{ fixedMax }}</label>
+                        <input
+                            type="range"
+                            id="fixed-max"
+                            min="50"
+                            max="500"
+                            v-model.number="fixedMax"
+                            @change="handleFixedScaleChange"
+                        />
+                    </div>
+                </div>
+                <p v-if="useFixedScale" class="fixed-scale-hint">
+                    <template v-if="fixedScaleMode === 'render'">
+                        <strong>Render scale:</strong> Colors are scaled to
+                        {{ fixedMin }} - {{ fixedMax }}. Data value
+                        {{ dataMax }} renders at
+                        {{
+                            Math.round(
+                                ((dataMax - fixedMin) / (fixedMax - fixedMin)) *
+                                    100
+                            )
+                        }}% intensity.
+                    </template>
+                    <template v-else>
+                        <strong>Legend only:</strong> Legend shows
+                        {{ fixedMin }} - {{ fixedMax }}, but colors use actual
+                        data range ({{ dataMin }} - {{ dataMax }}).
+                    </template>
+                </p>
             </div>
         </div>
 
@@ -574,6 +682,57 @@ onUnmounted(() => {
     border-radius: 50%;
     background: var(--color-primary);
     cursor: pointer;
+}
+
+.fixed-scale-controls {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.fixed-scale-controls .control-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.fixed-scale-controls .control-group input[type="checkbox"],
+.fixed-scale-controls .control-group input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.fixed-scale-mode {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.fixed-scale-mode .control-group {
+    background: transparent;
+    padding: 0.25rem 0;
+}
+
+.fixed-scale-mode .control-group label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.fixed-scale-controls .range-controls {
+    margin-top: 1rem;
+}
+
+.fixed-scale-hint {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    font-style: italic;
 }
 
 .card {

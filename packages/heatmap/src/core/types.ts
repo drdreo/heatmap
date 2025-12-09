@@ -32,10 +32,6 @@ export interface RGBAColor {
 
 /** Data to be rendered on the heatmap */
 export interface HeatmapData {
-    /** Minimum value in the dataset (for normalization) */
-    min: number;
-    /** Maximum value in the dataset (for normalization) */
-    max: number;
     /** Array of data points */
     data: HeatmapPoint[];
 }
@@ -78,8 +74,31 @@ export interface RenderBoundaries {
 
 /** Event payload for data changes */
 export interface DataChangeEvent {
-    /** The new data that was set */
-    data: HeatmapData;
+    /** The data points that were set */
+    points: HeatmapPoint[];
+    /**
+     * The minimum value found in the data points.
+     * Auto-detected from the point with the lowest value.
+     */
+    dataMin: number;
+    /**
+     * The maximum aggregated value in the grid.
+     * This may be higher than the max individual point value when multiple
+     * points are grouped into the same grid cell (their values are summed).
+     */
+    gridMax: number;
+    /**
+     * The effective minimum value used for rendering.
+     * This is config.valueMin if set, otherwise dataMin.
+     * Use this for legend display to match the rendered colors.
+     */
+    effectiveMin: number;
+    /**
+     * The effective maximum value used for rendering.
+     * This is config.valueMax if set, otherwise gridMax.
+     * Use this for legend display to match the rendered colors.
+     */
+    effectiveMax: number;
 }
 
 /** Event payload for gradient changes */
@@ -127,7 +146,7 @@ export interface HeatmapStats {
     renderCoveragePercent: number;
     /** Number of grid cells in value lookup */
     valueGridSize: number;
-    /** Data range */
+    /** Auto-detected data range (min from points, max from grid aggregation) */
     dataRange: { min: number; max: number } | null;
 }
 
@@ -194,10 +213,38 @@ export interface HeatmapConfig {
     intensityExponent?: number;
 
     /**
-     * Initial data to render.
-     * Use HeatmapData for static heatmaps, TemporalHeatmapData for animated heatmaps.
+     * Fixed minimum value for the color scale (default: 0).
+     *
+     * By default, the scale starts at 0 for intuitive behavior where a value
+     * of 50 with max 100 shows at 50% intensity. Set this to a different value
+     * for special cases like:
+     * - Negative value ranges (e.g., valueMin: -100)
+     * - Data that doesn't include zero (e.g., temperatures starting at 20°C)
+     *
+     * The legend will automatically use this value.
      */
-    data?: HeatmapData | TemporalHeatmapData;
+    valueMin?: number;
+
+    /**
+     * Fixed maximum value for the color scale (default: auto-detected from data).
+     *
+     * When set, this value is used for color normalization instead of the
+     * auto-detected maximum. Values exceeding this will be clamped to full
+     * intensity. Useful for:
+     * - Maintaining consistent scales across multiple heatmaps
+     * - Preventing outliers from compressing the color range
+     * - Setting a known maximum (e.g., 100 for percentages)
+     *
+     * The legend will automatically use this value when set.
+     */
+    valueMax?: number;
+
+    /**
+     * Initial data points to render.
+     * Min/max values are auto-detected from the data.
+     * Use config.valueMin/valueMax to override the scale.
+     */
+    data?: HeatmapPoint[];
 }
 
 /**
@@ -255,8 +302,8 @@ export interface Heatmap {
     /** The renderer instance (shared across features) */
     renderer: HeatmapRenderer;
 
-    /** Set the data to render */
-    setData(data: HeatmapData): void;
+    /** Set the data points to render. */
+    setData(points: HeatmapPoint[]): void;
 
     /** Add a single point to existing data */
     addPoint(point: HeatmapPoint): void;

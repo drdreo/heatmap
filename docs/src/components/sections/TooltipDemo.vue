@@ -139,7 +139,7 @@ onMounted(() => {
         { x: 670, y: 310, value: 60 }
     ];
 
-    tooltipHeatmap.setData({ min: 0, max: 100, data: initialData });
+    tooltipHeatmap.setData(initialData);
 });
 
 onUnmounted(() => {

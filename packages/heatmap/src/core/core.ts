@@ -22,20 +22,23 @@ import { FeatureKind } from "./types";
  * // Basic static heatmap (Canvas2D renderer auto-created)
  * const heatmap = createHeatmap({
  *     container,
- *     data: { min: 0, max: 100, data: points }
+ *     data: [{ x: 10, y: 20, value: 50 }, ...]
  * });
  *
- * // Explicit renderer
- * const heatmap = createHeatmap(
- *     { container, data },
- *     withCanvas2DRenderer({ useOffscreenCanvas: false })
- * );
+ * // With fixed scale
+ * const heatmap = createHeatmap({
+ *     container,
+ *     data: points,
+ *     valueMin: 0,
+ *     valueMax: 100
+ * });
  *
  * // Animated heatmap with temporal data
  * const heatmap = createHeatmap(
- *     { container, data: temporalData },
+ *     { container },
  *     withAnimation({ loop: true })
  * );
+ * heatmap.setTemporalData(temporalData);
  * heatmap.play();
  * ```
  */
@@ -85,9 +88,21 @@ export function createHeatmap(
         }
     }
 
-    // Render initial data if provided (only static data, not temporal)
-    if (config.data && !("startTime" in config.data)) {
-        heatmap.setData(config.data);
+    // Render initial data if provided (skip if it's temporal data for animation)
+    const configData = config.data;
+    const isTemporalData =
+        configData &&
+        typeof configData === "object" &&
+        "startTime" in configData &&
+        "endTime" in configData;
+
+    if (
+        configData &&
+        Array.isArray(configData) &&
+        configData.length > 0 &&
+        !isTemporalData
+    ) {
+        heatmap.setData(configData);
     }
 
     const originalDestroy = heatmap.destroy;
