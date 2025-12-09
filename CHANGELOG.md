@@ -1,3 +1,13 @@
+## 1.3.2 (2025-12-09)
+
+### 🚀 Features
+
+- **legend:** withLegend supports fixed scales ([#12](https://github.com/drdreo/heatmap/pull/12))
+
+### ❤️ Thank You
+
+- Dr Dreo @drdreo
+
 ## 1.3.1 (2025-12-07)
 
 This was a version bump only, there were no code changes.
