@@ -111,7 +111,7 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     const onComplete = config.onComplete;
 
     // Animation state
-    let data: TemporalHeatmapData | null = null;
+    let data: (TemporalHeatmapData & { min: number; max: number }) | null = null;
     let state: AnimationState = "idle";
     let currentTime = 0;
     let lastFrameTime = 0;
@@ -126,7 +126,23 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
         const sortedData = [...newData.data].sort(
             (a, b) => a.timestamp - b.timestamp
         );
-        data = { ...newData, data: sortedData };
+        
+        // Auto-detect min/max if not provided
+        let min = newData.min;
+        let max = newData.max;
+        
+        if (min === undefined || max === undefined) {
+            if (sortedData.length === 0) {
+                min = 0;
+                max = 100;
+            } else {
+                const values = sortedData.map(p => p.value);
+                min = min ?? Math.min(...values);
+                max = max ?? Math.max(...values);
+            }
+        }
+        
+        data = { ...newData, data: sortedData, min, max };
         currentTime = newData.startTime;
         lastSearchIndex = 0;
         renderFrame(currentTime);

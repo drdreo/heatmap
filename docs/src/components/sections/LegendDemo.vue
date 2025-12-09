@@ -17,6 +17,7 @@ import ConfigTable, { type ConfigOption } from "../ui/ConfigTable.vue";
 
 const legendCode = `import { createHeatmap, withLegend, GRADIENT_THERMAL } from '@drdreo/heatmap';
 
+// Basic usage with auto scale (matches data range)
 const heatmap = createHeatmap(
     {
         container: document.querySelector('#container')!,
@@ -27,17 +28,28 @@ const heatmap = createHeatmap(
     withLegend({
         position: 'bottom-right',
         orientation: 'horizontal',
+        scale: 'auto',  // Default: auto-detects from data
         labelCount: 5,
         formatter: (value) => \`\${value.toFixed(0)}%\`,
         className: 'my-legend'
     })
 );
 
-// Legend updates automatically when data changes
-heatmap.setData({ min: 0, max: 100, data: points });
+// Auto-detection: min/max can be omitted from data
+heatmap.setData({ data: points });
 
-// Legend updates automatically when gradient changes
-heatmap.setGradient(GRADIENT_COOL);`;
+// Manual scale: useful for comparing multiple heatmaps
+const tempMap = createHeatmap(
+    { container },
+    withLegend({
+        scale: { min: -50, max: 150 },  // Fixed temperature scale
+        formatter: (v) => \`\${v}°C\`
+    })
+);
+
+// Data from -5 to 55, but scale shows -50 to 150
+tempMap.setData({ data: temperaturePoints });`;
+
 
 const legendOptions: ConfigOption[] = [
     {
@@ -64,6 +76,12 @@ const legendOptions: ConfigOption[] = [
         type: "number",
         default: "15 / 100",
         description: "Height in pixels (default varies by orientation)"
+    },
+    {
+        name: "scale",
+        type: "'auto' | { min, max }",
+        default: "'auto'",
+        description: "Scale mode: 'auto' matches data range, or set a fixed scale (e.g., { min: -50, max: 150 })"
     },
     {
         name: "labelCount",
@@ -97,10 +115,10 @@ const legendOptions: ConfigOption[] = [
 ];
 
 const featureHighlights = [
-    { icon: "1", label: "Auto-updating" },
-    { icon: "2", label: "8 Positions" },
-    { icon: "3", label: "Custom Formatters" },
-    { icon: "4", label: "CSS Themeable" }
+    { icon: "✨", label: "Auto-Scale or Manual" },
+    { icon: "🔄", label: "Auto-updating" },
+    { icon: "📍", label: "8 Positions" },
+    { icon: "🎨", label: "Custom Formatters" }
 ];
 
 type GradientPreset = {
@@ -141,6 +159,9 @@ const containerRef = ref<HTMLElement | null>(null);
 const selectedGradient = ref<string>("Default");
 const selectedPosition = ref<Position>("bottom-right");
 const selectedOrientation = ref<"horizontal" | "vertical">("horizontal");
+const scaleMode = ref<"auto" | "manual">("auto");
+const scaleMin = ref(-50);
+const scaleMax = ref(150);
 const dataMin = ref(0);
 const dataMax = ref(100);
 
@@ -222,6 +243,11 @@ function handleDataRangeChange() {
     });
 }
 
+function handleScaleModeChange() {
+    // Need to recreate heatmap to change scale mode
+    recreateHeatmap();
+}
+
 function recreateHeatmap() {
     if (!containerRef.value) return;
 
@@ -233,6 +259,11 @@ function recreateHeatmap() {
         (p) => p.name === selectedGradient.value
     );
 
+    // Determine scale configuration
+    const scale = scaleMode.value === 'auto' 
+        ? 'auto' 
+        : { min: scaleMin.value, max: scaleMax.value };
+
     // Create new heatmap with updated legend config
     legendHeatmap = createHeatmap(
         {
@@ -242,6 +273,7 @@ function recreateHeatmap() {
         withLegend({
             position: selectedPosition.value,
             orientation: selectedOrientation.value,
+            scale: scale,
             labelCount: 5,
             formatter: (value) => `${Math.round(value)}`,
             className: "demo-legend"
@@ -391,9 +423,44 @@ onUnmounted(() => {
                         <option value="vertical">Vertical</option>
                     </select>
                 </div>
+                <div class="control-group">
+                    <label for="scale-mode-select">Scale Mode:</label>
+                    <select
+                        id="scale-mode-select"
+                        v-model="scaleMode"
+                        @change="handleScaleModeChange"
+                    >
+                        <option value="auto">Auto</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </div>
                 <button class="btn btn-primary" @click="handleRandomize">
                     Randomize Data
                 </button>
+            </div>
+            <div class="range-controls" v-if="scaleMode === 'manual'">
+                <div class="range-control">
+                    <label for="scale-min">Scale Min: {{ scaleMin }}</label>
+                    <input
+                        type="range"
+                        id="scale-min"
+                        min="-100"
+                        max="100"
+                        v-model.number="scaleMin"
+                        @change="handleScaleModeChange"
+                    />
+                </div>
+                <div class="range-control">
+                    <label for="scale-max">Scale Max: {{ scaleMax }}</label>
+                    <input
+                        type="range"
+                        id="scale-max"
+                        min="50"
+                        max="500"
+                        v-model.number="scaleMax"
+                        @change="handleScaleModeChange"
+                    />
+                </div>
             </div>
             <div class="range-controls">
                 <div class="range-control">

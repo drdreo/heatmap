@@ -32,10 +32,16 @@ export interface RGBAColor {
 
 /** Data to be rendered on the heatmap */
 export interface HeatmapData {
-    /** Minimum value in the dataset (for normalization) */
-    min: number;
-    /** Maximum value in the dataset (for normalization) */
-    max: number;
+    /** 
+     * Minimum value in the dataset (for normalization).
+     * If not provided, it will be auto-detected from the data points.
+     */
+    min?: number;
+    /** 
+     * Maximum value in the dataset (for normalization).
+     * If not provided, it will be auto-detected from the data points.
+     */
+    max?: number;
     /** Array of data points */
     data: HeatmapPoint[];
 }
@@ -48,16 +54,32 @@ export interface TemporalHeatmapPoint extends HeatmapPoint {
 
 /** Temporal data for animated heatmaps */
 export interface TemporalHeatmapData {
-    /** Minimum value in the dataset */
-    min: number;
-    /** Maximum value in the dataset */
-    max: number;
+    /** 
+     * Minimum value in the dataset.
+     * If not provided, it will be auto-detected from the data points.
+     */
+    min?: number;
+    /** 
+     * Maximum value in the dataset.
+     * If not provided, it will be auto-detected from the data points.
+     */
+    max?: number;
     /** Start timestamp of the data range */
     startTime: number;
     /** End timestamp of the data range */
     endTime: number;
     /** Array of temporal data points */
     data: TemporalHeatmapPoint[];
+}
+
+/** Internal data structure with guaranteed min/max values */
+export interface NormalizedHeatmapData {
+    /** Minimum value in the dataset (always defined) */
+    min: number;
+    /** Maximum value in the dataset (always defined) */
+    max: number;
+    /** Array of data points */
+    data: HeatmapPoint[];
 }
 
 /** Point ready to be rendered with computed alpha */
@@ -78,8 +100,8 @@ export interface RenderBoundaries {
 
 /** Event payload for data changes */
 export interface DataChangeEvent {
-    /** The new data that was set */
-    data: HeatmapData;
+    /** The new data that was set (with guaranteed min/max values) */
+    data: NormalizedHeatmapData;
 }
 
 /** Event payload for gradient changes */

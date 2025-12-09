@@ -10,6 +10,7 @@ import type {
     Heatmap,
     HeatmapConfig,
     HeatmapData,
+    NormalizedHeatmapData,
     HeatmapEventListener,
     HeatmapEventMap,
     HeatmapPoint,
@@ -26,7 +27,7 @@ type GridKey = `${number},${number}`;
  * Internal state for the heatmap
  */
 interface HeatmapState {
-    data: HeatmapData | null;
+    data: NormalizedHeatmapData | null;
     valueGrid: Map<GridKey, number>;
     renderBoundaries: RenderBoundaries;
 }
@@ -95,13 +96,42 @@ export function createCore(config: HeatmapConfig): Heatmap {
     // Event emitter for reactive features
     const events = createEventEmitter();
 
+    // --- Helper Functions ---
+
+    /**
+     * Normalize data by computing min/max if not provided
+     */
+    function normalizeData(data: HeatmapData): NormalizedHeatmapData {
+        let min = data.min;
+        let max = data.max;
+
+        // Auto-detect min/max if not provided
+        if (min === undefined || max === undefined) {
+            if (data.data.length === 0) {
+                min = 0;
+                max = 100;
+            } else {
+                const values = data.data.map(p => p.value);
+                min = min ?? Math.min(...values);
+                max = max ?? Math.max(...values);
+            }
+        }
+
+        return {
+            min,
+            max,
+            data: data.data
+        };
+    }
+
     // --- Core Methods ---
 
     function setData(data: HeatmapData): void {
-        state.data = data;
-        updateValueGrid(data.data);
+        const normalizedData = normalizeData(data);
+        state.data = normalizedData;
+        updateValueGrid(normalizedData.data);
         render();
-        events.emit("datachange", { data });
+        events.emit("datachange", { data: normalizedData });
     }
 
     function addPoint(point: HeatmapPoint): void {
@@ -246,7 +276,7 @@ export function createCore(config: HeatmapConfig): Heatmap {
         renderer.render(points);
     }
 
-    function computeRenderablePoints(data: HeatmapData): RenderablePoint[] {
+    function computeRenderablePoints(data: NormalizedHeatmapData): RenderablePoint[] {
         const { min, max, data: points } = data;
         return points.map((point) => toRenderablePoint(point, min, max));
     }

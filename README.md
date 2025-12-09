@@ -34,7 +34,19 @@ npm install @drdreo/heatmap
 ```typescript
 import { createHeatmap } from "@drdreo/heatmap";
 
+// Simple usage - min/max are auto-detected from data
 const heatmap = createHeatmap({
+    container: document.getElementById("heatmap")!,
+    data: {
+        data: [
+            { x: 100, y: 150, value: 80 },
+            { x: 200, y: 100, value: 50 }
+        ]
+    }
+});
+
+// Or specify min/max explicitly for custom normalization
+const heatmap2 = createHeatmap({
     container: document.getElementById("heatmap")!,
     data: {
         min: 0,
@@ -66,18 +78,36 @@ const heatmap = createHeatmap(
 ```typescript
 import { createHeatmap, withLegend, GRADIENT_THERMAL } from "@drdreo/heatmap";
 
+// Auto-scale legend (default) - matches data range
 const heatmap = createHeatmap(
     { container, gradient: GRADIENT_THERMAL },
     withLegend({
         position: "bottom-right",
         orientation: "horizontal",
+        scale: "auto", // Auto-detects min/max from data
         labelCount: 5,
         formatter: (value) => `${value.toFixed(0)}°C`
     })
 );
+
+// Manual scale - useful for fixed ranges or comparing multiple heatmaps
+const tempMap = createHeatmap(
+    { container },
+    withLegend({
+        scale: { min: -50, max: 150 }, // Fixed temperature scale
+        formatter: (value) => `${value}°C`
+    })
+);
+
+// Simplified data API - min/max are auto-detected when not provided
+heatmap.setData({ data: points }); // No need to specify min/max
 ```
 
 The legend automatically updates when data or gradient changes. Available positions: `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
+
+**Scale Modes:**
+- `'auto'` (default): Legend scale matches the data range automatically
+- `{ min, max }`: Fixed scale range (e.g., for temperature -50 to 150, or ad clicks 0 to 1000)
 
 ### With Animation
 

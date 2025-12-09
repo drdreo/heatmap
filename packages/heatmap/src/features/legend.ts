@@ -30,6 +30,11 @@ export type LegendPosition =
 /** Orientation of the legend gradient */
 export type LegendOrientation = "horizontal" | "vertical";
 
+/** Legend scale configuration */
+export type LegendScale = 
+    | 'auto'  // Auto-detect min/max from data
+    | { min: number; max: number };  // Manual scale range
+
 /** Legend configuration */
 export interface LegendConfig {
     /**
@@ -53,6 +58,22 @@ export interface LegendConfig {
      * Default: 15 for horizontal, 100 for vertical
      */
     height?: number;
+
+    /**
+     * Scale mode for the legend (default: 'auto')
+     * - 'auto': Automatically use min/max from the data
+     * - { min, max }: Use a fixed scale range (e.g., for temperature -50 to 150)
+     * 
+     * @example
+     * // Auto scale (default) - legend matches data range
+     * scale: 'auto'
+     * 
+     * @example
+     * // Fixed scale - useful for comparing multiple heatmaps or known ranges
+     * scale: { min: -50, max: 150 }  // Temperature scale
+     * scale: { min: 0, max: 1000 }   // Ad clicks scale
+     */
+    scale?: LegendScale;
 
     /**
      * Number of labels to show (default: 5)
@@ -86,6 +107,8 @@ export interface LegendConfig {
 interface LegendState {
     minValue: number;
     maxValue: number;
+    dataMin: number;  // Actual data range for reference
+    dataMax: number;
     gradientStops: GradientStop[];
     gradientCanvas: HTMLCanvasElement | null;
 }
@@ -98,6 +121,7 @@ const DEFAULT_LEGEND_CONFIG: Required<
     orientation: "horizontal",
     width: 150,
     height: 15,
+    scale: 'auto',
     labelCount: 5,
     showMinMax: true,
     formatter: (value: number) => Math.round(value).toString()
@@ -150,6 +174,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
             (config.orientation === "vertical"
                 ? 100
                 : DEFAULT_LEGEND_CONFIG.height),
+        scale: config.scale ?? DEFAULT_LEGEND_CONFIG.scale,
         labelCount: config.labelCount ?? DEFAULT_LEGEND_CONFIG.labelCount,
         showMinMax: config.showMinMax ?? DEFAULT_LEGEND_CONFIG.showMinMax,
         formatter: config.formatter ?? DEFAULT_LEGEND_CONFIG.formatter,
@@ -160,6 +185,8 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     const state: LegendState = {
         minValue: 0,
         maxValue: 100,
+        dataMin: 0,
+        dataMax: 100,
         gradientStops: DEFAULT_GRADIENT,
         gradientCanvas: null
     };
@@ -397,8 +424,21 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
      * Handle data change event - update min/max values and labels
      */
     function handleDataChange(event: DataChangeEvent): void {
-        state.minValue = event.data.min;
-        state.maxValue = event.data.max;
+        // Store actual data range
+        state.dataMin = event.data.min;
+        state.dataMax = event.data.max;
+        
+        // Update legend scale based on configuration
+        if (resolvedConfig.scale === 'auto') {
+            // Auto mode: use data min/max
+            state.minValue = event.data.min;
+            state.maxValue = event.data.max;
+        } else {
+            // Manual mode: use configured scale
+            state.minValue = resolvedConfig.scale.min;
+            state.maxValue = resolvedConfig.scale.max;
+        }
+        
         updateLabelsDisplay();
     }
 
@@ -443,8 +483,21 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         // Get initial data range from config if available
         const configData = heatmap.config.data;
         if (configData && !("startTime" in configData)) {
-            state.minValue = configData.min;
-            state.maxValue = configData.max;
+            // Get data min/max (will be provided or auto-detected by setData)
+            const dataMin = configData.min ?? 0;
+            const dataMax = configData.max ?? 100;
+            
+            state.dataMin = dataMin;
+            state.dataMax = dataMax;
+            
+            // Set legend scale based on configuration
+            if (resolvedConfig.scale === 'auto') {
+                state.minValue = dataMin;
+                state.maxValue = dataMax;
+            } else {
+                state.minValue = resolvedConfig.scale.min;
+                state.maxValue = resolvedConfig.scale.max;
+            }
         }
     }
 

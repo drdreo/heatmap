@@ -618,4 +618,231 @@ describe("withLegend feature", () => {
             expect(initialGradient).not.toBe(newGradientCanvas);
         });
     });
+
+    describe("legend scale configuration", () => {
+        describe("auto mode (default)", () => {
+            it("should automatically use data min/max in auto mode", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: { min: 10, max: 90, data: [] }
+                    },
+                    withLegend({ scale: 'auto' })
+                );
+
+                const labels = getLabels();
+                expect(labels[0]).toBe("10");
+                expect(labels[labels.length - 1]).toBe("90");
+            });
+
+            it("should update legend when data range changes in auto mode", () => {
+                heatmap = createHeatmap(
+                    { container },
+                    withLegend({ scale: 'auto' })
+                );
+
+                heatmap.setData({ min: -5, max: 55, data: [] });
+
+                const labels = getLabels();
+                expect(labels[0]).toBe("-5");
+                expect(labels[labels.length - 1]).toBe("55");
+            });
+
+            it("should use auto mode by default when scale is not specified", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: { min: 20, max: 80, data: [] }
+                    },
+                    withLegend()
+                );
+
+                const labels = getLabels();
+                expect(labels[0]).toBe("20");
+                expect(labels[labels.length - 1]).toBe("80");
+            });
+        });
+
+        describe("manual scale mode", () => {
+            it("should use configured scale range instead of data range", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: { min: -5, max: 55, data: [] }
+                    },
+                    withLegend({
+                        scale: { min: -50, max: 150 },
+                        labelCount: 5
+                    })
+                );
+
+                const labels = getLabels();
+                expect(labels[0]).toBe("-50");
+                expect(labels[labels.length - 1]).toBe("150");
+            });
+
+            it("should maintain configured scale when data changes", () => {
+                heatmap = createHeatmap(
+                    { container },
+                    withLegend({ scale: { min: 0, max: 1000 } })
+                );
+
+                // Initial data
+                heatmap.setData({ min: 10, max: 100, data: [] });
+                let labels = getLabels();
+                expect(labels[0]).toBe("0");
+                expect(labels[labels.length - 1]).toBe("1000");
+
+                // Updated data with different range
+                heatmap.setData({ min: 200, max: 800, data: [] });
+                labels = getLabels();
+                expect(labels[0]).toBe("0");
+                expect(labels[labels.length - 1]).toBe("1000");
+            });
+
+            it("should work with temperature scale (-50 to 150)", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: { min: -5, max: 55, data: [] }
+                    },
+                    withLegend({
+                        scale: { min: -50, max: 150 },
+                        formatter: (v) => `${v}°C`,
+                        labelCount: 5
+                    })
+                );
+
+                const labels = getLabels();
+                expect(labels).toEqual(["-50°C", "0°C", "50°C", "100°C", "150°C"]);
+            });
+
+            it("should work with ad click scale (0 to 1000)", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: { min: 0, max: 1000, data: [] }
+                    },
+                    withLegend({
+                        scale: { min: 0, max: 1000 },
+                        formatter: (v) => `${v} clicks`,
+                        labelCount: 3
+                    })
+                );
+
+                const labels = getLabels();
+                expect(labels).toEqual(["0 clicks", "500 clicks", "1000 clicks"]);
+            });
+
+            it("should handle negative scale ranges", () => {
+                heatmap = createHeatmap(
+                    { container },
+                    withLegend({
+                        scale: { min: -100, max: -10 },
+                        labelCount: 3
+                    })
+                );
+
+                heatmap.setData({ min: -80, max: -40, data: [] });
+
+                const labels = getLabels();
+                expect(labels).toEqual(["-100", "-55", "-10"]);
+            });
+
+            it("should handle decimal scale ranges", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: { min: 0.1, max: 0.9, data: [] }
+                    },
+                    withLegend({
+                        scale: { min: 0.0, max: 1.0 },
+                        formatter: (v) => v.toFixed(2),
+                        labelCount: 5
+                    })
+                );
+
+                const labels = getLabels();
+                expect(labels).toEqual(["0.00", "0.25", "0.50", "0.75", "1.00"]);
+            });
+        });
+
+        describe("auto-detection of min/max from data points", () => {
+            it("should auto-detect min/max when not provided in data", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: {
+                            data: [
+                                { x: 10, y: 10, value: 5 },
+                                { x: 20, y: 20, value: 95 },
+                                { x: 30, y: 30, value: 50 }
+                            ]
+                        }
+                    },
+                    withLegend()
+                );
+
+                const labels = getLabels();
+                expect(labels[0]).toBe("5");
+                expect(labels[labels.length - 1]).toBe("95");
+            });
+
+            it("should handle empty data array when min/max not provided", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: { data: [] }
+                    },
+                    withLegend()
+                );
+
+                const labels = getLabels();
+                // Should default to 0-100
+                expect(labels[0]).toBe("0");
+                expect(labels[labels.length - 1]).toBe("100");
+            });
+
+            it("should detect negative values correctly", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: {
+                            data: [
+                                { x: 10, y: 10, value: -50 },
+                                { x: 20, y: 20, value: 30 },
+                                { x: 30, y: 30, value: -10 }
+                            ]
+                        }
+                    },
+                    withLegend({ labelCount: 3 })
+                );
+
+                const labels = getLabels();
+                expect(labels[0]).toBe("-50");
+                expect(labels[labels.length - 1]).toBe("30");
+            });
+
+            it("should prefer provided min/max over auto-detection", () => {
+                heatmap = createHeatmap(
+                    {
+                        container,
+                        data: {
+                            min: 0,
+                            max: 100,
+                            data: [
+                                { x: 10, y: 10, value: 5 },
+                                { x: 20, y: 20, value: 95 }
+                            ]
+                        }
+                    },
+                    withLegend()
+                );
+
+                const labels = getLabels();
+                expect(labels[0]).toBe("0");
+                expect(labels[labels.length - 1]).toBe("100");
+            });
+        });
+    });
 });
