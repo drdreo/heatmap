@@ -390,7 +390,12 @@ describe("createHeatmap core", () => {
 
     describe("config options", () => {
         it("should use custom radius", () => {
-            heatmap = createHeatmap({ container, radius: 50, valueMin: 0, valueMax: 100 });
+            heatmap = createHeatmap({
+                container,
+                radius: 50,
+                valueMin: 0,
+                valueMax: 100
+            });
             heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;

@@ -189,7 +189,12 @@ describe("withLegend feature", () => {
             heatmap.destroy();
 
             heatmap = createHeatmap(
-                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 100 }] },
+                {
+                    container,
+                    valueMin: 0,
+                    valueMax: 100,
+                    data: [{ x: 50, y: 50, value: 100 }]
+                },
                 withLegend({ labelCount: 1 })
             );
             expect(getLabels()).toEqual(["50"]); // midpoint of 0-100
@@ -197,7 +202,12 @@ describe("withLegend feature", () => {
 
         it("should evenly distribute labels", () => {
             heatmap = createHeatmap(
-                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 100 }] },
+                {
+                    container,
+                    valueMin: 0,
+                    valueMax: 100,
+                    data: [{ x: 50, y: 50, value: 100 }]
+                },
                 withLegend({ labelCount: 5 })
             );
             expect(getLabels().map(Number)).toEqual([0, 25, 50, 75, 100]);
@@ -220,7 +230,12 @@ describe("withLegend feature", () => {
 
         it("should use default formatter to round values", () => {
             heatmap = createHeatmap(
-                { container, valueMin: 0, valueMax: 99, data: [{ x: 50, y: 50, value: 99 }] },
+                {
+                    container,
+                    valueMin: 0,
+                    valueMax: 99,
+                    data: [{ x: 50, y: 50, value: 99 }]
+                },
                 withLegend({ labelCount: 4 })
             );
             expect(getLabels()).toEqual(["0", "33", "66", "99"]);
@@ -246,7 +261,11 @@ describe("withLegend feature", () => {
     describe("custom min/max configuration", () => {
         it("should use explicit valueMin for range-based data (e.g., temps 50-100)", () => {
             heatmap = createHeatmap(
-                { container, valueMin: 50, data: [{ x: 10, y: 10, value: 100 }] },
+                {
+                    container,
+                    valueMin: 50,
+                    data: [{ x: 10, y: 10, value: 100 }]
+                },
                 withLegend()
             );
 
@@ -257,7 +276,11 @@ describe("withLegend feature", () => {
 
         it("should keep configured valueMin even if data is below it", () => {
             heatmap = createHeatmap(
-                { container, valueMin: 50, data: [{ x: 10, y: 10, value: 40 }] },
+                {
+                    container,
+                    valueMin: 50,
+                    data: [{ x: 10, y: 10, value: 40 }]
+                },
                 withLegend()
             );
             expect(getLabels()[0]).toBe("50");
@@ -265,7 +288,12 @@ describe("withLegend feature", () => {
 
         it("should use explicit valueMax to extend scale beyond data", () => {
             heatmap = createHeatmap(
-                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 50 }] },
+                {
+                    container,
+                    valueMin: 0,
+                    valueMax: 100,
+                    data: [{ x: 50, y: 50, value: 50 }]
+                },
                 withLegend({ labelCount: 3 })
             );
 
@@ -276,7 +304,12 @@ describe("withLegend feature", () => {
 
         it("should use both configured valueMin and valueMax", () => {
             heatmap = createHeatmap(
-                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 50 }] },
+                {
+                    container,
+                    valueMin: 0,
+                    valueMax: 100,
+                    data: [{ x: 50, y: 50, value: 50 }]
+                },
                 withLegend({ labelCount: 5 })
             );
             expect(getLabels().map(Number)).toEqual([0, 25, 50, 75, 100]);

@@ -192,7 +192,6 @@ function createCore(config: HeatmapConfig): Heatmap {
     // Renderer will be attached by withCanvas2DRenderer or similar
     let renderer: HeatmapRenderer | null = null;
 
-    // Internal state
     const state: HeatmapState = {
         points: [],
         dataMin: config.valueMin ?? 0,
@@ -222,16 +221,24 @@ function createCore(config: HeatmapConfig): Heatmap {
         return Math.max(...points.map((p) => p.value));
     }
 
+    /**
+     * Recompute and apply data bounds from current points
+     * @returns Whether the bounds changed from previous values
+     */
+    function syncDataBounds(): boolean {
+        const oldMin = state.dataMin;
+        const oldMax = state.dataMax;
+
+        state.dataMin = config.valueMin ?? computeDataMin(state.points);
+        state.dataMax = config.valueMax ?? computeDataMax(state.points);
+
+        return state.dataMin !== oldMin || state.dataMax !== oldMax;
+    }
+
     function setData(data: HeatmapPoint[]): void {
         state.points = data;
-
-        const detectedMin = computeDataMin(data);
-        const detectedMax = computeDataMax(data);
-
-        state.dataMin = config.valueMin ?? detectedMin;
-        state.dataMax = config.valueMax ?? detectedMax;
-
-        updateValueGrid(data);
+        syncDataBounds();
+        updateValueGrid(state.points);
         render();
         events.emit("datachange", {
             data,
@@ -248,29 +255,13 @@ function createCore(config: HeatmapConfig): Heatmap {
         if (points.length === 0) return;
 
         const hadNoPoints = state.points.length === 0;
-        const oldMin = state.dataMin;
-        const oldMax = state.dataMax;
         state.points.push(...points);
 
+        const boundsChanged = syncDataBounds();
         updateValueGrid(state.points);
 
-        const detectedMin = computeDataMin(state.points);
-        const detectedMax = computeDataMax(state.points);
-
-        const newMin = config.valueMin ?? detectedMin;
-        const newMax = config.valueMax ?? detectedMax;
-
-        if (newMin < state.dataMin || config.valueMin !== undefined) {
-            state.dataMin = newMin;
-        }
-        if (newMax > state.dataMax || config.valueMax !== undefined) {
-            state.dataMax = newMax;
-        }
-
-        const needsFullRender =
-            hadNoPoints || newMin < oldMin || newMax > oldMax;
-
-        if (needsFullRender) {
+        // Only do incremental render if bounds didn't change
+        if (hadNoPoints || boundsChanged) {
             render();
         } else {
             const renderablePoints = points.map((p) =>
@@ -287,19 +278,11 @@ function createCore(config: HeatmapConfig): Heatmap {
         events.emit("gradientchange", { stops });
     }
 
-    function setScale(
-        min: number | undefined,
-        max: number | undefined
-    ): void {
+    function setScale(min: number | undefined, max: number | undefined): void {
         config.valueMin = min;
         config.valueMax = max;
 
-        const detectedMin = computeDataMin(state.points);
-        const detectedMax = computeDataMax(state.points);
-
-        state.dataMin = min ?? detectedMin;
-        state.dataMax = max ?? detectedMax;
-
+        syncDataBounds();
         render();
 
         events.emit("scalechange", {
@@ -370,8 +353,6 @@ function createCore(config: HeatmapConfig): Heatmap {
         state.points = [];
     }
 
-    // --- Internal Helpers ---
-
     function computeAlpha(value: number, min: number, max: number): number {
         const range = max - min || 1;
         const normalized = Math.min(1, Math.max(0, (value - min) / range));
@@ -428,7 +409,6 @@ function createCore(config: HeatmapConfig): Heatmap {
         renderer.colorize(state.renderBoundaries);
     }
 
-    // Create the heatmap object
     const heatmap: Heatmap = {
         config,
         container,
