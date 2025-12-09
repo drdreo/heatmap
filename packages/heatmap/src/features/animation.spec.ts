@@ -38,8 +38,6 @@ describe("withAnimation feature", () => {
             });
         }
         return {
-            min: 0,
-            max: 100,
             startTime,
             endTime: startTime + duration,
             data

@@ -129,16 +129,9 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
             (a, b) => a.timestamp - b.timestamp
         );
         
-        // Auto-detect min/max if not provided
-        let min = newData.min;
-        let max = newData.max;
-        
-        if (min === undefined || max === undefined) {
-            const values = sortedData.map(p => p.value);
-            const computed = computeMinMax(values);
-            min = min ?? computed.min;
-            max = max ?? computed.max;
-        }
+        // Compute min/max from data points
+        const values = sortedData.map(p => p.value);
+        const { min, max } = computeMinMax(values);
         
         data = { ...newData, data: sortedData, min, max };
         currentTime = newData.startTime;

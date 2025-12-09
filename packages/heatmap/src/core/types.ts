@@ -32,16 +32,6 @@ export interface RGBAColor {
 
 /** Data to be rendered on the heatmap */
 export interface HeatmapData {
-    /** 
-     * Minimum value in the dataset (for normalization).
-     * If not provided, it will be auto-detected from the data points.
-     */
-    min?: number;
-    /** 
-     * Maximum value in the dataset (for normalization).
-     * If not provided, it will be auto-detected from the data points.
-     */
-    max?: number;
     /** Array of data points */
     data: HeatmapPoint[];
 }
@@ -54,16 +44,6 @@ export interface TemporalHeatmapPoint extends HeatmapPoint {
 
 /** Temporal data for animated heatmaps */
 export interface TemporalHeatmapData {
-    /** 
-     * Minimum value in the dataset.
-     * If not provided, it will be auto-detected from the data points.
-     */
-    min?: number;
-    /** 
-     * Maximum value in the dataset.
-     * If not provided, it will be auto-detected from the data points.
-     */
-    max?: number;
     /** Start timestamp of the data range */
     startTime: number;
     /** End timestamp of the data range */

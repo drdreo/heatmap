@@ -100,19 +100,11 @@ export function createCore(config: HeatmapConfig): Heatmap {
     // --- Helper Functions ---
 
     /**
-     * Normalize data by computing min/max if not provided
+     * Normalize data by computing min/max from data points
      */
     function normalizeData(data: HeatmapData): NormalizedHeatmapData {
-        let min = data.min;
-        let max = data.max;
-
-        // Auto-detect min/max if not provided
-        if (min === undefined || max === undefined) {
-            const values = data.data.map(p => p.value);
-            const computed = computeMinMax(values);
-            min = min ?? computed.min;
-            max = max ?? computed.max;
-        }
+        const values = data.data.map(p => p.value);
+        const { min, max } = computeMinMax(values);
 
         return {
             min,

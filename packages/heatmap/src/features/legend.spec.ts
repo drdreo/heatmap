@@ -113,9 +113,10 @@ describe("withLegend feature", () => {
                 {
                     container,
                     data: {
-                        min: 10,
-                        max: 50,
-                        data: [{ x: 50, y: 50, value: 30 }]
+                        data: [
+                            { x: 50, y: 50, value: 10 },
+                            { x: 60, y: 60, value: 50 }
+                        ]
                     }
                 },
                 withLegend()
@@ -272,7 +273,7 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 100, data: [] }
+                    data: { data: [] }
                 },
                 withLegend({ labelCount: 5, showMinMax: true })
             );
@@ -286,7 +287,7 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 100, data: [] }
+                    data: { data: [] }
                 },
                 withLegend({ labelCount: 1 })
             );
@@ -310,7 +311,7 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 100, data: [] }
+                    data: { data: [] }
                 },
                 withLegend({ labelCount: 5 })
             );
@@ -325,7 +326,7 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 100, data: [] }
+                    data: { data: [] }
                 },
                 withLegend({
                     formatter: (value) => `${value}°C`,
@@ -343,7 +344,7 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 100, data: [] }
+                    data: { data: [] }
                 },
                 withLegend({ formatter: formatterSpy, labelCount: 3 })
             );
@@ -357,14 +358,19 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 99, data: [] }
+                    data: {
+                        data: [
+                            { x: 50, y: 50, value: 0 },
+                            { x: 100, y: 100, value: 100 }
+                        ]
+                    }
                 },
                 withLegend({ labelCount: 4 })
             );
 
             const labels = getLabels();
-            // 0, 33, 66, 99 - all rounded
-            expect(labels).toEqual(["0", "33", "66", "99"]);
+            // 0, 33, 67, 100 - all rounded
+            expect(labels).toEqual(["0", "33", "67", "100"]);
         });
     });
 
@@ -379,9 +385,10 @@ describe("withLegend feature", () => {
 
             // Update data with new range
             heatmap.setData({
-                min: 50,
-                max: 200,
-                data: [{ x: 100, y: 100, value: 150 }]
+                data: [
+                    { x: 100, y: 100, value: 50 },
+                    { x: 110, y: 110, value: 200 }
+                ]
             });
 
             labels = getLabels();
@@ -393,8 +400,6 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap({ container }, withLegend());
 
             heatmap.setData({
-                min: 0,
-                max: 100,
                 data: [
                     { x: 50, y: 50, value: 75 },
                     { x: 100, y: 100, value: 25 }
@@ -403,7 +408,7 @@ describe("withLegend feature", () => {
 
             const stats = heatmap.getStats();
             expect(stats.pointCount).toBe(2);
-            expect(stats.dataRange?.max).toBe(100);
+            expect(stats.dataRange?.max).toBe(75);
         });
     });
 
@@ -519,9 +524,10 @@ describe("withLegend feature", () => {
                 {
                     container,
                     data: {
-                        min: 50,
-                        max: 50,
-                        data: [{ x: 50, y: 50, value: 50 }]
+                        data: [
+                            { x: 50, y: 50, value: 50 },
+                            { x: 60, y: 60, value: 50 }
+                        ]
                     }
                 },
                 withLegend()
@@ -536,7 +542,12 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: -100, max: 100, data: [] }
+                    data: {
+                        data: [
+                            { x: 50, y: 50, value: -100 },
+                            { x: 100, y: 100, value: 100 }
+                        ]
+                    }
                 },
                 withLegend({ labelCount: 5 })
             );
@@ -551,7 +562,12 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0.5, max: 2.5, data: [] }
+                    data: {
+                        data: [
+                            { x: 50, y: 50, value: 0.5 },
+                            { x: 100, y: 100, value: 2.5 }
+                        ]
+                    }
                 },
                 withLegend({
                     formatter: (v) => v.toFixed(1),
@@ -588,7 +604,12 @@ describe("withLegend feature", () => {
             const initialGradient = findGradientCanvas();
             const initialLabels = getLabels();
 
-            heatmap.setData({ min: 0, max: 200, data: [] });
+            heatmap.setData({
+                data: [
+                    { x: 50, y: 50, value: 0 },
+                    { x: 100, y: 100, value: 200 }
+                ]
+            });
 
             // Gradient canvas should be the same (not recreated)
             const newGradientCanvas = findGradientCanvas();
@@ -602,7 +623,12 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 100, data: [] }
+                    data: {
+                        data: [
+                            { x: 50, y: 50, value: 0 },
+                            { x: 100, y: 100, value: 100 }
+                        ]
+                    }
                 },
                 withLegend()
             );
@@ -625,7 +651,12 @@ describe("withLegend feature", () => {
                 heatmap = createHeatmap(
                     {
                         container,
-                        data: { min: 10, max: 90, data: [] }
+                        data: {
+                            data: [
+                                { x: 50, y: 50, value: 10 },
+                                { x: 100, y: 100, value: 90 }
+                            ]
+                        }
                     },
                     withLegend({ scale: 'auto' })
                 );
@@ -641,7 +672,12 @@ describe("withLegend feature", () => {
                     withLegend({ scale: 'auto' })
                 );
 
-                heatmap.setData({ min: -5, max: 55, data: [] });
+                heatmap.setData({
+                    data: [
+                        { x: 50, y: 50, value: -5 },
+                        { x: 100, y: 100, value: 55 }
+                    ]
+                });
 
                 const labels = getLabels();
                 expect(labels[0]).toBe("-5");
@@ -652,7 +688,12 @@ describe("withLegend feature", () => {
                 heatmap = createHeatmap(
                     {
                         container,
-                        data: { min: 20, max: 80, data: [] }
+                        data: {
+                            data: [
+                                { x: 50, y: 50, value: 20 },
+                                { x: 100, y: 100, value: 80 }
+                            ]
+                        }
                     },
                     withLegend()
                 );
@@ -668,7 +709,12 @@ describe("withLegend feature", () => {
                 heatmap = createHeatmap(
                     {
                         container,
-                        data: { min: -5, max: 55, data: [] }
+                        data: {
+                            data: [
+                                { x: 50, y: 50, value: -5 },
+                                { x: 100, y: 100, value: 55 }
+                            ]
+                        }
                     },
                     withLegend({
                         scale: { min: -50, max: 150 },
@@ -688,13 +734,23 @@ describe("withLegend feature", () => {
                 );
 
                 // Initial data
-                heatmap.setData({ min: 10, max: 100, data: [] });
+                heatmap.setData({
+                    data: [
+                        { x: 50, y: 50, value: 10 },
+                        { x: 100, y: 100, value: 100 }
+                    ]
+                });
                 let labels = getLabels();
                 expect(labels[0]).toBe("0");
                 expect(labels[labels.length - 1]).toBe("1000");
 
                 // Updated data with different range
-                heatmap.setData({ min: 200, max: 800, data: [] });
+                heatmap.setData({
+                    data: [
+                        { x: 50, y: 50, value: 200 },
+                        { x: 100, y: 100, value: 800 }
+                    ]
+                });
                 labels = getLabels();
                 expect(labels[0]).toBe("0");
                 expect(labels[labels.length - 1]).toBe("1000");
@@ -704,7 +760,12 @@ describe("withLegend feature", () => {
                 heatmap = createHeatmap(
                     {
                         container,
-                        data: { min: -5, max: 55, data: [] }
+                        data: {
+                            data: [
+                                { x: 50, y: 50, value: -5 },
+                                { x: 100, y: 100, value: 55 }
+                            ]
+                        }
                     },
                     withLegend({
                         scale: { min: -50, max: 150 },
@@ -721,7 +782,12 @@ describe("withLegend feature", () => {
                 heatmap = createHeatmap(
                     {
                         container,
-                        data: { min: 0, max: 1000, data: [] }
+                        data: {
+                            data: [
+                                { x: 50, y: 50, value: 0 },
+                                { x: 100, y: 100, value: 1000 }
+                            ]
+                        }
                     },
                     withLegend({
                         scale: { min: 0, max: 1000 },
@@ -743,7 +809,12 @@ describe("withLegend feature", () => {
                     })
                 );
 
-                heatmap.setData({ min: -80, max: -40, data: [] });
+                heatmap.setData({
+                    data: [
+                        { x: 50, y: 50, value: -80 },
+                        { x: 100, y: 100, value: -40 }
+                    ]
+                });
 
                 const labels = getLabels();
                 expect(labels).toEqual(["-100", "-55", "-10"]);
@@ -753,7 +824,12 @@ describe("withLegend feature", () => {
                 heatmap = createHeatmap(
                     {
                         container,
-                        data: { min: 0.1, max: 0.9, data: [] }
+                        data: {
+                            data: [
+                                { x: 50, y: 50, value: 0.1 },
+                                { x: 100, y: 100, value: 0.9 }
+                            ]
+                        }
                     },
                     withLegend({
                         scale: { min: 0.0, max: 1.0 },
@@ -823,26 +899,7 @@ describe("withLegend feature", () => {
                 expect(labels[labels.length - 1]).toBe("30");
             });
 
-            it("should prefer provided min/max over auto-detection", () => {
-                heatmap = createHeatmap(
-                    {
-                        container,
-                        data: {
-                            min: 0,
-                            max: 100,
-                            data: [
-                                { x: 10, y: 10, value: 5 },
-                                { x: 20, y: 20, value: 95 }
-                            ]
-                        }
-                    },
-                    withLegend()
-                );
 
-                const labels = getLabels();
-                expect(labels[0]).toBe("0");
-                expect(labels[labels.length - 1]).toBe("100");
-            });
         });
     });
 });

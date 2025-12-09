@@ -482,24 +482,11 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     function initializeState(heatmap: Heatmap): void {
         state.gradientStops = heatmap.config.gradient ?? DEFAULT_GRADIENT;
 
-        // Get initial data range from config if available
-        const configData = heatmap.config.data;
-        if (configData && !("startTime" in configData)) {
-            // Get data min/max (will be provided or auto-detected by setData)
-            const dataMin = configData.min ?? 0;
-            const dataMax = configData.max ?? 100;
-            
-            state.dataMin = dataMin;
-            state.dataMax = dataMax;
-            
-            // Set legend scale based on configuration
-            if (resolvedConfig.scale === 'auto') {
-                state.minValue = dataMin;
-                state.maxValue = dataMax;
-            } else {
-                state.minValue = resolvedConfig.scale.min;
-                state.maxValue = resolvedConfig.scale.max;
-            }
+        // Set initial legend scale based on configuration
+        // Data range will be computed when setData is called
+        if (resolvedConfig.scale !== 'auto') {
+            state.minValue = resolvedConfig.scale.min;
+            state.maxValue = resolvedConfig.scale.max;
         }
     }
 

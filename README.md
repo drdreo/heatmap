@@ -34,23 +34,9 @@ npm install @drdreo/heatmap
 ```typescript
 import { createHeatmap } from "@drdreo/heatmap";
 
-// Simple usage - min/max are auto-detected from data
 const heatmap = createHeatmap({
     container: document.getElementById("heatmap")!,
     data: {
-        data: [
-            { x: 100, y: 150, value: 80 },
-            { x: 200, y: 100, value: 50 }
-        ]
-    }
-});
-
-// Or specify min/max explicitly for custom normalization
-const heatmap2 = createHeatmap({
-    container: document.getElementById("heatmap")!,
-    data: {
-        min: 0,
-        max: 100,
         data: [
             { x: 100, y: 150, value: 80 },
             { x: 200, y: 100, value: 50 }
@@ -99,8 +85,8 @@ const tempMap = createHeatmap(
     })
 );
 
-// Simplified data API - min/max are auto-detected when not provided
-heatmap.setData({ data: points }); // No need to specify min/max
+// Data values are automatically normalized
+heatmap.setData({ data: points });
 ```
 
 The legend automatically updates when data or gradient changes. Available positions: `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
@@ -125,8 +111,6 @@ const heatmap = createHeatmap(
     })
 );
 heatmap.setTemporalData({
-    min: 0,
-    max: 100,
     startTime: 0,
     endTime: 60000,
     data: [

@@ -205,8 +205,6 @@ describe("WebGL Renderer", () => {
 
             // Set temporal data
             animatedHeatmap.setTemporalData({
-                min: 0,
-                max: 100,
                 startTime: 0,
                 endTime: 1000,
                 data: [
@@ -384,7 +382,7 @@ describe("WebGL Renderer", () => {
             heatmap = createHeatmap({ container }, withWebGLRenderer());
 
             expect(() =>
-                heatmap!.setData({ min: 0, max: 100, data: [] })
+                heatmap!.setData({ data: [] })
             ).not.toThrow();
         });
 
