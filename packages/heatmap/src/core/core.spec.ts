@@ -2,12 +2,11 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import {
     createHeatmap,
     type Heatmap,
-    type HeatmapData,
     type HeatmapPoint,
     type GradientStop
 } from "../index";
 
-describe("createHeatmap renderer", () => {
+describe("createHeatmap core", () => {
     let container: HTMLDivElement;
     let heatmap: Heatmap;
 
@@ -68,11 +67,7 @@ describe("createHeatmap renderer", () => {
             heatmap = createHeatmap({
                 container,
                 radius: 10,
-                data: {
-                    min: 0,
-                    max: 100,
-                    data: [{ x: 50, y: 50, value: 100 }]
-                }
+                data: [{ x: 50, y: 50, value: 100 }]
             });
 
             const ctx = heatmap.canvas.getContext("2d")!;
@@ -85,12 +80,10 @@ describe("createHeatmap renderer", () => {
         });
 
         it("should render static data when provided in config", () => {
-            const staticData = {
-                min: 0,
-                max: 100,
+            heatmap = createHeatmap({
+                container,
                 data: [{ x: 150, y: 100, value: 100 }]
-            };
-            heatmap = createHeatmap({ container, data: staticData });
+            });
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -104,13 +97,9 @@ describe("createHeatmap renderer", () => {
     describe("setData", () => {
         it("should render points on canvas", () => {
             heatmap = createHeatmap({ container, radius: 10 });
-            const data: HeatmapData = {
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            };
+            const points: HeatmapPoint[] = [{ x: 50, y: 50, value: 100 }];
 
-            heatmap.setData(data);
+            heatmap.setData(points);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -123,22 +112,17 @@ describe("createHeatmap renderer", () => {
 
         it("should handle empty data", () => {
             heatmap = createHeatmap({ container });
-            const data: HeatmapData = { min: 0, max: 100, data: [] };
 
-            expect(() => heatmap.setData(data)).not.toThrow();
+            expect(() => heatmap.setData([])).not.toThrow();
         });
 
         it("should normalize values based on min/max", () => {
             heatmap = createHeatmap({ container, radius: 10 });
 
             // Low value relative to max should produce dimmer output
-            const data: HeatmapData = {
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 10 }]
-            };
+            const points: HeatmapPoint[] = [{ x: 50, y: 50, value: 10 }];
 
-            heatmap.setData(data);
+            heatmap.setData(points);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -151,13 +135,9 @@ describe("createHeatmap renderer", () => {
 
         it("should handle same min and max values", () => {
             heatmap = createHeatmap({ container, radius: 10 });
-            const data: HeatmapData = {
-                min: 50,
-                max: 50,
-                data: [{ x: 50, y: 50, value: 50 }]
-            };
+            const points: HeatmapPoint[] = [{ x: 50, y: 50, value: 50 }];
 
-            expect(() => heatmap.setData(data)).not.toThrow();
+            expect(() => heatmap.setData(points)).not.toThrow();
         });
     });
 
@@ -179,11 +159,7 @@ describe("createHeatmap renderer", () => {
 
         it("should add point to existing data", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 50 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 50 }]);
 
             const point: HeatmapPoint = { x: 150, y: 150, value: 75 };
             heatmap.addPoint(point);
@@ -193,11 +169,7 @@ describe("createHeatmap renderer", () => {
 
         it("should update max value if new point exceeds it", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 50,
-                data: [{ x: 50, y: 50, value: 50 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 50 }]);
 
             const point: HeatmapPoint = { x: 100, y: 100, value: 100 };
             heatmap.addPoint(point);
@@ -234,11 +206,7 @@ describe("createHeatmap renderer", () => {
 
         it("should add points to existing data", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 50,
-                data: [{ x: 50, y: 50, value: 50 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 50 }]);
 
             const points: HeatmapPoint[] = [
                 { x: 100, y: 100, value: 60 },
@@ -255,11 +223,7 @@ describe("createHeatmap renderer", () => {
 
         it("should update max value if any new point exceeds it", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 50,
-                data: [{ x: 50, y: 50, value: 50 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 50 }]);
 
             const points: HeatmapPoint[] = [
                 { x: 100, y: 100, value: 60 },
@@ -273,11 +237,7 @@ describe("createHeatmap renderer", () => {
     describe("setGradient", () => {
         it("should update the gradient", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             const customGradient: GradientStop[] = [
                 { offset: 0, color: "rgba(0, 0, 255, 0)" },
@@ -297,11 +257,7 @@ describe("createHeatmap renderer", () => {
 
         it("should re-render with new gradient", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             // Get pixel color before gradient change
             const ctx = heatmap.canvas.getContext("2d")!;
@@ -330,11 +286,7 @@ describe("createHeatmap renderer", () => {
     describe("clear", () => {
         it("should clear the canvas", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             heatmap.clear();
 
@@ -349,11 +301,7 @@ describe("createHeatmap renderer", () => {
 
         it("should clear the value grid", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             heatmap.clear();
 
@@ -370,14 +318,10 @@ describe("createHeatmap renderer", () => {
 
         it("should return aggregated value at position", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 2, y: 2, value: 30 },
-                    { x: 4, y: 4, value: 20 }
-                ]
-            });
+            heatmap.setData([
+                { x: 2, y: 2, value: 30 },
+                { x: 4, y: 4, value: 20 }
+            ]);
 
             // Both points should be in same grid cell (default gridSize is 6)
             expect(heatmap.getValueAt(3, 3)).toBe(50); // 30 + 20
@@ -385,14 +329,10 @@ describe("createHeatmap renderer", () => {
 
         it("should return value from correct grid cell", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 10, y: 10, value: 50 },
-                    { x: 100, y: 100, value: 75 }
-                ]
-            });
+            heatmap.setData([
+                { x: 10, y: 10, value: 50 },
+                { x: 100, y: 100, value: 75 }
+            ]);
 
             // Different grid cells should have different values
             const value1 = heatmap.getValueAt(10, 10);
@@ -406,11 +346,7 @@ describe("createHeatmap renderer", () => {
     describe("getDataURL", () => {
         it("should return a data URL", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             const dataUrl = heatmap.getDataURL();
 
@@ -419,11 +355,7 @@ describe("createHeatmap renderer", () => {
 
         it("should accept custom type", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             const dataUrl = heatmap.getDataURL("image/jpeg");
 
@@ -432,11 +364,7 @@ describe("createHeatmap renderer", () => {
 
         it("should accept quality parameter", () => {
             heatmap = createHeatmap({ container });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 100 }]
-            });
+            heatmap.setData([{ x: 50, y: 50, value: 100 }]);
 
             const highQuality = heatmap.getDataURL("image/jpeg", 1.0);
             const lowQuality = heatmap.getDataURL("image/jpeg", 0.1);
@@ -463,11 +391,7 @@ describe("createHeatmap renderer", () => {
     describe("config options", () => {
         it("should use custom radius", () => {
             heatmap = createHeatmap({ container, radius: 50 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
 
@@ -479,11 +403,7 @@ describe("createHeatmap renderer", () => {
 
         it("should use custom blur", () => {
             heatmap = createHeatmap({ container, blur: 0.5, radius: 20 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -496,11 +416,7 @@ describe("createHeatmap renderer", () => {
 
         it("should use custom maxOpacity", () => {
             heatmap = createHeatmap({ container, maxOpacity: 0.5 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(150, 100, 1, 1);
@@ -511,11 +427,7 @@ describe("createHeatmap renderer", () => {
 
         it("should use custom minOpacity", () => {
             heatmap = createHeatmap({ container, minOpacity: 0.3, radius: 50 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 10 }] // Low value
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 10 }]); // Low value
 
             const ctx = heatmap.canvas.getContext("2d")!;
             // Check center point - even with low value, should have min opacity
@@ -536,11 +448,7 @@ describe("createHeatmap renderer", () => {
                 gradient: customGradient
             });
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(150, 100, 1, 1);
@@ -554,11 +462,7 @@ describe("createHeatmap renderer", () => {
             heatmap = createHeatmap({ container, useOffscreenCanvas: true });
 
             expect(() =>
-                heatmap.setData({
-                    min: 0,
-                    max: 100,
-                    data: [{ x: 50, y: 50, value: 100 }]
-                })
+                heatmap.setData([{ x: 50, y: 50, value: 100 }])
             ).not.toThrow();
         });
 
@@ -566,11 +470,7 @@ describe("createHeatmap renderer", () => {
             heatmap = createHeatmap({ container, useOffscreenCanvas: false });
 
             expect(() =>
-                heatmap.setData({
-                    min: 0,
-                    max: 100,
-                    data: [{ x: 50, y: 50, value: 100 }]
-                })
+                heatmap.setData([{ x: 50, y: 50, value: 100 }])
             ).not.toThrow();
         });
     });
@@ -578,14 +478,10 @@ describe("createHeatmap renderer", () => {
     describe("multiple points rendering", () => {
         it("should render overlapping points with accumulation", () => {
             heatmap = createHeatmap({ container, radius: 20 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 150, y: 100, value: 50 },
-                    { x: 155, y: 100, value: 50 }
-                ]
-            });
+            heatmap.setData([
+                { x: 150, y: 100, value: 50 },
+                { x: 155, y: 100, value: 50 }
+            ]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(152, 100, 1, 1);
@@ -605,27 +501,17 @@ describe("createHeatmap renderer", () => {
                 });
             }
 
-            expect(() =>
-                heatmap.setData({
-                    min: 0,
-                    max: 100,
-                    data: points
-                })
-            ).not.toThrow();
+            expect(() => heatmap.setData(points)).not.toThrow();
         });
     });
 
     describe("edge cases", () => {
         it("should handle points at canvas edges", () => {
             heatmap = createHeatmap({ container, radius: 10 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 0, y: 0, value: 100 },
-                    { x: 299, y: 199, value: 100 }
-                ]
-            });
+            heatmap.setData([
+                { x: 0, y: 0, value: 100 },
+                { x: 299, y: 199, value: 100 }
+            ]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -640,14 +526,10 @@ describe("createHeatmap renderer", () => {
             heatmap = createHeatmap({ container, radius: 10 });
 
             expect(() =>
-                heatmap.setData({
-                    min: 0,
-                    max: 100,
-                    data: [
-                        { x: -50, y: -50, value: 100 },
-                        { x: 500, y: 500, value: 100 }
-                    ]
-                })
+                heatmap.setData([
+                    { x: -50, y: -50, value: 100 },
+                    { x: 500, y: 500, value: 100 }
+                ])
             ).not.toThrow();
         });
 
@@ -655,14 +537,10 @@ describe("createHeatmap renderer", () => {
             heatmap = createHeatmap({ container });
 
             expect(() =>
-                heatmap.setData({
-                    min: -50,
-                    max: 50,
-                    data: [
-                        { x: 50, y: 50, value: -25 },
-                        { x: 100, y: 100, value: 25 }
-                    ]
-                })
+                heatmap.setData([
+                    { x: 50, y: 50, value: -25 },
+                    { x: 100, y: 100, value: 25 }
+                ])
             ).not.toThrow();
         });
 
@@ -670,14 +548,10 @@ describe("createHeatmap renderer", () => {
             heatmap = createHeatmap({ container });
 
             expect(() =>
-                heatmap.setData({
-                    min: 0,
-                    max: 0.001,
-                    data: [
-                        { x: 50, y: 50, value: 0.0001 },
-                        { x: 100, y: 100, value: 0.0005 }
-                    ]
-                })
+                heatmap.setData([
+                    { x: 50, y: 50, value: 0.0001 },
+                    { x: 100, y: 100, value: 0.0005 }
+                ])
             ).not.toThrow();
         });
 
@@ -685,14 +559,10 @@ describe("createHeatmap renderer", () => {
             heatmap = createHeatmap({ container });
 
             expect(() =>
-                heatmap.setData({
-                    min: 0,
-                    max: 1000000,
-                    data: [
-                        { x: 50, y: 50, value: 500000 },
-                        { x: 100, y: 100, value: 999999 }
-                    ]
-                })
+                heatmap.setData([
+                    { x: 50, y: 50, value: 500000 },
+                    { x: 100, y: 100, value: 999999 }
+                ])
             ).not.toThrow();
         });
     });
@@ -700,11 +570,7 @@ describe("createHeatmap renderer", () => {
     describe("blur behavior", () => {
         it("should render solid circle when blur is 0 (no blur)", () => {
             heatmap = createHeatmap({ container, blur: 0, radius: 30 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
 
@@ -724,11 +590,7 @@ describe("createHeatmap renderer", () => {
 
         it("should render gradient falloff when blur > 0", () => {
             heatmap = createHeatmap({ container, blur: 0.5, radius: 30 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
 
@@ -745,11 +607,7 @@ describe("createHeatmap renderer", () => {
 
         it("should have maximum blur when blur is 1", () => {
             heatmap = createHeatmap({ container, blur: 1, radius: 30 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
 
@@ -766,11 +624,7 @@ describe("createHeatmap renderer", () => {
         it("should produce different visual output for different blur values", () => {
             // Create heatmap with blur=0 (no blur)
             const heatmap1 = createHeatmap({ container, blur: 0, radius: 30 });
-            heatmap1.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap1.setData([{ x: 150, y: 100, value: 100 }]);
             const dataUrl1 = heatmap1.getDataURL();
             heatmap1.destroy();
 
@@ -780,11 +634,7 @@ describe("createHeatmap renderer", () => {
                 blur: 0.5,
                 radius: 30
             });
-            heatmap2.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap2.setData([{ x: 150, y: 100, value: 100 }]);
             const dataUrl2 = heatmap2.getDataURL();
             heatmap2.destroy();
 
@@ -868,14 +718,10 @@ describe("createHeatmap renderer", () => {
     describe("blendMode", () => {
         it("should use default blend mode (source-over) when not specified", () => {
             heatmap = createHeatmap({ container, radius: 20 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 150, y: 100, value: 100 },
-                    { x: 160, y: 100, value: 100 }
-                ]
-            });
+            heatmap.setData([
+                { x: 150, y: 100, value: 100 },
+                { x: 160, y: 100, value: 100 }
+            ]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -892,14 +738,10 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 blendMode: "lighter"
             });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 150, y: 100, value: 50 },
-                    { x: 160, y: 100, value: 50 }
-                ]
-            });
+            heatmap.setData([
+                { x: 150, y: 100, value: 50 },
+                { x: 160, y: 100, value: 50 }
+            ]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -917,14 +759,10 @@ describe("createHeatmap renderer", () => {
                 radius: 30,
                 blendMode: "source-over"
             });
-            heatmap1.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 150, y: 100, value: 80 },
-                    { x: 165, y: 100, value: 80 }
-                ]
-            });
+            heatmap1.setData([
+                { x: 150, y: 100, value: 80 },
+                { x: 165, y: 100, value: 80 }
+            ]);
             const ctx1 = heatmap1.canvas.getContext("2d")!;
             // Sample the overlapping area
             const overlapData1 = ctx1.getImageData(157, 100, 1, 1).data;
@@ -936,14 +774,10 @@ describe("createHeatmap renderer", () => {
                 radius: 30,
                 blendMode: "lighter"
             });
-            heatmap2.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 150, y: 100, value: 80 },
-                    { x: 165, y: 100, value: 80 }
-                ]
-            });
+            heatmap2.setData([
+                { x: 150, y: 100, value: 80 },
+                { x: 165, y: 100, value: 80 }
+            ]);
             const ctx2 = heatmap2.canvas.getContext("2d")!;
             const overlapData2 = ctx2.getImageData(157, 100, 1, 1).data;
             heatmap2.destroy();
@@ -968,11 +802,7 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 blendMode: "multiply"
             });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 100 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(0, 0, 300, 200);
@@ -989,11 +819,7 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 blendMode: "lighter"
             });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 50 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 50 }]);
 
             // Add overlapping point
             heatmap.addPoint({ x: 160, y: 100, value: 50 });
@@ -1025,11 +851,7 @@ describe("createHeatmap renderer", () => {
     describe("intensityExponent", () => {
         it("should use default linear intensity (exponent = 1)", () => {
             heatmap = createHeatmap({ container, radius: 20 });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 50 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 50 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(150, 100, 1, 1);
@@ -1042,11 +864,7 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 intensityExponent: 2
             });
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 50 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 50 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
             const imageData = ctx.getImageData(150, 100, 1, 1);
@@ -1060,11 +878,9 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 intensityExponent: 1
             });
-            heatmap1.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 25 }] // 25% intensity
-            });
+            heatmap1.setData([
+                { x: 150, y: 100, value: 25 } // 25% intensity (target point)
+            ]);
             const ctx1 = heatmap1.canvas.getContext("2d")!;
             const alpha1 = ctx1.getImageData(150, 100, 1, 1).data[3];
             heatmap1.destroy();
@@ -1074,11 +890,9 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 intensityExponent: 0.5
             });
-            heatmap2.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 25 }] // 25% -> 50% with sqrt
-            });
+            heatmap2.setData([
+                { x: 150, y: 100, value: 25 } // 25% -> 50% with sqrt
+            ]);
             const ctx2 = heatmap2.canvas.getContext("2d")!;
             const alpha2 = ctx2.getImageData(150, 100, 1, 1).data[3];
             heatmap2.destroy();
@@ -1096,11 +910,9 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 intensityExponent: 1
             });
-            heatmap1.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 50 }] // 50% intensity
-            });
+            heatmap1.setData([
+                { x: 150, y: 100, value: 50 } // 50% intensity (target point)
+            ]);
             const ctx1 = heatmap1.canvas.getContext("2d")!;
             const alpha1 = ctx1.getImageData(150, 100, 1, 1).data[3];
             heatmap1.destroy();
@@ -1110,11 +922,9 @@ describe("createHeatmap renderer", () => {
                 radius: 20,
                 intensityExponent: 2
             });
-            heatmap2.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 50 }] // 50% -> 25% with square
-            });
+            heatmap2.setData([
+                { x: 150, y: 100, value: 50 } // 50% -> 25% with square
+            ]);
             const ctx2 = heatmap2.canvas.getContext("2d")!;
             const alpha2 = ctx2.getImageData(150, 100, 1, 1).data[3];
             heatmap2.destroy();
@@ -1174,15 +984,11 @@ describe("createHeatmap renderer", () => {
             const listener = vi.fn();
             heatmap.on("datachange", listener);
 
-            const data: HeatmapData = {
-                min: 0,
-                max: 100,
-                data: [{ x: 50, y: 50, value: 75 }]
-            };
-            heatmap.setData(data);
+            const points: HeatmapPoint[] = [{ x: 50, y: 50, value: 75 }];
+            heatmap.setData(points);
 
             expect(listener).toHaveBeenCalledTimes(1);
-            expect(listener).toHaveBeenCalledWith({ data });
+            expect(listener).toHaveBeenCalledWith({ points });
         });
 
         it("should emit gradientchange event when setGradient is called", () => {
@@ -1233,7 +1039,7 @@ describe("createHeatmap renderer", () => {
             heatmap.on("datachange", listener1);
             heatmap.on("datachange", listener2);
 
-            heatmap.setData({ min: 0, max: 100, data: [] });
+            heatmap.setData([]);
 
             expect(listener1).toHaveBeenCalledTimes(1);
             expect(listener2).toHaveBeenCalledTimes(1);
@@ -1244,11 +1050,11 @@ describe("createHeatmap renderer", () => {
             const listener = vi.fn();
 
             heatmap.on("datachange", listener);
-            heatmap.setData({ min: 0, max: 50, data: [] });
+            heatmap.setData([]);
             expect(listener).toHaveBeenCalledTimes(1);
 
             heatmap.off("datachange", listener);
-            heatmap.setData({ min: 0, max: 100, data: [] });
+            heatmap.setData([]);
             expect(listener).toHaveBeenCalledTimes(1); // Still 1, not called again
         });
 

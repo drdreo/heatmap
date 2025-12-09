@@ -110,7 +110,7 @@ function createCustomHeatmap() {
         })
     );
 
-    customHeatmap.setData({ min: 0, max: 100, data: customPoints });
+    customHeatmap.setData(customPoints);
 }
 
 function handleSliderChange() {
@@ -320,7 +320,6 @@ onUnmounted(() => {
     background: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
-    overflow: hidden;
     display: flex;
     justify-content: center;
 }

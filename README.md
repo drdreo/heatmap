@@ -95,8 +95,6 @@ const heatmap = createHeatmap(
     })
 );
 heatmap.setTemporalData({
-    min: 0,
-    max: 100,
     startTime: 0,
     endTime: 60000,
     data: [

@@ -1,9 +1,11 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+    type AnimatedHeatmap,
     createHeatmap,
-    withWebGLRenderer,
+    type Heatmap,
+    type HeatmapPoint,
     isWebGLAvailable,
-    type Heatmap
+    withWebGLRenderer
 } from "../index";
 
 describe("WebGL Renderer", () => {
@@ -55,11 +57,7 @@ describe("WebGL Renderer", () => {
                 {
                     container,
                     radius: 20,
-                    data: {
-                        min: 0,
-                        max: 100,
-                        data: [{ x: 150, y: 100, value: 100 }]
-                    }
+                    data: [{ x: 150, y: 100, value: 100 }]
                 },
                 withWebGLRenderer()
             );
@@ -76,11 +74,7 @@ describe("WebGL Renderer", () => {
             );
 
             expect(() =>
-                heatmap!.setData({
-                    min: 0,
-                    max: 100,
-                    data: [{ x: 150, y: 100, value: 100 }]
-                })
+                heatmap!.setData([{ x: 150, y: 100, value: 100 }])
             ).not.toThrow();
         });
 
@@ -114,11 +108,7 @@ describe("WebGL Renderer", () => {
                 {
                     container,
                     radius: 20,
-                    data: {
-                        min: 0,
-                        max: 100,
-                        data: [{ x: 150, y: 100, value: 100 }]
-                    }
+                    data: [{ x: 150, y: 100, value: 100 }]
                 },
                 withWebGLRenderer()
             );
@@ -136,11 +126,7 @@ describe("WebGL Renderer", () => {
                 {
                     container,
                     radius: 20,
-                    data: {
-                        min: 0,
-                        max: 100,
-                        data: [{ x: 150, y: 100, value: 100 }]
-                    }
+                    data: [{ x: 150, y: 100, value: 100 }]
                 },
                 withWebGLRenderer()
             );
@@ -186,8 +172,7 @@ describe("WebGL Renderer", () => {
     describe("integration with other features", () => {
         it("should work with withAnimation feature", async () => {
             const animationModule = await import("../features/animation");
-            const { withAnimation } = animationModule;
-            type AnimatedHeatmap = animationModule.AnimatedHeatmap;
+            const withAnimation = animationModule.withAnimation;
 
             heatmap = createHeatmap(
                 { container, radius: 20 },
@@ -195,7 +180,7 @@ describe("WebGL Renderer", () => {
                 withAnimation()
             );
 
-            const animatedHeatmap = heatmap as unknown as AnimatedHeatmap;
+            const animatedHeatmap = heatmap as AnimatedHeatmap;
 
             // Animation feature adds animation control methods
             expect(typeof animatedHeatmap.play).toBe("function");
@@ -205,8 +190,6 @@ describe("WebGL Renderer", () => {
 
             // Set temporal data
             animatedHeatmap.setTemporalData({
-                min: 0,
-                max: 100,
                 startTime: 0,
                 endTime: 1000,
                 data: [
@@ -229,11 +212,7 @@ describe("WebGL Renderer", () => {
                 withTooltip()
             );
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [{ x: 150, y: 100, value: 75 }]
-            });
+            heatmap.setData([{ x: 150, y: 100, value: 75 }]);
 
             // Should be able to get value
             expect(heatmap.getValueAt(150, 100)).toBe(75);
@@ -246,11 +225,7 @@ describe("WebGL Renderer", () => {
                 {
                     container,
                     radius: 20,
-                    data: {
-                        min: 0,
-                        max: 100,
-                        data: [{ x: 150, y: 100, value: 100 }]
-                    }
+                    data: [{ x: 150, y: 100, value: 100 }]
                 },
                 withWebGLRenderer(),
                 withLegend({ position: "bottom-right" })
@@ -321,11 +296,7 @@ describe("WebGL Renderer", () => {
             // Multiple setData calls
             for (let i = 0; i < 10; i++) {
                 expect(() =>
-                    heatmap!.setData({
-                        min: 0,
-                        max: 100,
-                        data: [{ x: 150, y: 100, value: i * 10 }]
-                    })
+                    heatmap!.setData([{ x: 150, y: 100, value: i * 10 }])
                 ).not.toThrow();
             }
         });
@@ -336,7 +307,7 @@ describe("WebGL Renderer", () => {
                 withWebGLRenderer()
             );
 
-            const points = [];
+            const points: HeatmapPoint[] = [];
             for (let i = 0; i < 1000; i++) {
                 points.push({
                     x: Math.random() * 300,
@@ -345,13 +316,7 @@ describe("WebGL Renderer", () => {
                 });
             }
 
-            expect(() =>
-                heatmap!.setData({
-                    min: 0,
-                    max: 100,
-                    data: points
-                })
-            ).not.toThrow();
+            expect(() => heatmap!.setData(points)).not.toThrow();
         });
     });
 
@@ -383,9 +348,7 @@ describe("WebGL Renderer", () => {
         it("should handle empty data", () => {
             heatmap = createHeatmap({ container }, withWebGLRenderer());
 
-            expect(() =>
-                heatmap!.setData({ min: 0, max: 100, data: [] })
-            ).not.toThrow();
+            expect(() => heatmap!.setData([])).not.toThrow();
         });
 
         it("should handle points at canvas edges", () => {
@@ -395,14 +358,10 @@ describe("WebGL Renderer", () => {
             );
 
             expect(() =>
-                heatmap!.setData({
-                    min: 0,
-                    max: 100,
-                    data: [
-                        { x: 0, y: 0, value: 100 },
-                        { x: 299, y: 199, value: 100 }
-                    ]
-                })
+                heatmap!.setData([
+                    { x: 0, y: 0, value: 100 },
+                    { x: 299, y: 199, value: 100 }
+                ])
             ).not.toThrow();
         });
 
@@ -413,14 +372,10 @@ describe("WebGL Renderer", () => {
             );
 
             expect(() =>
-                heatmap!.setData({
-                    min: 0,
-                    max: 100,
-                    data: [
-                        { x: -50, y: -50, value: 100 },
-                        { x: 500, y: 500, value: 100 }
-                    ]
-                })
+                heatmap!.setData([
+                    { x: -50, y: -50, value: 100 },
+                    { x: 500, y: 500, value: 100 }
+                ])
             ).not.toThrow();
         });
 
@@ -431,11 +386,7 @@ describe("WebGL Renderer", () => {
             );
 
             expect(() =>
-                heatmap!.setData({
-                    min: 50,
-                    max: 50,
-                    data: [{ x: 150, y: 100, value: 50 }]
-                })
+                heatmap!.setData([{ x: 150, y: 100, value: 50 }])
             ).not.toThrow();
         });
     });

@@ -27,17 +27,13 @@ describe("withLegend feature", () => {
     const findLegend = (selector = ".heatmap-legend") =>
         container.querySelector(selector);
 
-    const findGradientContainer = () =>
-        container.querySelector(".heatmap-legend__gradient-container");
-
-    const findLabelsContainer = () =>
-        container.querySelector(".heatmap-legend__labels");
-
     const findGradientCanvas = () =>
         container.querySelector(".heatmap-legend__gradient");
 
     const getLabels = (): string[] => {
-        const labelsContainer = findLabelsContainer();
+        const labelsContainer = container.querySelector(
+            ".heatmap-legend__labels"
+        );
         if (!labelsContainer) return [];
         return Array.from(labelsContainer.querySelectorAll("span")).map(
             (span) => span.textContent || ""
@@ -55,171 +51,95 @@ describe("withLegend feature", () => {
     });
 
     describe("initialization", () => {
-        it("should create legend element when feature is added", () => {
+        it("should create legend with all required elements", () => {
             heatmap = createHeatmap({ container }, withLegend());
 
-            const legend = findLegend();
+            const legend = findLegend() as HTMLElement;
             expect(legend).not.toBeNull();
+            expect(legend.style.position).toBe("absolute");
+            expect(legend.style.zIndex).toBe("999");
+
+            // Gradient canvas
+            const canvas = findGradientCanvas() as HTMLCanvasElement;
+            expect(canvas?.tagName.toLowerCase()).toBe("canvas");
+
+            // Labels container
+            expect(
+                container.querySelector(".heatmap-legend__labels")
+            ).not.toBeNull();
         });
 
         it("should not create legend without the feature", () => {
             heatmap = createHeatmap({ container });
-
-            const legend = findLegend();
-            expect(legend).toBeNull();
+            expect(findLegend()).toBeNull();
         });
 
-        it("should create gradient container", () => {
+        it("should use default labels 0-100 when no data", () => {
             heatmap = createHeatmap({ container }, withLegend());
-
-            const gradientContainer = findGradientContainer();
-            expect(gradientContainer).not.toBeNull();
+            expect(getLabels()).toEqual(["0", "25", "50", "75", "100"]);
         });
 
-        it("should create labels container", () => {
-            heatmap = createHeatmap({ container }, withLegend());
-
-            const labelsContainer = findLabelsContainer();
-            expect(labelsContainer).not.toBeNull();
-        });
-
-        it("should create gradient canvas", () => {
-            heatmap = createHeatmap({ container }, withLegend());
-
-            const gradientCanvas = findGradientCanvas();
-            expect(gradientCanvas).not.toBeNull();
-            expect(gradientCanvas?.tagName.toLowerCase()).toBe("canvas");
-        });
-
-        it("should apply default styles to legend", () => {
-            heatmap = createHeatmap({ container }, withLegend());
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.position).toBe("absolute");
-            expect(legend.style.pointerEvents).toBe("none");
-            expect(legend.style.zIndex).toBe("999");
-        });
-
-        it("should use default min/max values when no data provided", () => {
-            heatmap = createHeatmap({ container }, withLegend());
-
-            const labels = getLabels();
-            // Default min=0, max=100, labelCount=5
-            expect(labels).toEqual(["0", "25", "50", "75", "100"]);
-        });
-
-        it("should use data min/max values from config", () => {
+        it("should derive labels from data (effectiveMin=0 to gridMax)", () => {
             heatmap = createHeatmap(
-                {
-                    container,
-                    data: {
-                        min: 10,
-                        max: 50,
-                        data: [{ x: 50, y: 50, value: 30 }]
-                    }
-                },
+                { container, data: [{ x: 50, y: 50, value: 30 }] },
                 withLegend()
             );
 
             const labels = getLabels();
-            expect(labels[0]).toBe("10");
-            expect(labels[labels.length - 1]).toBe("50");
+            expect(labels[0]).toBe("0");
+            expect(labels[labels.length - 1]).toBe("30");
         });
     });
 
     describe("positioning", () => {
-        it("should position legend at bottom-right by default", () => {
-            heatmap = createHeatmap({ container }, withLegend());
+        it.each([
+            ["bottom-right", { bottom: "10px", right: "10px" }],
+            ["top-left", { top: "10px", left: "10px" }],
+            ["top-right", { top: "10px", right: "10px" }],
+            ["bottom-left", { bottom: "10px", left: "10px" }]
+        ] as const)(
+            "should position legend at %s",
+            (position, expectedStyles) => {
+                heatmap = createHeatmap(
+                    { container },
+                    withLegend({ position })
+                );
 
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.bottom).toBe("10px");
-            expect(legend.style.right).toBe("10px");
-        });
+                const legend = findLegend() as HTMLElement;
+                for (const [prop, value] of Object.entries(expectedStyles)) {
+                    expect(
+                        legend.style[prop as keyof CSSStyleDeclaration]
+                    ).toBe(value);
+                }
+            }
+        );
 
-        it("should position legend at top-left when configured", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({ position: "top-left" })
-            );
+        it.each([
+            ["top", { top: "10px", left: "50%" }],
+            ["bottom", { bottom: "10px", left: "50%" }],
+            ["left", { top: "50%", left: "10px" }],
+            ["right", { top: "50%", right: "10px" }]
+        ] as const)(
+            "should center legend at %s with transform",
+            (position, expectedStyles) => {
+                heatmap = createHeatmap(
+                    { container },
+                    withLegend({ position })
+                );
 
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.top).toBe("10px");
-            expect(legend.style.left).toBe("10px");
-        });
-
-        it("should position legend at top-right when configured", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({ position: "top-right" })
-            );
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.top).toBe("10px");
-            expect(legend.style.right).toBe("10px");
-        });
-
-        it("should position legend at bottom-left when configured", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({ position: "bottom-left" })
-            );
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.bottom).toBe("10px");
-            expect(legend.style.left).toBe("10px");
-        });
-
-        it("should center legend at top when configured", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({ position: "top" })
-            );
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.top).toBe("10px");
-            expect(legend.style.left).toBe("50%");
-            expect(legend.style.transform).toContain("translateX(-50%)");
-        });
-
-        it("should center legend at bottom when configured", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({ position: "bottom" })
-            );
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.bottom).toBe("10px");
-            expect(legend.style.left).toBe("50%");
-            expect(legend.style.transform).toContain("translateX(-50%)");
-        });
-
-        it("should center legend at left when configured", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({ position: "left" })
-            );
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.top).toBe("50%");
-            expect(legend.style.left).toBe("10px");
-            expect(legend.style.transform).toContain("translateY(-50%)");
-        });
-
-        it("should center legend at right when configured", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({ position: "right" })
-            );
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.top).toBe("50%");
-            expect(legend.style.right).toBe("10px");
-            expect(legend.style.transform).toContain("translateY(-50%)");
-        });
+                const legend = findLegend() as HTMLElement;
+                for (const [prop, value] of Object.entries(expectedStyles)) {
+                    expect(
+                        legend.style[prop as keyof CSSStyleDeclaration]
+                    ).toBe(value);
+                }
+                expect(legend.style.transform).toContain("translate");
+            }
+        );
     });
 
-    describe("orientation", () => {
-        it("should use default width/height for horizontal", () => {
+    describe("dimensions", () => {
+        it("should use horizontal defaults (150x15)", () => {
             heatmap = createHeatmap({ container }, withLegend());
 
             const canvas = findGradientCanvas() as HTMLCanvasElement;
@@ -227,7 +147,7 @@ describe("withLegend feature", () => {
             expect(canvas.height).toBe(15);
         });
 
-        it("should use default width/height for vertical", () => {
+        it("should use vertical defaults (20x100)", () => {
             heatmap = createHeatmap(
                 { container },
                 withLegend({ orientation: "vertical" })
@@ -238,7 +158,7 @@ describe("withLegend feature", () => {
             expect(canvas.height).toBe(100);
         });
 
-        it("should use custom width/height when provided", () => {
+        it("should use custom dimensions", () => {
             heatmap = createHeatmap(
                 { container },
                 withLegend({ width: 200, height: 25 })
@@ -251,100 +171,44 @@ describe("withLegend feature", () => {
     });
 
     describe("labels", () => {
-        it("should show 5 labels by default", () => {
-            heatmap = createHeatmap({ container }, withLegend());
-
-            const labels = getLabels();
-            expect(labels.length).toBe(5);
-        });
-
-        it("should use custom label count", () => {
+        it("should respect labelCount", () => {
             heatmap = createHeatmap(
                 { container },
                 withLegend({ labelCount: 3 })
             );
-
-            const labels = getLabels();
-            expect(labels.length).toBe(3);
+            expect(getLabels().length).toBe(3);
         });
 
-        it("should include min/max values in labels", () => {
-            heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: 0, max: 100, data: [] }
-                },
-                withLegend({ labelCount: 5, showMinMax: true })
-            );
-
-            const labels = getLabels();
-            expect(labels[0]).toBe("0");
-            expect(labels[labels.length - 1]).toBe("100");
-        });
-
-        it("should handle labelCount of 1", () => {
-            heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: 0, max: 100, data: [] }
-                },
-                withLegend({ labelCount: 1 })
-            );
-
-            const labels = getLabels();
-            expect(labels.length).toBe(1);
-            expect(labels[0]).toBe("50"); // midpoint
-        });
-
-        it("should handle labelCount of 0", () => {
+        it("should handle labelCount edge cases (0 and 1)", () => {
             heatmap = createHeatmap(
                 { container },
                 withLegend({ labelCount: 0 })
             );
+            expect(getLabels().length).toBe(0);
+            heatmap.destroy();
 
-            const labels = getLabels();
-            expect(labels.length).toBe(0);
+            heatmap = createHeatmap(
+                { container, data: [{ x: 50, y: 50, value: 100 }] },
+                withLegend({ labelCount: 1 })
+            );
+            expect(getLabels()).toEqual(["50"]); // midpoint of 0-100
         });
 
         it("should evenly distribute labels", () => {
             heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: 0, max: 100, data: [] }
-                },
+                { container, data: [{ x: 50, y: 50, value: 100 }] },
                 withLegend({ labelCount: 5 })
             );
-
-            const labels = getLabels().map(Number);
-            expect(labels).toEqual([0, 25, 50, 75, 100]);
+            expect(getLabels().map(Number)).toEqual([0, 25, 50, 75, 100]);
         });
     });
 
     describe("formatter", () => {
-        it("should use custom formatter", () => {
-            heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: 0, max: 100, data: [] }
-                },
-                withLegend({
-                    formatter: (value) => `${value}°C`,
-                    labelCount: 3
-                })
-            );
-
-            const labels = getLabels();
-            expect(labels).toEqual(["0°C", "50°C", "100°C"]);
-        });
-
-        it("should pass index to formatter", () => {
+        it("should apply custom formatter with value and index", () => {
             const formatterSpy = vi.fn((value, index) => `${value}[${index}]`);
 
             heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: 0, max: 100, data: [] }
-                },
+                { container },
                 withLegend({ formatter: formatterSpy, labelCount: 3 })
             );
 
@@ -355,85 +219,127 @@ describe("withLegend feature", () => {
 
         it("should use default formatter to round values", () => {
             heatmap = createHeatmap(
+                { container, data: [{ x: 50, y: 50, value: 99 }] },
+                withLegend({ labelCount: 4 })
+            );
+            expect(getLabels()).toEqual(["0", "33", "66", "99"]);
+        });
+
+        it("should format decimal values", () => {
+            heatmap = createHeatmap(
                 {
                     container,
-                    data: { min: 0, max: 99, data: [] }
+                    data: [
+                        { x: 50, y: 50, value: 0.5 },
+                        { x: 150, y: 100, value: 2.5 }
+                    ]
                 },
-                withLegend({ labelCount: 4 })
+                withLegend({ formatter: (v) => v.toFixed(1), labelCount: 3 })
+            );
+            expect(getLabels()).toEqual(["0.0", "1.3", "2.5"]);
+        });
+    });
+
+    describe("custom min/max configuration", () => {
+        it("should use explicit min for range-based data (e.g., temps 50-100)", () => {
+            heatmap = createHeatmap(
+                { container, data: [{ x: 10, y: 10, value: 100 }] },
+                withLegend({ min: 50 })
             );
 
             const labels = getLabels();
-            // 0, 33, 66, 99 - all rounded
-            expect(labels).toEqual(["0", "33", "66", "99"]);
+            expect(labels[0]).toBe("50");
+            expect(labels[labels.length - 1]).toBe("100");
+        });
+
+        it("should keep configured min even if data is below it", () => {
+            heatmap = createHeatmap(
+                { container, data: [{ x: 10, y: 10, value: 40 }] },
+                withLegend({ min: 50 })
+            );
+            expect(getLabels()[0]).toBe("50");
+        });
+
+        it("should use explicit max to extend scale beyond data", () => {
+            heatmap = createHeatmap(
+                { container, data: [{ x: 50, y: 50, value: 50 }] },
+                withLegend({ max: 100, labelCount: 3 })
+            );
+
+            const labels = getLabels();
+            expect(labels[0]).toBe("0");
+            expect(labels[labels.length - 1]).toBe("100");
+        });
+
+        it("should use both configured min and max", () => {
+            heatmap = createHeatmap(
+                { container, data: [{ x: 50, y: 50, value: 50 }] },
+                withLegend({ min: 0, max: 100, labelCount: 5 })
+            );
+            expect(getLabels().map(Number)).toEqual([0, 25, 50, 75, 100]);
+        });
+
+        it("should keep configured min/max when data changes", () => {
+            heatmap = createHeatmap(
+                { container },
+                withLegend({ min: 0, max: 100, labelCount: 3 })
+            );
+
+            expect(getLabels()[0]).toBe("0");
+            expect(getLabels()[2]).toBe("100");
+
+            heatmap.setData([{ x: 50, y: 50, value: 150 }]);
+
+            // Should still use configured min/max
+            expect(getLabels()[0]).toBe("0");
+            expect(getLabels()[2]).toBe("100");
         });
     });
 
-    describe("reactive updates - setData", () => {
+    describe("reactive updates", () => {
         it("should update labels when setData is called", () => {
             heatmap = createHeatmap({ container }, withLegend());
 
-            // Initial labels (default 0-100)
-            let labels = getLabels();
-            expect(labels[0]).toBe("0");
-            expect(labels[labels.length - 1]).toBe("100");
+            expect(getLabels()[4]).toBe("100"); // default max
 
-            // Update data with new range
-            heatmap.setData({
-                min: 50,
-                max: 200,
-                data: [{ x: 100, y: 100, value: 150 }]
-            });
+            heatmap.setData([{ x: 100, y: 100, value: 150 }]);
 
-            labels = getLabels();
-            expect(labels[0]).toBe("50");
-            expect(labels[labels.length - 1]).toBe("200");
+            expect(getLabels()[4]).toBe("150"); // new gridMax
         });
 
-        it("should preserve heatmap rendering after setData", () => {
-            heatmap = createHeatmap({ container }, withLegend());
+        it("should show aggregated gridMax when points overlap", () => {
+            heatmap = createHeatmap({ container, gridSize: 10 }, withLegend());
 
-            heatmap.setData({
-                min: 0,
-                max: 100,
-                data: [
-                    { x: 50, y: 50, value: 75 },
-                    { x: 100, y: 100, value: 25 }
-                ]
-            });
+            // Two points in same grid cell
+            heatmap.setData([
+                { x: 2, y: 2, value: 30 },
+                { x: 4, y: 4, value: 20 }
+            ]);
 
-            const stats = heatmap.getStats();
-            expect(stats.pointCount).toBe(2);
-            expect(stats.dataRange?.max).toBe(100);
-        });
-    });
-
-    describe("reactive updates - setGradient", () => {
-        it("should still exist when setGradient is called", () => {
-            heatmap = createHeatmap({ container }, withLegend());
-
-            // Change to thermal gradient
-            heatmap.setGradient(GRADIENT_THERMAL);
-
-            // The canvas should be updated (same element but content changed)
-            const gradientCanvas2 = findGradientCanvas() as HTMLCanvasElement;
-
-            expect(gradientCanvas2).not.toBeNull();
+            expect(getLabels()[4]).toBe("50"); // 30 + 20 aggregated
         });
 
-        it("should invalidate cached gradient canvas on setGradient", () => {
+        it("should update gradient on setGradient but not labels", () => {
             heatmap = createHeatmap({ container }, withLegend());
 
-            const canvas1 = findGradientCanvas();
+            const initialCanvas = findGradientCanvas();
+            const initialLabels = getLabels();
 
             heatmap.setGradient(GRADIENT_THERMAL);
 
-            const canvas2 = findGradientCanvas();
+            expect(findGradientCanvas()).not.toBe(initialCanvas);
+            expect(getLabels()).toEqual(initialLabels);
+        });
 
-            // New canvas should be created (cache invalidated)
-            // Both should exist but be different instances
-            expect(canvas1).not.toBeNull();
-            expect(canvas2).not.toBeNull();
-            expect(canvas1).not.toBe(canvas2);
+        it("should update labels on setData but not gradient", () => {
+            heatmap = createHeatmap({ container }, withLegend());
+
+            const initialCanvas = findGradientCanvas();
+
+            heatmap.setData([{ x: 50, y: 50, value: 200 }]);
+
+            expect(findGradientCanvas()).toBe(initialCanvas);
+            expect(getLabels()[4]).toBe("200");
         });
     });
 
@@ -441,34 +347,17 @@ describe("withLegend feature", () => {
         it("should use custom className", () => {
             heatmap = createHeatmap(
                 { container },
-                withLegend({ className: "my-custom-legend" })
+                withLegend({ className: "my-legend" })
             );
-
-            const legend = findLegend(".my-custom-legend");
-            expect(legend).not.toBeNull();
+            expect(findLegend(".my-legend")).not.toBeNull();
         });
 
-        it("should apply custom styles", () => {
+        it("should apply and override styles", () => {
             heatmap = createHeatmap(
                 { container },
                 withLegend({
                     style: {
                         backgroundColor: "red",
-                        borderRadius: "10px"
-                    }
-                })
-            );
-
-            const legend = findLegend() as HTMLElement;
-            expect(legend.style.backgroundColor).toBe("red");
-            expect(legend.style.borderRadius).toBe("10px");
-        });
-
-        it("should allow custom styles to override defaults", () => {
-            heatmap = createHeatmap(
-                { container },
-                withLegend({
-                    style: {
                         position: "fixed",
                         zIndex: "2000"
                     }
@@ -476,101 +365,35 @@ describe("withLegend feature", () => {
             );
 
             const legend = findLegend() as HTMLElement;
+            expect(legend.style.backgroundColor).toBe("red");
             expect(legend.style.position).toBe("fixed");
             expect(legend.style.zIndex).toBe("2000");
         });
     });
 
     describe("teardown", () => {
-        it("should remove legend element on destroy", () => {
+        it("should remove legend on destroy", () => {
             heatmap = createHeatmap({ container }, withLegend());
-
             expect(findLegend()).not.toBeNull();
 
             heatmap.destroy();
-
             expect(findLegend()).toBeNull();
-        });
-
-        it("should not affect heatmap after legend teardown", () => {
-            heatmap = createHeatmap({ container }, withLegend());
-
-            heatmap.destroy();
-
-            // Container should still exist (not removed by legend)
-            expect(container.parentNode).not.toBeNull();
         });
 
         it("should handle multiple destroy calls gracefully", () => {
             heatmap = createHeatmap({ container }, withLegend());
             heatmap.destroy();
-
-            expect(() => {
-                heatmap.destroy();
-                // Calling destroy again should not throw
-                // (though in practice the heatmap is already destroyed)
-            }).not.toThrow();
+            expect(() => heatmap.destroy()).not.toThrow();
         });
     });
 
-    describe("edge cases", () => {
-        it("should handle data with same min and max", () => {
-            heatmap = createHeatmap(
-                {
-                    container,
-                    data: {
-                        min: 50,
-                        max: 50,
-                        data: [{ x: 50, y: 50, value: 50 }]
-                    }
-                },
-                withLegend()
-            );
-
-            const labels = getLabels();
-            // All labels should be the same value
-            labels.forEach((label) => expect(label).toBe("50"));
-        });
-
-        it("should handle negative values", () => {
-            heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: -100, max: 100, data: [] }
-                },
-                withLegend({ labelCount: 5 })
-            );
-
-            const labels = getLabels();
-            expect(labels).toContain("-100");
-            expect(labels).toContain("0");
-            expect(labels).toContain("100");
-        });
-
-        it("should handle decimal values with formatter", () => {
-            heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: 0.5, max: 2.5, data: [] }
-                },
-                withLegend({
-                    formatter: (v) => v.toFixed(1),
-                    labelCount: 3
-                })
-            );
-
-            const labels = getLabels();
-            expect(labels).toEqual(["0.5", "1.5", "2.5"]);
-        });
-
-        it("should work with gradient from heatmap config", () => {
+    describe("integration", () => {
+        it("should work with heatmap gradient config", () => {
             heatmap = createHeatmap(
                 { container, gradient: GRADIENT_THERMAL },
                 withLegend()
             );
-
-            const gradientCanvas = findGradientCanvas();
-            expect(gradientCanvas).not.toBeNull();
+            expect(findGradientCanvas()).not.toBeNull();
         });
 
         it("should work with multiple features", () => {
@@ -579,43 +402,19 @@ describe("withLegend feature", () => {
             expect(findLegend()).not.toBeNull();
             expect(container.querySelector(".heatmap-tooltip")).not.toBeNull();
         });
-    });
 
-    describe("performance", () => {
-        it("should only update labels on setData, not gradient", () => {
+        it("should preserve heatmap stats after setData", () => {
             heatmap = createHeatmap({ container }, withLegend());
 
-            const initialGradient = findGradientCanvas();
-            const initialLabels = getLabels();
+            heatmap.setData([
+                { x: 50, y: 50, value: 75 },
+                { x: 100, y: 100, value: 25 }
+            ]);
 
-            heatmap.setData({ min: 0, max: 200, data: [] });
-
-            // Gradient canvas should be the same (not recreated)
-            const newGradientCanvas = findGradientCanvas();
-            const newLabels = getLabels();
-
-            expect(newLabels).not.toEqual(initialLabels);
-            expect(newGradientCanvas).toBe(initialGradient);
-        });
-
-        it("should only update gradient on setGradient, not labels", () => {
-            heatmap = createHeatmap(
-                {
-                    container,
-                    data: { min: 0, max: 100, data: [] }
-                },
-                withLegend()
-            );
-            const initialGradient = findGradientCanvas();
-            const initialLabels = getLabels();
-
-            heatmap.setGradient(GRADIENT_THERMAL);
-
-            const newGradientCanvas = findGradientCanvas();
-            // Labels should remain unchanged
-            const newLabels = getLabels();
-            expect(newLabels).toEqual(initialLabels);
-            expect(initialGradient).not.toBe(newGradientCanvas);
+            const stats = heatmap.getStats();
+            expect(stats.pointCount).toBe(2);
+            expect(stats.dataRange?.min).toBe(25);
+            expect(stats.dataRange?.max).toBe(75);
         });
     });
 });

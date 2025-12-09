@@ -31,14 +31,7 @@ export interface RGBAColor {
 }
 
 /** Data to be rendered on the heatmap */
-export interface HeatmapData {
-    /** Minimum value in the dataset (for normalization) */
-    min: number;
-    /** Maximum value in the dataset (for normalization) */
-    max: number;
-    /** Array of data points */
-    data: HeatmapPoint[];
-}
+export type HeatmapData = HeatmapPoint[];
 
 /** Temporal data point with timestamp */
 export interface TemporalHeatmapPoint extends HeatmapPoint {
@@ -47,18 +40,14 @@ export interface TemporalHeatmapPoint extends HeatmapPoint {
 }
 
 /** Temporal data for animated heatmaps */
-export interface TemporalHeatmapData {
-    /** Minimum value in the dataset */
-    min: number;
-    /** Maximum value in the dataset */
-    max: number;
+export type TemporalHeatmapData = {
     /** Start timestamp of the data range */
     startTime: number;
     /** End timestamp of the data range */
     endTime: number;
     /** Array of temporal data points */
     data: TemporalHeatmapPoint[];
-}
+};
 
 /** Point ready to be rendered with computed alpha */
 export interface RenderablePoint {
@@ -79,7 +68,9 @@ export interface RenderBoundaries {
 /** Event payload for data changes */
 export interface DataChangeEvent {
     /** The new data that was set */
-    data: HeatmapData;
+    data: HeatmapPoint[];
+    dataMin: number;
+    dataMax: number;
 }
 
 /** Event payload for gradient changes */
@@ -255,8 +246,8 @@ export interface Heatmap {
     /** The renderer instance (shared across features) */
     renderer: HeatmapRenderer;
 
-    /** Set the data to render */
-    setData(data: HeatmapData): void;
+    /** Set the data points to render. */
+    setData(points: HeatmapPoint[]): void;
 
     /** Add a single point to existing data */
     addPoint(point: HeatmapPoint): void;

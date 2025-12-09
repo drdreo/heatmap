@@ -76,7 +76,7 @@ function initHeatmap() {
             value: 30 + Math.random() * 70
         });
     }
-    heatmap.setData({ min: 0, max: 100, data: initialPoints });
+    heatmap.setData(initialPoints);
 }
 
 onMounted(() => {
