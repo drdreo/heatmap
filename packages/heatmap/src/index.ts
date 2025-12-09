@@ -85,7 +85,8 @@ export {
     withLegend,
     type LegendConfig,
     type LegendPosition,
-    type LegendOrientation
+    type LegendOrientation,
+    type LegendScale
 } from "./features/legend";
 export {
     withAnimation,

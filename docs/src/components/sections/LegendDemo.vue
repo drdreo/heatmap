@@ -359,9 +359,10 @@ onUnmounted(() => {
     <section id="legend-demo" class="section">
         <h2>Legend Feature</h2>
         <p class="section-description">
-            Add a gradient legend that automatically updates when data or
-            gradient changes. Fully customizable positioning, formatting, and
-            styling.
+            Add a gradient legend with auto-scaling or fixed scale ranges. 
+            The legend automatically updates when data or gradient changes, and supports 
+            both auto-detection from data or manual configuration for consistent scales 
+            across multiple heatmaps. Perfect for temperature ranges, click data, and more.
         </p>
 
         <div class="feature-highlights">
@@ -485,6 +486,20 @@ onUnmounted(() => {
                         @change="handleDataRangeChange"
                     />
                 </div>
+            </div>
+            
+            <div class="info-box">
+                <h4>💡 Scale Modes</h4>
+                <ul>
+                    <li>
+                        <strong>Auto Mode:</strong> Legend scale automatically matches your data range. 
+                        Perfect for exploring data where the range is unknown.
+                    </li>
+                    <li>
+                        <strong>Manual Mode:</strong> Set a fixed scale range (e.g., -50°C to 150°C for temperature). 
+                        Ideal for comparing multiple heatmaps with consistent scales or when you have known data boundaries.
+                    </li>
+                </ul>
             </div>
         </div>
 
@@ -641,6 +656,42 @@ onUnmounted(() => {
     border-radius: 50%;
     background: var(--color-primary);
     cursor: pointer;
+}
+
+.info-box {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--border-radius-sm);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.info-box h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.info-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-box li {
+    margin-bottom: 0.75rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+.info-box li:last-child {
+    margin-bottom: 0;
+}
+
+.info-box strong {
+    color: var(--color-text);
 }
 
 .card {
