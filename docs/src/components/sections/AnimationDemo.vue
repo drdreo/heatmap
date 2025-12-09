@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
 import {
-    createHeatmap,
     type AnimatedHeatmap,
+    createHeatmap,
     type TemporalHeatmapPoint,
     withAnimation
 } from "@drdreo/heatmap";
+import { onMounted, onUnmounted, ref } from "vue";
 import CodeBlock from "../ui/CodeBlock.vue";
 import ConfigTable, { type ConfigOption } from "../ui/ConfigTable.vue";
 
