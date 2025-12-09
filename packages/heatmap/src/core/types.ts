@@ -82,6 +82,20 @@ export interface NormalizedHeatmapData {
     data: HeatmapPoint[];
 }
 
+/** Internal temporal data structure with guaranteed min/max values */
+export interface NormalizedTemporalHeatmapData {
+    /** Minimum value in the dataset (always defined) */
+    min: number;
+    /** Maximum value in the dataset (always defined) */
+    max: number;
+    /** Start timestamp of the data range */
+    startTime: number;
+    /** End timestamp of the data range */
+    endTime: number;
+    /** Array of temporal data points */
+    data: TemporalHeatmapPoint[];
+}
+
 /** Point ready to be rendered with computed alpha */
 export interface RenderablePoint {
     x: number;

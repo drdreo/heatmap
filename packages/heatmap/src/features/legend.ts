@@ -107,7 +107,9 @@ export interface LegendConfig {
 interface LegendState {
     minValue: number;
     maxValue: number;
-    dataMin: number;  // Actual data range for reference
+    /** Actual min value from the data (for reference when using manual scale) */
+    dataMin: number;
+    /** Actual max value from the data (for reference when using manual scale) */
     dataMax: number;
     gradientStops: GradientStop[];
     gradientCanvas: HTMLCanvasElement | null;

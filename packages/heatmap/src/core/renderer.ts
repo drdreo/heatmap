@@ -20,6 +20,7 @@ import type {
     RenderBoundaries
 } from "./types";
 import { validateConfig } from "./validation";
+import { computeMinMax } from "./utils";
 
 type GridKey = `${number},${number}`;
 
@@ -107,14 +108,10 @@ export function createCore(config: HeatmapConfig): Heatmap {
 
         // Auto-detect min/max if not provided
         if (min === undefined || max === undefined) {
-            if (data.data.length === 0) {
-                min = 0;
-                max = 100;
-            } else {
-                const values = data.data.map(p => p.value);
-                min = min ?? Math.min(...values);
-                max = max ?? Math.max(...values);
-            }
+            const values = data.data.map(p => p.value);
+            const computed = computeMinMax(values);
+            min = min ?? computed.min;
+            max = max ?? computed.max;
         }
 
         return {

@@ -10,8 +10,10 @@ import {
     type Heatmap,
     type RenderablePoint,
     type TemporalHeatmapData,
-    type TemporalHeatmapPoint
+    type TemporalHeatmapPoint,
+    type NormalizedTemporalHeatmapData
 } from "../core/types";
+import { computeMinMax } from "../core/utils";
 
 /** Re-export temporal types from core */
 export type { TemporalHeatmapPoint, TemporalHeatmapData } from "../core/types";
@@ -111,7 +113,7 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
     const onComplete = config.onComplete;
 
     // Animation state
-    let data: (TemporalHeatmapData & { min: number; max: number }) | null = null;
+    let data: NormalizedTemporalHeatmapData | null = null;
     let state: AnimationState = "idle";
     let currentTime = 0;
     let lastFrameTime = 0;
@@ -132,14 +134,10 @@ export function withAnimation(config: AnimationConfig = {}): AnimationFeature {
         let max = newData.max;
         
         if (min === undefined || max === undefined) {
-            if (sortedData.length === 0) {
-                min = 0;
-                max = 100;
-            } else {
-                const values = sortedData.map(p => p.value);
-                min = min ?? Math.min(...values);
-                max = max ?? Math.max(...values);
-            }
+            const values = sortedData.map(p => p.value);
+            const computed = computeMinMax(values);
+            min = min ?? computed.min;
+            max = max ?? computed.max;
         }
         
         data = { ...newData, data: sortedData, min, max };
