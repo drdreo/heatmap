@@ -466,8 +466,11 @@ onUnmounted(() => {
                     </div>
                 </div>
                 <p class="fixed-scale-hint" v-if="useFixedScale">
-                    💡 Fixed scale uses <code>valueMin</code>/<code>valueMax</code> on HeatmapConfig.
-                    Both rendering intensity and legend labels use this scale.
+                    💡 Fixed scale uses <code>valueMin</code>/<code
+                        >valueMax</code
+                    >
+                    on HeatmapConfig. Both rendering intensity and legend labels
+                    use this scale.
                 </p>
             </div>
         </div>
@@ -646,7 +649,6 @@ onUnmounted(() => {
     height: 16px;
     accent-color: var(--color-primary);
 }
-
 
 .fixed-scale-hint {
     font-size: 0.8rem;

@@ -32,7 +32,7 @@ interface HeatmapState {
     points: HeatmapPoint[];
     /** Auto-detected minimum value from data points */
     dataMin: number;
-    /** Auto-detected maxium value from data points */
+    /** Auto-detected maximum value from data points */
     dataMax: number;
     valueGrid: Map<GridKey, number>;
     renderBoundaries: RenderBoundaries;
@@ -206,19 +206,24 @@ function createCore(config: HeatmapConfig): Heatmap {
     // --- Core Methods ---
 
     /**
-     * Compute min value from data points
+     * Compute min and max values from data points in a single pass
      */
-    function computeDataMin(points: HeatmapPoint[]): number {
-        if (points.length === 0) return 0;
-        return Math.min(...points.map((p) => p.value));
-    }
+    function computeDataBounds(points: HeatmapPoint[]): {
+        min: number;
+        max: number;
+    } {
+        if (points.length === 0) return { min: 0, max: 0 };
 
-    /**
-     * Compute max value from data points
-     */
-    function computeDataMax(points: HeatmapPoint[]): number {
-        if (points.length === 0) return 0;
-        return Math.max(...points.map((p) => p.value));
+        let min = points[0].value;
+        let max = points[0].value;
+
+        for (let i = 1; i < points.length; i++) {
+            const value = points[i].value;
+            if (value < min) min = value;
+            if (value > max) max = value;
+        }
+
+        return { min, max };
     }
 
     /**
@@ -229,8 +234,14 @@ function createCore(config: HeatmapConfig): Heatmap {
         const oldMin = state.dataMin;
         const oldMax = state.dataMax;
 
-        state.dataMin = config.valueMin ?? computeDataMin(state.points);
-        state.dataMax = config.valueMax ?? computeDataMax(state.points);
+        if (config.valueMin !== undefined && config.valueMax !== undefined) {
+            state.dataMin = config.valueMin;
+            state.dataMax = config.valueMax;
+        } else {
+            const bounds = computeDataBounds(state.points);
+            state.dataMin = config.valueMin ?? bounds.min;
+            state.dataMax = config.valueMax ?? bounds.max;
+        }
 
         return state.dataMin !== oldMin || state.dataMax !== oldMax;
     }
