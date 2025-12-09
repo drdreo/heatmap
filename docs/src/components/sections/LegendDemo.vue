@@ -18,6 +18,7 @@ import ConfigTable, { type ConfigOption } from "../ui/ConfigTable.vue";
 
 const legendCode = `import { createHeatmap, withLegend, GRADIENT_THERMAL } from '@drdreo/heatmap';
 
+// Basic legend - scale auto-detected from data
 const heatmap = createHeatmap(
     {
         container: document.querySelector('#container')!,
@@ -33,6 +34,21 @@ const heatmap = createHeatmap(
         className: 'my-legend'
     })
 );
+
+// Fixed scale - set at creation time
+const fixedScaleHeatmap = createHeatmap(
+    {
+        container: document.querySelector('#container')!,
+        valueMin: 0,    // Fixed minimum
+        valueMax: 100,  // Fixed maximum
+        gradient: GRADIENT_THERMAL
+    },
+    withLegend({ position: 'bottom-right' })
+);
+
+// Or update scale dynamically using setScale()
+heatmap.setScale(0, 100);  // Set fixed scale
+heatmap.setScale(undefined, undefined);  // Reset to auto-detect
 
 // Legend updates automatically when data changes
 heatmap.setData(points);
@@ -101,7 +117,7 @@ const featureHighlights = [
     { icon: "1", label: "Auto-updating" },
     { icon: "2", label: "8 Positions" },
     { icon: "3", label: "Custom Formatters" },
-    { icon: "4", label: "CSS Themeable" }
+    { icon: "4", label: "Fixed Scale" }
 ];
 
 type GradientPreset = {
@@ -144,6 +160,11 @@ const selectedPosition = ref<Position>("bottom-right");
 const selectedOrientation = ref<"horizontal" | "vertical">("horizontal");
 const dataMin = ref(0);
 const dataMax = ref(100);
+
+// Fixed scale controls
+const useFixedScale = ref(false);
+const fixedMin = ref(0);
+const fixedMax = ref(100);
 
 let legendHeatmap: Heatmap | null = null;
 
@@ -212,8 +233,15 @@ function handleOrientationChange() {
 }
 
 function handleFixedScaleChange() {
-    // Need to recreate heatmap to change legend min/max config
-    recreateHeatmap();
+    if (!legendHeatmap) return;
+
+    // Use setScale API instead of recreating the heatmap
+    if (useFixedScale.value) {
+        legendHeatmap.setScale(fixedMin.value, fixedMax.value);
+    } else {
+        // Reset to auto-detect
+        legendHeatmap.setScale(undefined, undefined);
+    }
 }
 
 function handleDataRangeChange() {
@@ -241,10 +269,15 @@ function recreateHeatmap() {
         (p) => p.name === selectedGradient.value
     );
 
-    // Build heatmap config
+    // Build heatmap config with optional fixed scale
     const heatmapConfig: Parameters<typeof createHeatmap>[0] = {
         container: containerRef.value,
-        gradient: preset?.value
+        gradient: preset?.value,
+        // Apply fixed scale to HeatmapConfig (affects both rendering AND legend)
+        ...(useFixedScale.value && {
+            valueMin: fixedMin.value,
+            valueMax: fixedMax.value
+        })
     };
 
     // Build legend config
@@ -255,19 +288,6 @@ function recreateHeatmap() {
         formatter: (value) => `${Math.round(value)}`,
         className: "demo-legend"
     };
-
-    // Apply fixed scale based on mode
-    if (useFixedScale.value) {
-        if (fixedScaleMode.value === "render") {
-            // Fixed scale for RENDERING - affects color intensity AND legend
-            heatmapConfig.valueMin = fixedMin.value;
-            heatmapConfig.valueMax = fixedMax.value;
-        } else {
-            // Fixed scale for LEGEND ONLY - display purposes
-            legendConfig.min = fixedMin.value;
-            legendConfig.max = fixedMax.value;
-        }
-    }
 
     // Create new heatmap with updated config
     legendHeatmap = createHeatmap(
@@ -407,6 +427,48 @@ onUnmounted(() => {
                         @change="handleDataRangeChange"
                     />
                 </div>
+            </div>
+
+            <!-- Fixed Scale Controls -->
+            <div class="fixed-scale-controls">
+                <div class="control-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            v-model="useFixedScale"
+                            @change="handleFixedScaleChange"
+                        />
+                        Use Fixed Scale
+                    </label>
+                </div>
+                <div class="range-controls" v-if="useFixedScale">
+                    <div class="range-control">
+                        <label for="fixed-min">Fixed Min: {{ fixedMin }}</label>
+                        <input
+                            type="range"
+                            id="fixed-min"
+                            min="-300"
+                            max="50"
+                            v-model.number="fixedMin"
+                            @change="handleFixedScaleChange"
+                        />
+                    </div>
+                    <div class="range-control">
+                        <label for="fixed-max">Fixed Max: {{ fixedMax }}</label>
+                        <input
+                            type="range"
+                            id="fixed-max"
+                            min="55"
+                            max="300"
+                            v-model.number="fixedMax"
+                            @change="handleFixedScaleChange"
+                        />
+                    </div>
+                </div>
+                <p class="fixed-scale-hint" v-if="useFixedScale">
+                    💡 Fixed scale uses <code>valueMin</code>/<code>valueMax</code> on HeatmapConfig.
+                    Both rendering intensity and legend labels use this scale.
+                </p>
             </div>
         </div>
 
@@ -562,6 +624,45 @@ onUnmounted(() => {
     border-radius: 50%;
     background: var(--color-primary);
     cursor: pointer;
+}
+
+.fixed-scale-controls {
+    margin-top: 1rem;
+}
+
+.fixed-scale-controls .control-group {
+    margin-bottom: 1rem;
+}
+
+.fixed-scale-controls .control-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.fixed-scale-controls .control-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+}
+
+
+.fixed-scale-hint {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(249, 115, 22, 0.1);
+    border-radius: 4px;
+    border-left: 3px solid var(--color-primary);
+}
+
+.fixed-scale-hint code {
+    background: var(--color-bg-secondary);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
 }
 
 .card {

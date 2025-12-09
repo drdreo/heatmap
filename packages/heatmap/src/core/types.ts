@@ -79,12 +79,26 @@ export interface GradientChangeEvent {
     stops: GradientStop[];
 }
 
+/** Event payload for scale changes */
+export interface ScaleChangeEvent {
+    /** The new minimum value (undefined if auto-detecting) */
+    valueMin: number | undefined;
+    /** The new maximum value (undefined if auto-detecting) */
+    valueMax: number | undefined;
+    /** The effective minimum value used for rendering */
+    dataMin: number;
+    /** The effective maximum value used for rendering */
+    dataMax: number;
+}
+
 /** Map of heatmap event names to their payload types */
 export interface HeatmapEventMap {
     /** Fired when setData() is called */
     datachange: DataChangeEvent;
     /** Fired when setGradient() is called */
     gradientchange: GradientChangeEvent;
+    /** Fired when setScale() is called */
+    scalechange: ScaleChangeEvent;
     /** Fired when clear() is called */
     clear: void;
     /** Fired when destroy() is called (before cleanup) */
@@ -189,6 +203,22 @@ export interface HeatmapConfig {
      * Use HeatmapData for static heatmaps, TemporalHeatmapData for animated heatmaps.
      */
     data?: HeatmapData | TemporalHeatmapData;
+
+    /**
+     * Fixed minimum value for the heatmap scale.
+     * When set, this value will be used instead of auto-detecting from data.
+     * Useful for maintaining consistent scales across different datasets.
+     * @example valueMin: 0 // Always start scale at 0
+     */
+    valueMin?: number;
+
+    /**
+     * Fixed maximum value for the heatmap scale.
+     * When set, this value will be used instead of auto-detecting from data.
+     * Useful for maintaining consistent scales across different datasets.
+     * @example valueMax: 100 // Always end scale at 100
+     */
+    valueMax?: number;
 }
 
 /**
@@ -257,6 +287,14 @@ export interface Heatmap {
 
     /** Update the gradient */
     setGradient(stops: GradientStop[]): void;
+
+    /**
+     * Update the value scale for rendering.
+     * This affects both the heatmap intensity and legend labels.
+     * @param min - Minimum value for the scale (or undefined to auto-detect from data)
+     * @param max - Maximum value for the scale (or undefined to auto-detect from data)
+     */
+    setScale(min: number | undefined, max: number | undefined): void;
 
     /** Clear the heatmap */
     clear(): void;

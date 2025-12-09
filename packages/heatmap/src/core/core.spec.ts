@@ -390,7 +390,7 @@ describe("createHeatmap core", () => {
 
     describe("config options", () => {
         it("should use custom radius", () => {
-            heatmap = createHeatmap({ container, radius: 50 });
+            heatmap = createHeatmap({ container, radius: 50, valueMin: 0, valueMax: 100 });
             heatmap.setData([{ x: 150, y: 100, value: 100 }]);
 
             const ctx = heatmap.canvas.getContext("2d")!;
@@ -876,6 +876,8 @@ describe("createHeatmap core", () => {
             const heatmap1 = createHeatmap({
                 container,
                 radius: 20,
+                valueMin: 0,
+                valueMax: 100,
                 intensityExponent: 1
             });
             heatmap1.setData([
@@ -888,6 +890,8 @@ describe("createHeatmap core", () => {
             const heatmap2 = createHeatmap({
                 container,
                 radius: 20,
+                valueMin: 0,
+                valueMax: 100,
                 intensityExponent: 0.5
             });
             heatmap2.setData([
@@ -908,6 +912,8 @@ describe("createHeatmap core", () => {
             const heatmap1 = createHeatmap({
                 container,
                 radius: 20,
+                valueMin: 0,
+                valueMax: 100,
                 intensityExponent: 1
             });
             heatmap1.setData([
@@ -920,6 +926,8 @@ describe("createHeatmap core", () => {
             const heatmap2 = createHeatmap({
                 container,
                 radius: 20,
+                valueMin: 0,
+                valueMax: 100,
                 intensityExponent: 2
             });
             heatmap2.setData([
@@ -988,7 +996,11 @@ describe("createHeatmap core", () => {
             heatmap.setData(points);
 
             expect(listener).toHaveBeenCalledTimes(1);
-            expect(listener).toHaveBeenCalledWith({ points });
+            expect(listener).toHaveBeenCalledWith({
+                data: points,
+                dataMin: 75,
+                dataMax: 75
+            });
         });
 
         it("should emit gradientchange event when setGradient is called", () => {
@@ -1063,6 +1075,211 @@ describe("createHeatmap core", () => {
             const listener = vi.fn();
 
             expect(() => heatmap.off("datachange", listener)).not.toThrow();
+        });
+    });
+
+    describe("fixed value scale (valueMin/valueMax)", () => {
+        it("should use valueMin from config instead of auto-detection", () => {
+            heatmap = createHeatmap({
+                container,
+                valueMin: 0,
+                data: [{ x: 10, y: 10, value: 50 }]
+            });
+
+            // dataMin should be 0, not 50
+            const stats = heatmap.getStats();
+            expect(stats.dataRange?.min).toBe(0);
+        });
+
+        it("should use valueMax from config instead of auto-detection", () => {
+            heatmap = createHeatmap({
+                container,
+                valueMax: 100,
+                data: [{ x: 10, y: 10, value: 50 }]
+            });
+
+            // dataMax should be 100, not 50
+            const stats = heatmap.getStats();
+            expect(stats.dataRange?.max).toBe(100);
+        });
+
+        it("should allow mixed auto-detect and fixed values", () => {
+            heatmap = createHeatmap({
+                container,
+                valueMin: 0, // Fixed
+                // valueMax not set - should auto-detect
+                data: [
+                    { x: 10, y: 10, value: 25 },
+                    { x: 20, y: 20, value: 75 }
+                ]
+            });
+
+            const stats = heatmap.getStats();
+            expect(stats.dataRange?.min).toBe(0); // Fixed
+            expect(stats.dataRange?.max).toBe(75); // Auto-detected
+        });
+
+        it("should maintain fixed scale when data changes via setData", () => {
+            heatmap = createHeatmap({
+                container,
+                valueMin: 0,
+                valueMax: 100,
+                data: [{ x: 10, y: 10, value: 50 }]
+            });
+
+            heatmap.setData([{ x: 10, y: 10, value: 200 }]);
+
+            // Should still be 0-100, not 200
+            const stats = heatmap.getStats();
+            expect(stats.dataRange?.min).toBe(0);
+            expect(stats.dataRange?.max).toBe(100);
+        });
+
+        it("should maintain fixed scale when data changes via addPoint", () => {
+            heatmap = createHeatmap({
+                container,
+                valueMin: 0,
+                valueMax: 100,
+                data: [{ x: 10, y: 10, value: 50 }]
+            });
+
+            heatmap.addPoint({ x: 20, y: 20, value: 200 });
+
+            const stats = heatmap.getStats();
+            expect(stats.dataRange?.min).toBe(0);
+            expect(stats.dataRange?.max).toBe(100);
+        });
+
+        it("should emit correct dataMin/dataMax in datachange event with fixed scale", () => {
+            heatmap = createHeatmap({
+                container,
+                valueMin: 0,
+                valueMax: 100
+            });
+
+            const listener = vi.fn();
+            heatmap.on("datachange", listener);
+
+            heatmap.setData([{ x: 10, y: 10, value: 50 }]);
+
+            expect(listener).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    dataMin: 0,
+                    dataMax: 100
+                })
+            );
+        });
+
+        it("should render values relative to fixed scale", () => {
+            // With fixed scale 0-100, a value of 50 should render at 50% intensity
+            const heatmapFixed = createHeatmap({
+                container,
+                radius: 20,
+                valueMin: 0,
+                valueMax: 100,
+                data: [{ x: 150, y: 100, value: 50 }]
+            });
+
+            const ctx1 = heatmapFixed.canvas.getContext("2d")!;
+            const alphaFixed = ctx1.getImageData(150, 100, 1, 1).data[3];
+            heatmapFixed.destroy();
+
+            // With auto-detect, a single point of value 50 would render at 100% intensity
+            const heatmapAuto = createHeatmap({
+                container,
+                radius: 20,
+                data: [{ x: 150, y: 100, value: 50 }]
+            });
+
+            const ctx2 = heatmapAuto.canvas.getContext("2d")!;
+            const alphaAuto = ctx2.getImageData(150, 100, 1, 1).data[3];
+            heatmapAuto.destroy();
+
+            // With fixed scale 0-100, value 50 = 50% intensity (visible)
+            // With auto-detect and single point (min=max), the point gets minimal intensity
+            // Fixed scale should produce higher alpha than auto-detect for this case
+            expect(alphaFixed).toBeGreaterThan(alphaAuto);
+
+            heatmap = null as unknown as Heatmap;
+        });
+    });
+
+    describe("setScale", () => {
+        it("should update the scale and re-render", () => {
+            heatmap = createHeatmap({
+                container,
+                radius: 20,
+                data: [{ x: 150, y: 100, value: 50 }]
+            });
+
+            // Initially auto-detect: min=max=50, so low intensity
+            const ctx = heatmap.canvas.getContext("2d")!;
+            const alphaBefore = ctx.getImageData(150, 100, 1, 1).data[3];
+
+            // Set fixed scale 0-100
+            heatmap.setScale(0, 100);
+
+            // Now value 50 = 50% intensity, should be higher
+            const alphaAfter = ctx.getImageData(150, 100, 1, 1).data[3];
+            expect(alphaAfter).toBeGreaterThan(alphaBefore);
+        });
+
+        it("should emit scalechange event", () => {
+            heatmap = createHeatmap({
+                container,
+                data: [{ x: 50, y: 50, value: 50 }]
+            });
+
+            const listener = vi.fn();
+            heatmap.on("scalechange", listener);
+
+            heatmap.setScale(0, 100);
+
+            expect(listener).toHaveBeenCalledTimes(1);
+            expect(listener).toHaveBeenCalledWith({
+                valueMin: 0,
+                valueMax: 100,
+                dataMin: 0,
+                dataMax: 100
+            });
+        });
+
+        it("should allow resetting to auto-detect with undefined", () => {
+            heatmap = createHeatmap({
+                container,
+                valueMin: 0,
+                valueMax: 100,
+                data: [{ x: 50, y: 50, value: 75 }]
+            });
+
+            // Initially fixed scale
+            let stats = heatmap.getStats();
+            expect(stats.dataRange?.min).toBe(0);
+            expect(stats.dataRange?.max).toBe(100);
+
+            // Reset to auto-detect
+            heatmap.setScale(undefined, undefined);
+
+            stats = heatmap.getStats();
+            expect(stats.dataRange?.min).toBe(75);
+            expect(stats.dataRange?.max).toBe(75);
+        });
+
+        it("should allow mixed fixed and auto-detect values", () => {
+            heatmap = createHeatmap({
+                container,
+                data: [
+                    { x: 50, y: 50, value: 25 },
+                    { x: 100, y: 100, value: 75 }
+                ]
+            });
+
+            // Fix only min, auto-detect max
+            heatmap.setScale(0, undefined);
+
+            const stats = heatmap.getStats();
+            expect(stats.dataRange?.min).toBe(0);
+            expect(stats.dataRange?.max).toBe(75);
         });
     });
 });

@@ -195,8 +195,8 @@ function createCore(config: HeatmapConfig): Heatmap {
     // Internal state
     const state: HeatmapState = {
         points: [],
-        dataMin: 0,
-        dataMax: 0,
+        dataMin: config.valueMin ?? 0,
+        dataMax: config.valueMax ?? 0,
         valueGrid: new Map(),
         renderBoundaries: { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 }
     };
@@ -224,8 +224,13 @@ function createCore(config: HeatmapConfig): Heatmap {
 
     function setData(data: HeatmapPoint[]): void {
         state.points = data;
-        state.dataMin = computeDataMin(data);
-        state.dataMax = computeDataMax(data);
+
+        const detectedMin = computeDataMin(data);
+        const detectedMax = computeDataMax(data);
+
+        state.dataMin = config.valueMin ?? detectedMin;
+        state.dataMax = config.valueMax ?? detectedMax;
+
         updateValueGrid(data);
         render();
         events.emit("datachange", {
@@ -246,13 +251,19 @@ function createCore(config: HeatmapConfig): Heatmap {
         const oldMin = state.dataMin;
         const oldMax = state.dataMax;
         state.points.push(...points);
-        const newMin = computeDataMin(state.points);
-        const newMax = computeDataMax(state.points);
 
-        if (newMin < state.dataMin) {
+        updateValueGrid(state.points);
+
+        const detectedMin = computeDataMin(state.points);
+        const detectedMax = computeDataMax(state.points);
+
+        const newMin = config.valueMin ?? detectedMin;
+        const newMax = config.valueMax ?? detectedMax;
+
+        if (newMin < state.dataMin || config.valueMin !== undefined) {
             state.dataMin = newMin;
         }
-        if (newMax > state.dataMax) {
+        if (newMax > state.dataMax || config.valueMax !== undefined) {
             state.dataMax = newMax;
         }
 
@@ -274,6 +285,29 @@ function createCore(config: HeatmapConfig): Heatmap {
         renderer.setPalette(generatePalette(stops));
         render();
         events.emit("gradientchange", { stops });
+    }
+
+    function setScale(
+        min: number | undefined,
+        max: number | undefined
+    ): void {
+        config.valueMin = min;
+        config.valueMax = max;
+
+        const detectedMin = computeDataMin(state.points);
+        const detectedMax = computeDataMax(state.points);
+
+        state.dataMin = min ?? detectedMin;
+        state.dataMax = max ?? detectedMax;
+
+        render();
+
+        events.emit("scalechange", {
+            valueMin: min,
+            valueMax: max,
+            dataMin: state.dataMin,
+            dataMax: state.dataMax
+        });
     }
 
     function clear(): void {
@@ -423,6 +457,7 @@ function createCore(config: HeatmapConfig): Heatmap {
         addPoint,
         addPoints,
         setGradient,
+        setScale,
         clear,
         getValueAt,
         getDataURL,

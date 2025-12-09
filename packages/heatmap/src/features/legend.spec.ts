@@ -79,14 +79,15 @@ describe("withLegend feature", () => {
             expect(getLabels()).toEqual(["0", "25", "50", "75", "100"]);
         });
 
-        it("should derive labels from data (effectiveMin=0 to gridMax)", () => {
+        it("should derive labels from data (dataMin to dataMax)", () => {
             heatmap = createHeatmap(
                 { container, data: [{ x: 50, y: 50, value: 30 }] },
                 withLegend()
             );
 
             const labels = getLabels();
-            expect(labels[0]).toBe("0");
+            // With a single point, min and max are both 30
+            expect(labels[0]).toBe("30");
             expect(labels[labels.length - 1]).toBe("30");
         });
     });
@@ -188,7 +189,7 @@ describe("withLegend feature", () => {
             heatmap.destroy();
 
             heatmap = createHeatmap(
-                { container, data: [{ x: 50, y: 50, value: 100 }] },
+                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 100 }] },
                 withLegend({ labelCount: 1 })
             );
             expect(getLabels()).toEqual(["50"]); // midpoint of 0-100
@@ -196,7 +197,7 @@ describe("withLegend feature", () => {
 
         it("should evenly distribute labels", () => {
             heatmap = createHeatmap(
-                { container, data: [{ x: 50, y: 50, value: 100 }] },
+                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 100 }] },
                 withLegend({ labelCount: 5 })
             );
             expect(getLabels().map(Number)).toEqual([0, 25, 50, 75, 100]);
@@ -219,7 +220,7 @@ describe("withLegend feature", () => {
 
         it("should use default formatter to round values", () => {
             heatmap = createHeatmap(
-                { container, data: [{ x: 50, y: 50, value: 99 }] },
+                { container, valueMin: 0, valueMax: 99, data: [{ x: 50, y: 50, value: 99 }] },
                 withLegend({ labelCount: 4 })
             );
             expect(getLabels()).toEqual(["0", "33", "66", "99"]);
@@ -229,6 +230,8 @@ describe("withLegend feature", () => {
             heatmap = createHeatmap(
                 {
                     container,
+                    valueMin: 0,
+                    valueMax: 2.5,
                     data: [
                         { x: 50, y: 50, value: 0.5 },
                         { x: 150, y: 100, value: 2.5 }
@@ -241,10 +244,10 @@ describe("withLegend feature", () => {
     });
 
     describe("custom min/max configuration", () => {
-        it("should use explicit min for range-based data (e.g., temps 50-100)", () => {
+        it("should use explicit valueMin for range-based data (e.g., temps 50-100)", () => {
             heatmap = createHeatmap(
-                { container, data: [{ x: 10, y: 10, value: 100 }] },
-                withLegend({ min: 50 })
+                { container, valueMin: 50, data: [{ x: 10, y: 10, value: 100 }] },
+                withLegend()
             );
 
             const labels = getLabels();
@@ -252,18 +255,18 @@ describe("withLegend feature", () => {
             expect(labels[labels.length - 1]).toBe("100");
         });
 
-        it("should keep configured min even if data is below it", () => {
+        it("should keep configured valueMin even if data is below it", () => {
             heatmap = createHeatmap(
-                { container, data: [{ x: 10, y: 10, value: 40 }] },
-                withLegend({ min: 50 })
+                { container, valueMin: 50, data: [{ x: 10, y: 10, value: 40 }] },
+                withLegend()
             );
             expect(getLabels()[0]).toBe("50");
         });
 
-        it("should use explicit max to extend scale beyond data", () => {
+        it("should use explicit valueMax to extend scale beyond data", () => {
             heatmap = createHeatmap(
-                { container, data: [{ x: 50, y: 50, value: 50 }] },
-                withLegend({ max: 100, labelCount: 3 })
+                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 50 }] },
+                withLegend({ labelCount: 3 })
             );
 
             const labels = getLabels();
@@ -271,18 +274,18 @@ describe("withLegend feature", () => {
             expect(labels[labels.length - 1]).toBe("100");
         });
 
-        it("should use both configured min and max", () => {
+        it("should use both configured valueMin and valueMax", () => {
             heatmap = createHeatmap(
-                { container, data: [{ x: 50, y: 50, value: 50 }] },
-                withLegend({ min: 0, max: 100, labelCount: 5 })
+                { container, valueMin: 0, valueMax: 100, data: [{ x: 50, y: 50, value: 50 }] },
+                withLegend({ labelCount: 5 })
             );
             expect(getLabels().map(Number)).toEqual([0, 25, 50, 75, 100]);
         });
 
-        it("should keep configured min/max when data changes", () => {
+        it("should keep configured valueMin/valueMax when data changes", () => {
             heatmap = createHeatmap(
-                { container },
-                withLegend({ min: 0, max: 100, labelCount: 3 })
+                { container, valueMin: 0, valueMax: 100 },
+                withLegend({ labelCount: 3 })
             );
 
             expect(getLabels()[0]).toBe("0");
@@ -290,7 +293,7 @@ describe("withLegend feature", () => {
 
             heatmap.setData([{ x: 50, y: 50, value: 150 }]);
 
-            // Should still use configured min/max
+            // Should still use configured valueMin/valueMax
             expect(getLabels()[0]).toBe("0");
             expect(getLabels()[2]).toBe("100");
         });
@@ -307,16 +310,17 @@ describe("withLegend feature", () => {
             expect(getLabels()[4]).toBe("150"); // new gridMax
         });
 
-        it("should show aggregated gridMax when points overlap", () => {
+        it("should show dataMax from points when points overlap", () => {
             heatmap = createHeatmap({ container, gridSize: 10 }, withLegend());
 
-            // Two points in same grid cell
+            // Two points in same grid cell - legend shows max of individual point values
             heatmap.setData([
                 { x: 2, y: 2, value: 30 },
                 { x: 4, y: 4, value: 20 }
             ]);
 
-            expect(getLabels()[4]).toBe("50"); // 30 + 20 aggregated
+            // Legend shows max point value (30), not aggregated grid value
+            expect(getLabels()[4]).toBe("30");
         });
 
         it("should update gradient on setGradient but not labels", () => {

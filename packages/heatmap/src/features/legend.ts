@@ -11,6 +11,7 @@ import {
     FeatureKind,
     type DataChangeEvent,
     type GradientChangeEvent,
+    type ScaleChangeEvent,
     type GradientStop,
     type Heatmap,
     type LegendFeature
@@ -80,20 +81,6 @@ export interface LegendConfig {
      * Custom inline styles for the legend container
      */
     style?: Partial<CSSStyleDeclaration>;
-
-    /**
-     * Fixed minimum value for the legend.
-     * When set, this value will be used instead of auto-detecting from data.
-     * Useful for maintaining consistent scales across different datasets.
-     */
-    min?: number;
-
-    /**
-     * Fixed maximum value for the legend.
-     * When set, this value will be used instead of auto-detecting from data.
-     * Useful for maintaining consistent scales across different datasets.
-     */
-    max?: number;
 }
 
 /** Internal state for the legend */
@@ -106,7 +93,7 @@ interface LegendState {
 
 /** Default legend configuration */
 const DEFAULT_LEGEND_CONFIG: Required<
-    Omit<LegendConfig, "className" | "style" | "min" | "max">
+    Omit<LegendConfig, "className" | "style">
 > = {
     position: "bottom-right",
     orientation: "horizontal",
@@ -131,10 +118,10 @@ const DEFAULT_LEGEND_CONFIG: Required<
  *     withLegend({ formatter: (v) => `${v.toFixed(1)}°C`, labelCount: 3 })
  * );
  *
- * // Fixed min/max scale
+ * // Fixed min/max scale (use HeatmapConfig.valueMin/valueMax)
  * const heatmap = createHeatmap(
- *     { container, data },
- *     withLegend({ min: 0, max: 100 })
+ *     { container, valueMin: 0, valueMax: 100, data },
+ *     withLegend()
  * );
  *
  * // Custom theme
@@ -174,9 +161,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         showMinMax: config.showMinMax ?? DEFAULT_LEGEND_CONFIG.showMinMax,
         formatter: config.formatter ?? DEFAULT_LEGEND_CONFIG.formatter,
         className: config.className,
-        style: config.style,
-        min: config.min,
-        max: config.max
+        style: config.style
     };
 
     const state: LegendState = {
@@ -419,9 +404,8 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
      * Handle data change event - update min/max values and labels
      */
     function handleDataChange(event: DataChangeEvent): void {
-        // Use legend-specific config if provided, otherwise use effective render scale
-        state.minValue = resolvedConfig.min ?? event.dataMin;
-        state.maxValue = resolvedConfig.max ?? event.dataMax;
+        state.minValue = event.dataMin;
+        state.maxValue = event.dataMax;
         updateLabelsDisplay();
     }
 
@@ -435,14 +419,29 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     }
 
     /**
+     * Handle scale change event - update min/max values and labels
+     */
+    function handleScaleChange(event: ScaleChangeEvent): void {
+        state.minValue = event.dataMin;
+        state.maxValue = event.dataMax;
+        updateLabelsDisplay();
+    }
+
+    // Bound handlers for cleanup
+    let boundScaleChangeHandler: ((event: ScaleChangeEvent) => void) | null =
+        null;
+
+    /**
      * Subscribe to heatmap events for reactivity
      */
     function subscribeToEvents(heatmap: Heatmap): void {
         boundDataChangeHandler = handleDataChange;
         boundGradientChangeHandler = handleGradientChange;
+        boundScaleChangeHandler = handleScaleChange;
 
         heatmap.on("datachange", boundDataChangeHandler);
         heatmap.on("gradientchange", boundGradientChangeHandler);
+        heatmap.on("scalechange", boundScaleChangeHandler);
     }
 
     /**
@@ -455,6 +454,9 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         if (boundGradientChangeHandler) {
             heatmap.off("gradientchange", boundGradientChangeHandler);
         }
+        if (boundScaleChangeHandler) {
+            heatmap.off("scalechange", boundScaleChangeHandler);
+        }
     }
 
     /**
@@ -463,12 +465,12 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
     function initializeState(heatmap: Heatmap): void {
         state.gradientStops = heatmap.config.gradient ?? DEFAULT_GRADIENT;
 
-        // Use configured min/max if provided
-        if (resolvedConfig.min !== undefined) {
-            state.minValue = resolvedConfig.min;
+        // Initialize min/max from heatmap config if provided
+        if (heatmap.config.valueMin !== undefined) {
+            state.minValue = heatmap.config.valueMin;
         }
-        if (resolvedConfig.max !== undefined) {
-            state.maxValue = resolvedConfig.max;
+        if (heatmap.config.valueMax !== undefined) {
+            state.maxValue = heatmap.config.valueMax;
         }
     }
 
