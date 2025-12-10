@@ -58,6 +58,13 @@ heatmap.setGradient(GRADIENT_COOL);`;
 
 const legendOptions: ConfigOption[] = [
     {
+        name: "container",
+        type: "HTMLElement",
+        default: "heatmap container",
+        description:
+            "Custom container element for the legend. When provided, position styles are disabled."
+    },
+    {
         name: "position",
         type: "string",
         default: "'bottom-right'",
@@ -117,7 +124,8 @@ const featureHighlights = [
     { icon: "1", label: "Auto-updating" },
     { icon: "2", label: "8 Positions" },
     { icon: "3", label: "Custom Formatters" },
-    { icon: "4", label: "Fixed Scale" }
+    { icon: "4", label: "Fixed Scale" },
+    { icon: "5", label: "Custom Container" }
 ];
 
 type GradientPreset = {
@@ -155,6 +163,8 @@ const positions: Position[] = [
 ];
 
 const containerRef = ref<HTMLElement | null>(null);
+const scaleTestContainerRef = ref<HTMLElement | null>(null);
+const scaleTestLegendContainerRef = ref<HTMLElement | null>(null);
 const selectedGradient = ref<string>("Default");
 const selectedPosition = ref<Position>("bottom-right");
 const selectedOrientation = ref<"horizontal" | "vertical">("horizontal");
@@ -166,7 +176,11 @@ const useFixedScale = ref(false);
 const fixedMin = ref(0);
 const fixedMax = ref(100);
 
+// Scale correction test controls
+const containerScale = ref(1);
+
 let legendHeatmap: Heatmap | null = null;
+let scaleTestHeatmap: Heatmap | null = null;
 
 /**
  * Generate deterministic clustered points for consistent comparison.
@@ -307,6 +321,32 @@ function recreateHeatmap() {
     legendHeatmap.setData(scaledPoints);
 }
 
+function initScaleTestHeatmap() {
+    if (!scaleTestContainerRef.value || !scaleTestLegendContainerRef.value) return;
+
+    scaleTestHeatmap?.destroy();
+
+    scaleTestHeatmap = createHeatmap(
+        {
+            container: scaleTestContainerRef.value,
+            gradient: GRADIENT_THERMAL
+        },
+        withLegend({
+            // Use a separate container for the legend so it doesn't scale with the heatmap
+            container: scaleTestLegendContainerRef.value,
+            orientation: "horizontal",
+            labelCount: 5,
+            formatter: (value) => `${Math.round(value)}`,
+            className: "demo-legend"
+        })
+    );
+
+    // Set data
+    const points = generateClusteredPoints();
+    scaleTestHeatmap.setData(points);
+}
+
+
 onMounted(() => {
     if (!containerRef.value) return;
 
@@ -328,10 +368,14 @@ onMounted(() => {
     const points = generateClusteredPoints();
 
     legendHeatmap.setData(points);
+
+    // Initialize scale test heatmap
+    initScaleTestHeatmap();
 });
 
 onUnmounted(() => {
     legendHeatmap?.destroy();
+    scaleTestHeatmap?.destroy();
 });
 </script>
 
@@ -478,6 +522,60 @@ onUnmounted(() => {
         <CodeBlock title="Code" language="typescript">{{
             legendCode
         }}</CodeBlock>
+
+        <!-- Custom Container Test Section -->
+        <div class="card scale-test-card">
+            <h4>🧪 Custom Container Demo</h4>
+            <p class="scale-test-description">
+                When using CSS transforms on the heatmap container, the legend would
+                scale with it. To avoid this, you can provide a custom <code>container</code>
+                option to render the legend outside the transformed element.
+            </p>
+
+            <div class="scale-test-controls">
+                <div class="control-group">
+                    <label for="scale-slider">Container Scale: {{ containerScale.toFixed(2) }}x</label>
+                    <input
+                        type="range"
+                        id="scale-slider"
+                        min="0.25"
+                        max="2"
+                        step="0.05"
+                        v-model.number="containerScale"
+                    />
+                </div>
+            </div>
+
+            <div class="scale-test-container">
+                <div class="scale-reference">
+                    <span class="reference-label">Legend stays fixed size</span>
+                </div>
+                <div
+                    class="scale-test-wrapper"
+                    :style="{ transform: `scale(${containerScale})`, transformOrigin: 'top left' }"
+                >
+                    <div ref="scaleTestContainerRef" class="heatmap-container scale-test-heatmap"></div>
+                </div>
+                <!-- Custom container for legend - outside the scaled wrapper -->
+                <div ref="scaleTestLegendContainerRef" class="custom-legend-container"></div>
+            </div>
+
+            <div class="scale-test-info">
+                <p>
+                    <strong>How it works:</strong> The legend is rendered in a separate
+                    container that is not affected by the CSS transform. This gives you
+                    full control over the legend's appearance.
+                </p>
+                <pre class="code-example">withLegend({
+    container: document.querySelector('#my-legend-container'),
+    orientation: 'horizontal'
+})</pre>
+                <p class="scale-debug">
+                    Current heatmap transform: <code>scale({{ containerScale.toFixed(2) }})</code>
+                    | Legend: <strong>unaffected</strong>
+                </p>
+            </div>
+        </div>
 
         <div class="card config-card">
             <h4>LegendConfig Options</h4>
@@ -694,6 +792,149 @@ onUnmounted(() => {
     .range-controls {
         flex-direction: column;
     }
+}
+
+/* Scale Correction Test Styles */
+.scale-test-card {
+    margin-top: 2rem;
+}
+
+.scale-test-card h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.scale-test-description {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.scale-test-controls {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    align-items: flex-end;
+}
+
+.scale-test-controls .control-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.scale-test-controls input[type="range"] {
+    width: 200px;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-bg-tertiary);
+    border-radius: 4px;
+    outline: none;
+}
+
+.scale-test-controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    cursor: pointer;
+}
+
+.scale-test-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    min-height: 400px;
+    align-items: center;
+    justify-content: center;
+}
+
+.scale-reference {
+    width: 640px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary), transparent);
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.reference-label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+.scale-test-wrapper {
+    transform-origin: center center;
+    transition: transform 0.2s ease-out;
+}
+
+.scale-test-heatmap {
+    width: 640px;
+    height: 320px;
+    min-height: unset;
+}
+
+.scale-test-info {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(249, 115, 22, 0.1);
+    border-radius: 4px;
+    border-left: 3px solid var(--color-primary);
+    font-size: 0.875rem;
+}
+
+.scale-test-info p {
+    margin-bottom: 0.75rem;
+}
+
+.scale-test-info ul {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.scale-test-info li {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-muted);
+}
+
+.scale-test-info code {
+    background: var(--color-bg-secondary);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+}
+
+.scale-debug {
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    color: var(--color-text-muted);
+    margin-top: 1rem;
+}
+
+.custom-legend-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.code-example {
+    background: var(--color-bg-tertiary);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
 }
 </style>
 
