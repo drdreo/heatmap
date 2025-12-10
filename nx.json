@@ -24,7 +24,7 @@
             "workspaceChangelog": {
                 "createRelease": "github"
             },
-            "projectChangelogs": false
+            "projectChangelogs": true
         }
     },
     "namedInputs": {

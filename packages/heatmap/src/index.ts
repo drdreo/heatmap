@@ -32,7 +32,8 @@ export type {
     HeatmapEventMap,
     HeatmapEventListener,
     DataChangeEvent,
-    GradientChangeEvent
+    GradientChangeEvent,
+    ScaleChangeEvent
 } from "./core/types";
 
 export { FeatureKind } from "./core/types";

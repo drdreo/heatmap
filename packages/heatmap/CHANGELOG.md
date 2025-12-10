@@ -1,10 +1,31 @@
+## 1.3.2 (2025-12-09)
+
+### 🚀 Features
+
+- **legend:** withLegend supports fixed scales ([#12](https://github.com/drdreo/heatmap/pull/12))
+
+### ❤️ Thank You
+
+- Dr Dreo @drdreo
+
+## 1.3.1 (2025-12-07)
+
+This was a version bump only, there were no code changes.
+
+## 1.3.0 (2025-12-05)
+
+### 🚀 Features
+
+- add heatmap legend ([#4](https://github.com/drdreo/heatmap/pull/4))
+
+### ❤️ Thank You
+
+- Dr Dreo @drdreo
+
 ## 1.2.0 (2025-12-05)
 
-feat: improve initial data configuration
+This was a version bump only, there were no code changes.
 
-static and animated heatmaps can provide the initial data at creation
-now, as well as later through setData and setTemporalData
-
-## 1.1.0 (2025-12-04)
+## v1.2.0 (2025-12-05)
 
 This was a version bump only, there were no code changes.

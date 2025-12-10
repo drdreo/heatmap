@@ -4,7 +4,6 @@
  * Exports the core renderer and types.
  */
 
-export { createCore } from "./renderer";
 export { validateConfig, type ResolvedConfig } from "./validation";
 export { generatePalette, parseColor, createGradientCanvas } from "./gradient";
 export type {

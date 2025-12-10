@@ -440,7 +440,7 @@ export function createWebGLRenderer(
         if (!gl) return;
 
         // Clear framebuffer
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb.framebuffer);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb!.framebuffer);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -492,7 +492,7 @@ export function createWebGLRenderer(
         currentBounds.maxY = Math.min(height, Math.ceil(currentBounds.maxY));
 
         // === Pass 1: Render intensity to framebuffer ===
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb.framebuffer);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb!.framebuffer);
         gl.useProgram(intensityProgram);
 
         // Enable additive blending for intensity accumulation
@@ -541,7 +541,7 @@ export function createWebGLRenderer(
 
         // Bind intensity texture
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, fb.texture);
+        gl.bindTexture(gl.TEXTURE_2D, fb!.texture);
         gl.uniform1i(colorizeIntensityTexLoc, 0);
 
         // Bind palette texture
@@ -592,8 +592,8 @@ export function createWebGLRenderer(
         gl?.deleteBuffer(alphaBuffer);
         gl?.deleteBuffer(quadBuffer);
         gl?.deleteTexture(paletteTexture);
-        gl?.deleteTexture(fb.texture);
-        gl?.deleteFramebuffer(fb.framebuffer);
+        gl?.deleteTexture(fb!.texture);
+        gl?.deleteFramebuffer(fb!.framebuffer);
         gl?.deleteProgram(intensityProgram);
         gl?.deleteProgram(colorizeProgram);
         gl?.deleteShader(intensityVertexShader);
