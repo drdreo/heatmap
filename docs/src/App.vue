@@ -8,6 +8,7 @@ import TooltipDemo from "./components/sections/TooltipDemo.vue";
 import AnimationDemo from "./components/sections/AnimationDemo.vue";
 import LegendDemo from "./components/sections/LegendDemo.vue";
 import WebGLDemo from "./components/sections/WebGLDemo.vue";
+import LeafletDemo from "./components/sections/LeafletDemo.vue";
 import BenchmarkDemo from "./components/sections/BenchmarkDemo.vue";
 import ApiReference from "./components/sections/ApiReference.vue";
 import FooterSection from "./components/sections/FooterSection.vue";
@@ -25,6 +26,7 @@ import FooterSection from "./components/sections/FooterSection.vue";
             <AnimationDemo />
             <LegendDemo />
             <WebGLDemo />
+            <LeafletDemo />
             <BenchmarkDemo />
             <ApiReference />
             <FooterSection />
