@@ -21,13 +21,7 @@ const heatmap = createHeatmap(
     },
     withWebGLRenderer()  // GPU-accelerated rendering
 );
-
-// Use exactly like a regular heatmap
-heatmap.setData({
-    min: 0,
-    max: 100,
-    data: points
-});`;
+`;
 
 const fallbackCode = `import { createHeatmap, withWebGLRenderer, isWebGLAvailable } from '@drdreo/heatmap';
 

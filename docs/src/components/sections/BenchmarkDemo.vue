@@ -5,6 +5,8 @@ import {
     withCanvas2DRenderer,
     withWebGLRenderer,
     isWebGLAvailable,
+    GRADIENT_PRESETS,
+    type GradientPresetName,
     type Heatmap,
     type HeatmapPoint
 } from "@drdreo/heatmap";
@@ -32,6 +34,18 @@ const radius = ref(25);
 const selectedRenderer = ref<RendererType>("canvas2d");
 const dataDistribution = ref<DataDistribution>("random");
 const clusterCount = ref(10);
+const currentGradient = ref<GradientPresetName>("default");
+
+const gradientOptions = [
+    { value: "default", label: "Default (Blue -> Green -> Yellow -> Red)" },
+    { value: "cool", label: "Cool (Purple -> Cyan -> Green)" },
+    { value: "thermal", label: "Thermal (Purple -> Red -> Yellow -> White)" },
+    { value: "fire", label: "Fire (Dark Red -> Orange -> Yellow)" },
+    { value: "ocean", label: "Ocean (Dark Blue -> Cyan -> White)" },
+    { value: "grayscale", label: "Grayscale (Black -> White)" },
+    { value: "sunset", label: "Sunset (Purple -> Magenta -> Orange -> Gold)" },
+    { value: "viridis", label: "Viridis (Purple -> Teal -> Green -> Yellow)" }
+];
 
 // State
 const isRunning = ref(false);
@@ -160,9 +174,11 @@ function createHeatmapInstance() {
 
     const config = {
         container: containerRef.value,
+        opacity: 1,
         width: canvasWidth.value,
         height: canvasHeight.value,
-        radius: radius.value
+        radius: radius.value,
+        gradient: GRADIENT_PRESETS[currentGradient.value]
     };
 
     switch (selectedRenderer.value) {
@@ -415,6 +431,19 @@ onUnmounted(() => {
                             />
                         </label>
                     </div>
+                </div>
+
+                <div class="control-group">
+                    <h4>Gradient Theme</h4>
+                    <select v-model="currentGradient" class="select-input">
+                        <option
+                            v-for="option in gradientOptions"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </option>
+                    </select>
                 </div>
 
                 <div class="control-group actions">
