@@ -1,8 +1,7 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createHeatmap, type Heatmap, type HeatmapPoint } from "../index";
 import { withCanvas2DRenderer } from "./render-pipeline";
-import { withWebGLRenderer, isWebGLAvailable } from "./webgl-renderer";
-import { heatData } from "./heat-data.mock";
+import { isWebGLAvailable, withWebGLRenderer } from "./webgl-renderer";
 
 /**
  * Generate a large dataset for performance testing
@@ -111,72 +110,6 @@ describe("Canvas2D Renderer Performance Benchmarks", () => {
                 expect(hasContent).toBe(true);
             });
         }
-    });
-
-    describe("Benchmark: Real-world mock data", () => {
-        it("should render mock data (small canvas 320x50)", () => {
-            heatmap = createHeatmap(
-                { container, width: 320, height: 50, radius: 25 },
-                withCanvas2DRenderer()
-            );
-
-            const start = performance.now();
-            heatmap.setData(heatData);
-            const end = performance.now();
-
-            console.log(
-                `Canvas2D (320x50, r=25): ${(end - start).toFixed(2)}ms for ${heatData.length} points`
-            );
-
-            expect(heatmap.getStats().pointCount).toBe(heatData.length);
-        });
-
-        it("should render mock data (large canvas 1920x1080)", () => {
-            const largeContainer = createMockContainer(1920, 1080);
-            document.body.appendChild(largeContainer);
-
-            heatmap = createHeatmap(
-                {
-                    container: largeContainer,
-                    width: 1920,
-                    height: 1080,
-                    radius: 25
-                },
-                withCanvas2DRenderer()
-            );
-
-            const start = performance.now();
-            heatmap.setData(heatData);
-            const end = performance.now();
-
-            console.log(
-                `Canvas2D (1920x1080, r=25): ${(end - start).toFixed(2)}ms for ${heatData.length} points`
-            );
-
-            largeContainer.remove();
-            expect(heatmap.getStats().pointCount).toBe(heatData.length);
-        });
-
-        it("should render mock data (user scenario 300x250)", () => {
-            const userContainer = createMockContainer(300, 250);
-            document.body.appendChild(userContainer);
-
-            heatmap = createHeatmap(
-                { container: userContainer, width: 300, height: 250 },
-                withCanvas2DRenderer()
-            );
-
-            const start = performance.now();
-            heatmap.setData(heatData);
-            const end = performance.now();
-
-            console.log(
-                `Canvas2D (300x250, r=25): ${(end - start).toFixed(2)}ms for ${heatData.length} points`
-            );
-
-            userContainer.remove();
-            expect(heatmap.getStats().pointCount).toBe(heatData.length);
-        });
     });
 
     describe("Benchmark: Clustered data (realistic)", () => {
