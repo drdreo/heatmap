@@ -211,7 +211,6 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
 
         Object.assign(legend.style, baseStyles);
 
-        // Only apply position styles if using heatmap container (no custom container)
         if (!resolvedConfig.container) {
             applyPositionStyles(legend, resolvedConfig.position);
         }
@@ -221,7 +220,6 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
             Object.assign(legend.style, resolvedConfig.style);
         }
 
-        // Create gradient container
         gradientContainer = document.createElement("div");
         gradientContainer.className = "heatmap-legend__gradient-container";
         Object.assign(gradientContainer.style, {

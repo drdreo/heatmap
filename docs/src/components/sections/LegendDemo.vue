@@ -124,8 +124,7 @@ const featureHighlights = [
     { icon: "1", label: "Auto-updating" },
     { icon: "2", label: "8 Positions" },
     { icon: "3", label: "Custom Formatters" },
-    { icon: "4", label: "Fixed Scale" },
-    { icon: "5", label: "Custom Container" }
+    { icon: "4", label: "Fixed Scale" }
 ];
 
 type GradientPreset = {
@@ -163,8 +162,6 @@ const positions: Position[] = [
 ];
 
 const containerRef = ref<HTMLElement | null>(null);
-const scaleTestContainerRef = ref<HTMLElement | null>(null);
-const scaleTestLegendContainerRef = ref<HTMLElement | null>(null);
 const selectedGradient = ref<string>("Default");
 const selectedPosition = ref<Position>("bottom-right");
 const selectedOrientation = ref<"horizontal" | "vertical">("horizontal");
@@ -176,11 +173,7 @@ const useFixedScale = ref(false);
 const fixedMin = ref(0);
 const fixedMax = ref(100);
 
-// Scale correction test controls
-const containerScale = ref(1);
-
 let legendHeatmap: Heatmap | null = null;
-let scaleTestHeatmap: Heatmap | null = null;
 
 /**
  * Generate deterministic clustered points for consistent comparison.
@@ -321,32 +314,6 @@ function recreateHeatmap() {
     legendHeatmap.setData(scaledPoints);
 }
 
-function initScaleTestHeatmap() {
-    if (!scaleTestContainerRef.value || !scaleTestLegendContainerRef.value) return;
-
-    scaleTestHeatmap?.destroy();
-
-    scaleTestHeatmap = createHeatmap(
-        {
-            container: scaleTestContainerRef.value,
-            gradient: GRADIENT_THERMAL
-        },
-        withLegend({
-            // Use a separate container for the legend so it doesn't scale with the heatmap
-            container: scaleTestLegendContainerRef.value,
-            orientation: "horizontal",
-            labelCount: 5,
-            formatter: (value) => `${Math.round(value)}`,
-            className: "demo-legend"
-        })
-    );
-
-    // Set data
-    const points = generateClusteredPoints();
-    scaleTestHeatmap.setData(points);
-}
-
-
 onMounted(() => {
     if (!containerRef.value) return;
 
@@ -368,14 +335,10 @@ onMounted(() => {
     const points = generateClusteredPoints();
 
     legendHeatmap.setData(points);
-
-    // Initialize scale test heatmap
-    initScaleTestHeatmap();
 });
 
 onUnmounted(() => {
     legendHeatmap?.destroy();
-    scaleTestHeatmap?.destroy();
 });
 </script>
 
@@ -522,60 +485,6 @@ onUnmounted(() => {
         <CodeBlock title="Code" language="typescript">{{
             legendCode
         }}</CodeBlock>
-
-        <!-- Custom Container Test Section -->
-        <div class="card scale-test-card">
-            <h4>🧪 Custom Container Demo</h4>
-            <p class="scale-test-description">
-                When using CSS transforms on the heatmap container, the legend would
-                scale with it. To avoid this, you can provide a custom <code>container</code>
-                option to render the legend outside the transformed element.
-            </p>
-
-            <div class="scale-test-controls">
-                <div class="control-group">
-                    <label for="scale-slider">Container Scale: {{ containerScale.toFixed(2) }}x</label>
-                    <input
-                        type="range"
-                        id="scale-slider"
-                        min="0.25"
-                        max="2"
-                        step="0.05"
-                        v-model.number="containerScale"
-                    />
-                </div>
-            </div>
-
-            <div class="scale-test-container">
-                <div class="scale-reference">
-                    <span class="reference-label">Legend stays fixed size</span>
-                </div>
-                <div
-                    class="scale-test-wrapper"
-                    :style="{ transform: `scale(${containerScale})`, transformOrigin: 'top left' }"
-                >
-                    <div ref="scaleTestContainerRef" class="heatmap-container scale-test-heatmap"></div>
-                </div>
-                <!-- Custom container for legend - outside the scaled wrapper -->
-                <div ref="scaleTestLegendContainerRef" class="custom-legend-container"></div>
-            </div>
-
-            <div class="scale-test-info">
-                <p>
-                    <strong>How it works:</strong> The legend is rendered in a separate
-                    container that is not affected by the CSS transform. This gives you
-                    full control over the legend's appearance.
-                </p>
-                <pre class="code-example">withLegend({
-    container: document.querySelector('#my-legend-container'),
-    orientation: 'horizontal'
-})</pre>
-                <p class="scale-debug">
-                    Current heatmap transform: <code>scale({{ containerScale.toFixed(2) }})</code>
-                    | Legend: <strong>unaffected</strong>
-                </p>
-            </div>
-        </div>
 
         <div class="card config-card">
             <h4>LegendConfig Options</h4>
