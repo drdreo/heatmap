@@ -34,6 +34,14 @@ export type LegendOrientation = "horizontal" | "vertical";
 /** Legend configuration */
 export interface LegendConfig {
     /**
+     * Custom container element for the legend.
+     * If provided, the legend will be appended to this container instead of the heatmap container.
+     * This is useful when using CSS transforms on the heatmap container - you can place
+     * the legend in a separate non-transformed container to maintain consistent sizing.
+     */
+    container?: HTMLElement;
+
+    /**
      * Position of the legend relative to the heatmap (default: 'bottom-right')
      */
     position?: LegendPosition;
@@ -93,7 +101,7 @@ interface LegendState {
 
 /** Default legend configuration */
 const DEFAULT_LEGEND_CONFIG: Required<
-    Omit<LegendConfig, "className" | "style">
+    Omit<LegendConfig, "container" | "className" | "style">
 > = {
     position: "bottom-right",
     orientation: "horizontal",
@@ -145,6 +153,7 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         | null = null;
 
     const resolvedConfig = {
+        container: config.container,
         position: config.position ?? DEFAULT_LEGEND_CONFIG.position,
         orientation: config.orientation ?? DEFAULT_LEGEND_CONFIG.orientation,
         width:
@@ -178,9 +187,8 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
         const legend = document.createElement("div");
         legend.className = resolvedConfig.className ?? "heatmap-legend";
 
-        // Base styles for positioning
-        Object.assign(legend.style, {
-            position: "absolute",
+        // Base styles - only use absolute positioning if no custom container
+        const baseStyles: Partial<CSSStyleDeclaration> = {
             display: "flex",
             flexDirection:
                 resolvedConfig.orientation === "horizontal" ? "column" : "row",
@@ -194,16 +202,24 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
             pointerEvents: "none",
             zIndex: "999",
             boxSizing: "border-box"
-        });
+        };
 
-        applyPositionStyles(legend, resolvedConfig.position);
+        // Only apply absolute positioning if using heatmap container (no custom container)
+        if (!resolvedConfig.container) {
+            baseStyles.position = "absolute";
+        }
+
+        Object.assign(legend.style, baseStyles);
+
+        if (!resolvedConfig.container) {
+            applyPositionStyles(legend, resolvedConfig.position);
+        }
 
         // Apply custom styles (overrides defaults)
         if (resolvedConfig.style) {
             Object.assign(legend.style, resolvedConfig.style);
         }
 
-        // Create gradient container
         gradientContainer = document.createElement("div");
         gradientContainer.className = "heatmap-legend__gradient-container";
         Object.assign(gradientContainer.style, {
@@ -483,7 +499,11 @@ export function withLegend(config: LegendConfig = {}): LegendFeature {
             initializeState(heatmap);
 
             legendElement = createLegendElement();
-            heatmap.container.appendChild(legendElement);
+
+            // Append to custom container if provided, otherwise use heatmap container
+            const targetContainer =
+                resolvedConfig.container ?? heatmap.container;
+            targetContainer.appendChild(legendElement);
 
             subscribeToEvents(heatmap);
 

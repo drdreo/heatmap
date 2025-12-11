@@ -156,6 +156,8 @@ const heatmap = createHeatmap({ container, gradient });
 | `gridSize`           | `number`                   | `10`             | Grid cell size for value lookups           |
 | `blendMode`          | `GlobalCompositeOperation` | `source-over`    | Canvas blend mode (`lighter` for additive) |
 | `intensityExponent`  | `number`                   | `1`              | Intensity curve exponent                   |
+| `valueMin`           | `number`                   | -                | Fixed minimum value for consistent scales  |
+| `valueMax`           | `number`                   | -                | Fixed maximum value for consistent scales  |
 | `data`               | `HeatmapData`              | -                | Initial data                               |
 
 ### TooltipConfig
@@ -183,6 +185,7 @@ const heatmap = createHeatmap({ container, gradient });
 
 | Option        | Type                           | Default                | Description                                                                                        |
 | ------------- | ------------------------------ | ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `container`   | `HTMLElement`                  | -                      | Custom container element for the legend. Useful when using CSS transforms on the heatmap container |
 | `position`    | `LegendPosition`               | `'bottom-right'`       | Position: `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right` |
 | `orientation` | `'horizontal' \| 'vertical'`   | `'horizontal'`         | Gradient bar orientation                                                                           |
 | `width`       | `number`                       | `150` / `20`           | Width in pixels (default varies by orientation)                                                    |

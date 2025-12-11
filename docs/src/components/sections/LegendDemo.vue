@@ -58,6 +58,13 @@ heatmap.setGradient(GRADIENT_COOL);`;
 
 const legendOptions: ConfigOption[] = [
     {
+        name: "container",
+        type: "HTMLElement",
+        default: "heatmap container",
+        description:
+            "Custom container element for the legend. When provided, position styles are disabled."
+    },
+    {
         name: "position",
         type: "string",
         default: "'bottom-right'",
