@@ -57,38 +57,30 @@ const INTENSITY_FRAGMENT_SHADER = `
     precision mediump float;
     
     varying float v_alpha;
-    
     uniform float u_blur;
     
     void main() {
-        // Calculate distance from center of point (gl_PointCoord is 0-1)
+        // center is -0.5 to 0.5
         vec2 center = gl_PointCoord - vec2(0.5);
-        float dist = length(center) * 2.0;
         
-        if (dist > 1.0) {
+        // Calculate squared distance (cheaper than length)
+        float distSq = dot(center, center);
+        
+        // Discard pixels outside the circle (0.5 * 0.5 = 0.25 radius squared)
+        if (distSq > 0.25) {
             discard;
         }
-        
-        // Apply blur factor to create gradient
-        float blurFactor = 1.0 - u_blur;
-        float innerRadius = blurFactor;
-        
-        // Calculate falloff using smoothstep for a more natural heatmap look
-        float falloff;
-        if (blurFactor >= 1.0) {
-            // No blur - solid circle
-            falloff = 1.0;
-        } else if (dist <= innerRadius) {
-            // Inside inner radius - full opacity
-            falloff = 1.0;
-        } else {
-            // Smooth gradient from inner to outer radius using smoothstep
-            float t = (dist - innerRadius) / (1.0 - innerRadius);
-            falloff = 1.0 - smoothstep(0.0, 1.0, t);
-        }
-        
-        // Output grayscale intensity (will be accumulated via additive blending)
-        float intensity = v_alpha * falloff;
+
+        // GAUSSIAN FALLOFF
+        // We multiply distSq by a factor to control tightness.
+        // 1.0 - u_blur controls the spread. 
+        // A high blur needs a lower exponent to spread out.
+        float hardness = 10.0 + (u_blur * 40.0); 
+        float weight = exp(-distSq * hardness);
+
+        // Multiply by vertex alpha
+        float intensity = v_alpha * weight;
+
         gl_FragColor = vec4(intensity, intensity, intensity, intensity);
     }
 `;

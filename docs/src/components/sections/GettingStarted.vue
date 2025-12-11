@@ -7,14 +7,10 @@ const quickStartCode = `import { createHeatmap } from '@drdreo/heatmap';
 
 const heatmap = createHeatmap({
     container: document.getElementById('heatmap')!,
-    data: {
-        min: 0,
-        max: 100,
-        data: [
+    data: [
             { x: 200, y: 200, value: 80 },
             { x: 400, y: 150, value: 60 }
-        ]
-    }
+    ]
 });`;
 </script>
 

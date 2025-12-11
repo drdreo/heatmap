@@ -36,14 +36,10 @@ import { createHeatmap } from "@drdreo/heatmap";
 
 const heatmap = createHeatmap({
     container: document.getElementById("heatmap")!,
-    data: {
-        min: 0,
-        max: 100,
-        data: [
-            { x: 100, y: 150, value: 80 },
-            { x: 200, y: 100, value: 50 }
-        ]
-    }
+    data: [
+        { x: 100, y: 150, value: 80 },
+        { x: 200, y: 100, value: 50 }
+    ]
 });
 ```
 
