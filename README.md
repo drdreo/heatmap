@@ -84,8 +84,19 @@ The legend automatically updates when data or gradient changes. Available positi
 ```typescript
 import { createHeatmap, withAnimation } from "@drdreo/heatmap";
 
+// Option 1: Set temporal data directly in config
 const heatmap = createHeatmap(
-    { container },
+    {
+        container,
+        data: {
+            startTime: 0,
+            endTime: 60000,
+            data: [
+                { x: 100, y: 150, value: 80, timestamp: 1000 },
+                { x: 200, y: 100, value: 50, timestamp: 2500 }
+            ]
+        }
+    },
     withAnimation({
         fadeOutDuration: 2000,
         timeWindow: 5000,
@@ -94,7 +105,16 @@ const heatmap = createHeatmap(
             console.log(`${(progress * 100).toFixed(0)}%`)
     })
 );
-heatmap.setTemporalData({
+
+heatmap.play();
+
+// Option 2: Set temporal data later
+const heatmap2 = createHeatmap(
+    { container },
+    withAnimation({ fadeOutDuration: 2000, loop: true })
+);
+
+heatmap2.setTemporalData({
     startTime: 0,
     endTime: 60000,
     data: [
@@ -103,7 +123,7 @@ heatmap.setTemporalData({
     ]
 });
 
-heatmap.play();
+heatmap2.play();
 ```
 
 ### Composing Features
