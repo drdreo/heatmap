@@ -22,7 +22,7 @@ import { validateConfig, type ResolvedConfig } from "./validation";
  * Configuration for the Canvas2D renderer
  */
 export interface Canvas2DRendererConfig {
-    /** Use offscreen canvas for better performance (default: true) */
+    /** Use offscreen canvas for shadow canvas.  (default: false) */
     useOffscreenCanvas?: boolean;
 }
 
@@ -126,7 +126,7 @@ function createShadowCanvas(
 export function createCanvas2DRenderer(
     config: ResolvedConfig,
     gradient: GradientStop[] = DEFAULT_GRADIENT,
-    useOffscreenCanvas: boolean = true
+    useOffscreenCanvas: boolean = false
 ): HeatmapRenderer {
     const { width, height, radius, blur, minOpacity, maxOpacity, blendMode } =
         config;
@@ -300,7 +300,7 @@ export function createCanvas2DRenderer(
 export function withCanvas2DRenderer(
     config: Canvas2DRendererConfig = {}
 ): RendererFeature {
-    const { useOffscreenCanvas = true } = config;
+    const { useOffscreenCanvas = false } = config;
 
     return {
         kind: FeatureKind.Renderer,
