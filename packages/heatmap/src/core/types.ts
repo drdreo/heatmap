@@ -332,17 +332,22 @@ export interface Heatmap {
     ): void;
 }
 
+export const TooltipKind: unique symbol = Symbol("tooltip");
+export const LegendKind: unique symbol = Symbol("legend");
+export const AnimationKind: unique symbol = Symbol("animation");
+export const RendererKind: unique symbol = Symbol("renderer");
+
 export const FeatureKind: {
-    readonly Tooltip: symbol;
-    readonly Legend: symbol;
-    readonly Animation: symbol;
-    readonly Renderer: symbol;
+    readonly Tooltip: typeof TooltipKind;
+    readonly Legend: typeof LegendKind;
+    readonly Animation: typeof AnimationKind;
+    readonly Renderer: typeof RendererKind;
 } = {
-    Tooltip: Symbol("tooltip"),
-    Legend: Symbol("legend"),
-    Animation: Symbol("animation"),
-    Renderer: Symbol("renderer")
-} as const;
+    Tooltip: TooltipKind,
+    Legend: LegendKind,
+    Animation: AnimationKind,
+    Renderer: RendererKind
+};
 
 export interface HeatmapFeature<K extends symbol = symbol> {
     /** Unique identifier for the feature kind */
@@ -355,10 +360,10 @@ export interface HeatmapFeature<K extends symbol = symbol> {
     teardown?(): void;
 }
 
-export type TooltipFeature = HeatmapFeature<typeof FeatureKind.Tooltip>;
-export type LegendFeature = HeatmapFeature<typeof FeatureKind.Legend>;
-export type AnimationFeature = HeatmapFeature<typeof FeatureKind.Animation>;
-export type RendererFeature = HeatmapFeature<typeof FeatureKind.Renderer>;
+export type TooltipFeature = HeatmapFeature<typeof TooltipKind>;
+export type LegendFeature = HeatmapFeature<typeof LegendKind>;
+export type AnimationFeature = HeatmapFeature<typeof AnimationKind>;
+export type RendererFeature = HeatmapFeature<typeof RendererKind>;
 
 /**
  * Helper type to check if a feature array contains a specific feature kind
