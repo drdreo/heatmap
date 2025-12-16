@@ -25,6 +25,7 @@
         "test": "vitest",
         "test:run": "vitest run",
         "test:coverage": "vitest run --coverage",
+        "lint": "eslint src",
         "publish:jsr": "deno publish",
         "publish:jsr:dry-run": "deno publish --dry-run"
     },

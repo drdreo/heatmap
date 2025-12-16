@@ -128,7 +128,7 @@ export function createHeatmap(
     }
 
     const originalDestroy = heatmap.destroy;
-    heatmap.destroy = () => {
+    heatmap.destroy = (): void => {
         for (const feature of features) {
             feature.teardown?.();
         }
@@ -138,11 +138,27 @@ export function createHeatmap(
     return heatmap;
 }
 
-/**
- * Simple typed event emitter for heatmap events
- */
-function createEventEmitter() {
-    const listeners = new Map<keyof HeatmapEventMap, Set<Function>>();
+interface EventEmitter {
+    on<K extends keyof HeatmapEventMap>(
+        event: K,
+        listener: HeatmapEventListener<K>
+    ): void;
+    off<K extends keyof HeatmapEventMap>(
+        event: K,
+        listener: HeatmapEventListener<K>
+    ): void;
+    emit<K extends keyof HeatmapEventMap>(
+        event: K,
+        ...args: HeatmapEventMap[K] extends void ? [] : [HeatmapEventMap[K]]
+    ): void;
+    clear(): void;
+}
+
+function createEventEmitter(): EventEmitter {
+    const listeners = new Map<
+        keyof HeatmapEventMap,
+        Set<HeatmapEventListener<keyof HeatmapEventMap>>
+    >();
 
     return {
         on<K extends keyof HeatmapEventMap>(
@@ -152,14 +168,20 @@ function createEventEmitter() {
             if (!listeners.has(event)) {
                 listeners.set(event, new Set());
             }
-            listeners.get(event)!.add(listener);
+            listeners
+                .get(event)!
+                .add(listener as HeatmapEventListener<keyof HeatmapEventMap>);
         },
 
         off<K extends keyof HeatmapEventMap>(
             event: K,
             listener: HeatmapEventListener<K>
         ): void {
-            listeners.get(event)?.delete(listener);
+            listeners
+                .get(event)
+                ?.delete(
+                    listener as HeatmapEventListener<keyof HeatmapEventMap>
+                );
         },
 
         emit<K extends keyof HeatmapEventMap>(

@@ -11,14 +11,20 @@
         "preview": "pnpm --filter docs preview",
         "test": "pnpm --filter @drdreo/heatmap test",
         "test:run": "pnpm --filter @drdreo/heatmap test:run",
-        "test:coverage": "pnpm --filter @drdreo/heatmap test:coverage"
+        "test:coverage": "pnpm --filter @drdreo/heatmap test:coverage",
+        "lint": "eslint .",
+        "lint:lib": "pnpm --filter @drdreo/heatmap lint"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
         "@nx/js": "^22.1.3",
         "@nx/workspace": "^22.1.3",
+        "eslint": "^9.39.2",
+        "globals": "^16.5.0",
         "nx": "^22.1.3",
         "prettier": "3.7.4",
-        "typescript": "~5.9.3"
+        "typescript": "~5.9.3",
+        "typescript-eslint": "^8.50.0"
     },
     "pnpm": {
         "overrides": {
