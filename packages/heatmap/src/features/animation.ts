@@ -13,7 +13,6 @@ import {
     type TemporalHeatmapPoint
 } from "../core/types";
 
-
 /** Animation state */
 export type AnimationState = "idle" | "playing" | "paused";
 
