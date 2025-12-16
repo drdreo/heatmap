@@ -26,6 +26,7 @@ export type {
     HeatmapRenderer,
     AnimationFeature,
     TooltipFeature,
+    LegendFeature,
     RendererFeature,
     TemporalHeatmapPoint,
     TemporalHeatmapData,
