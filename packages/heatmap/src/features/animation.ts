@@ -13,8 +13,6 @@ import {
     type TemporalHeatmapPoint
 } from "../core/types";
 
-/** Re-export temporal types from core */
-export type { TemporalHeatmapPoint, TemporalHeatmapData } from "../core/types";
 
 /** Animation state */
 export type AnimationState = "idle" | "playing" | "paused";
