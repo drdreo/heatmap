@@ -332,7 +332,12 @@ export interface Heatmap {
     ): void;
 }
 
-export const FeatureKind = {
+export const FeatureKind: {
+    readonly Tooltip: symbol;
+    readonly Legend: symbol;
+    readonly Animation: symbol;
+    readonly Renderer: symbol;
+} = {
     Tooltip: Symbol("tooltip"),
     Legend: Symbol("legend"),
     Animation: Symbol("animation"),
