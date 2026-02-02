@@ -6,6 +6,7 @@ import {
     type GradientStop,
     isWebGLAvailable,
     withCanvas2DRenderer,
+    withLegend,
     withWebGLRenderer
 } from "@drdreo/heatmap";
 import {
@@ -136,6 +137,7 @@ const createHeatmapInstance = () => {
             scaleRadius: scaleRadius.value,
             scaleRadiusBaseZoom: 8
         },
+        withLegend(),
         ...features
     );
 
