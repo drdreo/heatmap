@@ -85,7 +85,7 @@ const heatmapConfigOptions: ConfigOption[] = [
         type: "'max' | 'sum' | 'mean' | 'count'",
         default: "'max'",
         description:
-            "How to combine multiple points in the same grid cell. Affects both tooltip values and legend range."
+            "How to aggregate values for tooltip/legend. Visual rendering uses canvas blending separately."
     }
 ];
 

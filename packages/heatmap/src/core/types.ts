@@ -234,13 +234,18 @@ export interface HeatmapConfig {
     /**
      * Aggregation mode for combining multiple points in the same grid cell (default: 'max').
      *
-     * This ensures consistency between tooltip values and legend range:
+     * This affects how tooltip values and legend range are calculated:
      * - 'max': Use the maximum value (default, shows peak intensity at each location)
      * - 'sum': Add all values together (good for click counts, cumulative data)
      * - 'mean': Calculate the average value (good for normalized/density data)
      * - 'count': Count the number of points (ignores individual point values)
      *
-     * @example aggregationMode: 'sum' // Accumulate values for click tracking
+     * Note: Visual rendering always uses radial gradients that blend through canvas
+     * compositing. The aggregation mode affects the data reported by tooltips and
+     * legends, not the visual blending of points. For additive visual blending,
+     * use `blendMode: 'lighter'`.
+     *
+     * @example aggregationMode: 'count' // Show number of data points per area
      */
     aggregationMode?: AggregationMode;
 }

@@ -359,7 +359,7 @@ onUnmounted(() => {
                     <label>
                         Aggregation Mode:
                         <small style="opacity: 0.7"
-                            >(how overlapping points combine)</small
+                            >(tooltip/legend only)</small
                         >
                     </label>
                     <select

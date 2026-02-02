@@ -156,7 +156,7 @@ const heatmap = createHeatmap({ container, gradient });
 
 ### Aggregation Modes
 
-Control how multiple points in the same grid cell are combined. This affects both tooltip values and legend range:
+Control how multiple points in the same grid cell are combined for tooltip and legend values:
 
 ```typescript
 import { createHeatmap } from "@drdreo/heatmap";
@@ -173,6 +173,8 @@ const heatmap = createHeatmap({
 | `sum`   | Add all values together         | Click tracking, cumulative data |
 | `mean`  | Calculate the average           | Normalized/density data         |
 | `count` | Count the number of points      | Pure density visualization      |
+
+> **Note**: Aggregation affects tooltip and legend values. Visual rendering uses radial gradient blending through canvas compositing. For additive visual effects, combine with `blendMode: 'lighter'`.
 
 ## API
 
