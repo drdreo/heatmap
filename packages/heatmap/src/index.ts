@@ -13,6 +13,7 @@
 
 // Re-export core types
 export type {
+    AggregationMode,
     Heatmap,
     HeatmapConfig,
     HeatmapData,

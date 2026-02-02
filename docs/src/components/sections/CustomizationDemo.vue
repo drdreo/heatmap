@@ -6,6 +6,7 @@ import {
     type GradientPresetName,
     type Heatmap,
     type HeatmapPoint,
+    type AggregationMode,
     withLegend,
     withTooltip
 } from "@drdreo/heatmap";
@@ -56,6 +57,7 @@ let customGridSize = ref(20);
 let currentGradient = ref<GradientPresetName>("cool");
 let currentBlendMode = ref<GlobalCompositeOperation>("source-over");
 let currentIntensityExponent = ref(1);
+let currentAggregationMode = ref<AggregationMode>("max");
 
 // Toggle between random and custom data mode
 let useCustomData = ref(false);
@@ -88,6 +90,13 @@ const blendModeOptions = [
     { value: "lighter", label: "Lighter (Additive - overlaps glow brighter)" }
 ];
 
+const aggregationModeOptions = [
+    { value: "max", label: "Max (Peak value at each location)" },
+    { value: "sum", label: "Sum (Add values together)" },
+    { value: "mean", label: "Mean (Average value)" },
+    { value: "count", label: "Count (Number of points)" }
+];
+
 function generateRandomPoints(
     count: number,
     width: number,
@@ -114,7 +123,8 @@ function createCustomHeatmap() {
             gridSize: customGridSize.value,
             gradient: GRADIENT_PRESETS[currentGradient.value],
             blendMode: currentBlendMode.value,
-            intensityExponent: currentIntensityExponent.value
+            intensityExponent: currentIntensityExponent.value,
+            aggregationMode: currentAggregationMode.value
         },
         withTooltip(),
         withLegend({
@@ -344,6 +354,26 @@ onUnmounted(() => {
                         v-model.number="currentIntensityExponent"
                         @input="handleSliderChange"
                     />
+                </div>
+                <div class="control-group">
+                    <label>
+                        Aggregation Mode:
+                        <small style="opacity: 0.7"
+                            >(how overlapping points combine)</small
+                        >
+                    </label>
+                    <select
+                        v-model="currentAggregationMode"
+                        @change="handleSliderChange"
+                    >
+                        <option
+                            v-for="opt in aggregationModeOptions"
+                            :key="opt.value"
+                            :value="opt.value"
+                        >
+                            {{ opt.label }}
+                        </option>
+                    </select>
                 </div>
                 <div class="control-group data-mode-control">
                     <label class="toggle-label">

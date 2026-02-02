@@ -154,6 +154,26 @@ const gradient: GradientStop[] = [
 const heatmap = createHeatmap({ container, gradient });
 ```
 
+### Aggregation Modes
+
+Control how multiple points in the same grid cell are combined. This affects both tooltip values and legend range:
+
+```typescript
+import { createHeatmap } from "@drdreo/heatmap";
+
+const heatmap = createHeatmap({
+    container,
+    aggregationMode: "max" // 'max' | 'sum' | 'mean' | 'count'
+});
+```
+
+| Mode    | Description                     | Use Case                        |
+| ------- | ------------------------------- | ------------------------------- |
+| `max`   | Use the maximum value (default) | Peak intensity visualization    |
+| `sum`   | Add all values together         | Click tracking, cumulative data |
+| `mean`  | Calculate the average           | Normalized/density data         |
+| `count` | Count the number of points      | Pure density visualization      |
+
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
