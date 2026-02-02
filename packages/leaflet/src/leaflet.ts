@@ -58,7 +58,9 @@ export function createLeafletHeatmap(
         width: `${size.x}px`,
         height: `${size.y}px`,
         pointerEvents: "none",
-        zIndex: "400" // Above tiles, below markers
+        zIndex: "400", // Above tiles, below markers
+        opacity: "1",
+        transition: "opacity 0.15s ease-out" // Smooth fade for zoom transitions
     });
 
     // Append to the map's container element
@@ -207,15 +209,34 @@ export function createLeafletHeatmap(
         renderImmediate();
     }
 
+    /**
+     * Handle zoom animation start - fade out heatmap to avoid visual lag
+     */
+    function handleZoomStart(): void {
+        container.style.opacity = "0";
+    }
+
+    /**
+     * Handle zoom animation end - fade in and re-render
+     */
+    function handleZoomEnd(): void {
+        renderImmediate();
+        container.style.opacity = "1";
+    }
+
     // Register map event listeners
     // Use 'move' for smooth updates during pan, 'moveend' for final position
     const onMove = () => render();
     const onZoom = () => render();
     const onResize = () => handleResize();
+    const onZoomStart = () => handleZoomStart();
+    const onZoomEnd = () => handleZoomEnd();
 
     map.on("move", onMove);
     map.on("zoom", onZoom);
     map.on("resize", onResize);
+    map.on("zoomstart", onZoomStart);
+    map.on("zoomend", onZoomEnd);
 
     // Initial render
     render();
@@ -261,6 +282,8 @@ export function createLeafletHeatmap(
         map.off("move", onMove);
         map.off("zoom", onZoom);
         map.off("resize", onResize);
+        map.off("zoomstart", onZoomStart);
+        map.off("zoomend", onZoomEnd);
 
         // Remove container from DOM
         container.remove();
