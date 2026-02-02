@@ -4,6 +4,17 @@
  * Type definitions for the composable heatmap library.
  */
 
+/**
+ * Aggregation mode for combining multiple points in the same grid cell.
+ * This affects both the tooltip values and legend range.
+ *
+ * - 'sum': Add all values together (default, good for click counts)
+ * - 'max': Use the maximum value (good for peak intensity)
+ * - 'mean': Calculate the average value (good for normalized data)
+ * - 'count': Count the number of points (ignores point values)
+ */
+export type AggregationMode = "sum" | "max" | "mean" | "count";
+
 /** A single data point in the heatmap */
 export interface HeatmapPoint {
     /** X coordinate in pixels */
@@ -219,6 +230,24 @@ export interface HeatmapConfig {
      * @example valueMax: 100 // Always end scale at 100
      */
     valueMax?: number;
+
+    /**
+     * Aggregation mode for combining multiple points in the same grid cell (default: 'max').
+     *
+     * This affects how tooltip values and legend range are calculated:
+     * - 'max': Use the maximum value (default, shows peak intensity at each location)
+     * - 'sum': Add all values together (good for click counts, cumulative data)
+     * - 'mean': Calculate the average value (good for normalized/density data)
+     * - 'count': Count the number of points (ignores individual point values)
+     *
+     * Note: Visual rendering always uses radial gradients that blend through canvas
+     * compositing. The aggregation mode affects the data reported by tooltips and
+     * legends, not the visual blending of points. For additive visual blending,
+     * use `blendMode: 'lighter'`.
+     *
+     * @example aggregationMode: 'count' // Show number of data points per area
+     */
+    aggregationMode?: AggregationMode;
 }
 
 /**

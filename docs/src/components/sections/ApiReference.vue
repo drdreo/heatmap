@@ -79,6 +79,13 @@ const heatmapConfigOptions: ConfigOption[] = [
         default: "1",
         description:
             "Exponent for intensity curve. Values < 1 boost low values, > 1 emphasize high values."
+    },
+    {
+        name: "aggregationMode",
+        type: "'max' | 'sum' | 'mean' | 'count'",
+        default: "'max'",
+        description:
+            "How to aggregate values for tooltip/legend. Visual rendering uses canvas blending separately."
     }
 ];
 

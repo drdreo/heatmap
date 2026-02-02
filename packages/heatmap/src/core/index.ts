@@ -7,6 +7,7 @@
 export { validateConfig, type ResolvedConfig } from "./validation";
 export { generatePalette, parseColor, createGradientCanvas } from "./gradient";
 export type {
+    AggregationMode,
     Heatmap,
     HeatmapConfig,
     HeatmapData,

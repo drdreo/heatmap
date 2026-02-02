@@ -175,7 +175,8 @@ describe("createHeatmap (composable API)", () => {
                 { x: 4, y: 4, value: 20 }
             ]);
 
-            expect(heatmap.getValueAt(3, 3)).toBe(50);
+            // Default aggregation is 'max', so returns the max value in the cell
+            expect(heatmap.getValueAt(3, 3)).toBe(30);
         });
 
         it("should export as data URL", () => {
