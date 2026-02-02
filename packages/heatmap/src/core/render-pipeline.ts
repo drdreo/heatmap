@@ -149,7 +149,7 @@ export function createCanvas2DRenderer(
 
     // Generate palette and opacity LUT
     let palette = generatePalette(gradient);
-    let opacityLUT = generateOpacityLUT(minOpacity, maxOpacity);
+    const opacityLUT = generateOpacityLUT(minOpacity, maxOpacity);
 
     // Current render boundaries
     let currentBounds: RenderBoundaries = {
@@ -264,10 +264,10 @@ export function createCanvas2DRenderer(
         canvas,
         width,
         height,
-        get palette() {
+        get palette(): Uint8ClampedArray {
             return palette;
         },
-        get opacityLUT() {
+        get opacityLUT(): Uint8ClampedArray {
             return opacityLUT;
         },
         clear,
@@ -305,7 +305,7 @@ export function withCanvas2DRenderer(
     return {
         kind: FeatureKind.Renderer,
 
-        setup(heatmap) {
+        setup(heatmap): void {
             const resolved = validateConfig(heatmap.config);
             const gradient = heatmap.config.gradient ?? DEFAULT_GRADIENT;
 
@@ -329,7 +329,7 @@ export function withCanvas2DRenderer(
             heatmap.container.appendChild(renderer.canvas);
         },
 
-        teardown() {
+        teardown(): void {
             // Cleanup handled by heatmap.destroy()
         }
     };

@@ -57,8 +57,20 @@ let currentGradient = ref<GradientPresetName>("cool");
 let currentBlendMode = ref<GlobalCompositeOperation>("source-over");
 let currentIntensityExponent = ref(1);
 
+// Toggle between random and custom data mode
+let useCustomData = ref(false);
+let customDataInput = ref("");
+let customDataError = ref("");
+
 let customPoints: HeatmapPoint[] = [];
 let customHeatmap: Heatmap | null = null;
+
+// Example data for the placeholder
+const exampleData = `[
+  { "x": 100, "y": 50, "value": 80 },
+  { "x": 200, "y": 100, "value": 60 },
+  { "x": 150, "y": 150, "value": 100 }
+]`;
 
 const gradientOptions = [
     { value: "cool", label: "Cool (Purple -> Cyan -> Green)" },
@@ -124,6 +136,77 @@ function handleRandomData() {
         containerRef.value.clientWidth,
         containerRef.value.clientHeight
     );
+    createCustomHeatmap();
+}
+
+function parseCustomData(input: string): HeatmapPoint[] | null {
+    if (!input.trim()) return null;
+
+    try {
+        const parsed = JSON.parse(input);
+
+        if (!Array.isArray(parsed)) {
+            customDataError.value = "Data must be an array of points";
+            return null;
+        }
+
+        const validPoints: HeatmapPoint[] = [];
+        for (let i = 0; i < parsed.length; i++) {
+            const point = parsed[i];
+            if (
+                typeof point.x !== "number" ||
+                typeof point.y !== "number" ||
+                typeof point.value !== "number"
+            ) {
+                customDataError.value = `Point at index ${i} must have x, y, and value as numbers`;
+                return null;
+            }
+            validPoints.push({
+                x: point.x,
+                y: point.y,
+                value: point.value
+            });
+        }
+
+        customDataError.value = "";
+        return validPoints;
+    } catch (e) {
+        customDataError.value = "Invalid JSON format";
+        return null;
+    }
+}
+
+function handleCustomDataChange() {
+    if (!useCustomData.value) return;
+
+    const parsed = parseCustomData(customDataInput.value);
+    if (parsed && parsed.length > 0) {
+        customPoints = parsed;
+        createCustomHeatmap();
+    }
+}
+
+function handleDataModeChange() {
+    if (useCustomData.value) {
+        // Switching to custom data mode
+        const parsed = parseCustomData(customDataInput.value);
+        if (parsed && parsed.length > 0) {
+            customPoints = parsed;
+        } else if (!customDataInput.value.trim()) {
+            // No custom data entered yet, keep existing points
+            customDataError.value = "";
+        }
+    } else {
+        // Switching back to random data mode
+        customDataError.value = "";
+        if (containerRef.value) {
+            customPoints = generateRandomPoints(
+                100,
+                containerRef.value.clientWidth,
+                containerRef.value.clientHeight
+            );
+        }
+    }
     createCustomHeatmap();
 }
 
@@ -262,7 +345,24 @@ onUnmounted(() => {
                         @input="handleSliderChange"
                     />
                 </div>
-                <div class="control-group">
+                <div class="control-group data-mode-control">
+                    <label class="toggle-label">
+                        <span class="toggle-text">Data Source:</span>
+                        <div class="toggle-switch">
+                            <input
+                                type="checkbox"
+                                id="data-mode-toggle"
+                                v-model="useCustomData"
+                                @change="handleDataModeChange"
+                            />
+                            <span class="toggle-slider"></span>
+                        </div>
+                        <span class="toggle-mode-label">{{
+                            useCustomData ? "Custom Data" : "Random Data"
+                        }}</span>
+                    </label>
+                </div>
+                <div class="control-group" v-if="!useCustomData">
                     <button
                         class="btn btn-primary btn-full"
                         @click="handleRandomData"
@@ -270,6 +370,36 @@ onUnmounted(() => {
                         Generate Random Data
                     </button>
                 </div>
+            </div>
+
+            <!-- Custom Data Input Section -->
+            <div v-if="useCustomData" class="custom-data-section">
+                <div class="custom-data-header">
+                    <label for="custom-data-input"
+                        >Custom Heatmap Data (JSON)</label
+                    >
+                    <button
+                        class="btn btn-secondary btn-sm"
+                        @click="handleCustomDataChange"
+                    >
+                        Apply Data
+                    </button>
+                </div>
+                <textarea
+                    id="custom-data-input"
+                    v-model="customDataInput"
+                    :placeholder="exampleData"
+                    rows="6"
+                    class="custom-data-textarea"
+                    @blur="handleCustomDataChange"
+                ></textarea>
+                <p v-if="customDataError" class="error-message">
+                    {{ customDataError }}
+                </p>
+                <p class="input-hint">
+                    Enter an array of points with <code>x</code>,
+                    <code>y</code>, and <code>value</code> properties.
+                </p>
             </div>
         </div>
 
@@ -389,5 +519,167 @@ onUnmounted(() => {
     .section h2 {
         font-size: 1.75rem;
     }
+}
+
+/* Toggle Switch Styles */
+.data-mode-control {
+    grid-column: 1 / -1;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.toggle-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.toggle-mode-label {
+    font-size: 0.875rem;
+    color: var(--color-text);
+    min-width: 100px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: 24px;
+    transition: 0.3s;
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--color-text-muted);
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+    background-color: white;
+}
+
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 99, 102, 241), 0.3);
+}
+
+/* Custom Data Input Styles */
+.custom-data-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.custom-data-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.custom-data-header label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.custom-data-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-family: "Fira Code", "Monaco", "Consolas", monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    color: var(--color-text);
+    resize: vertical;
+    min-height: 120px;
+}
+
+.custom-data-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.custom-data-textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.6;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.input-hint {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.input-hint code {
+    background: var(--color-bg-tertiary);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-family: "Fira Code", monospace;
+}
+
+.btn-secondary {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-primary);
+}
+
+.btn-sm {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
 }
 </style>

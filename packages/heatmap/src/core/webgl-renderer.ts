@@ -416,7 +416,7 @@ export function createWebGLRenderer(
     // Generate palette and create texture
     let palette = generatePalette(gradient);
     const opacityLUT = generateOpacityLUT(minOpacity, maxOpacity);
-    let paletteTexture = createPaletteTexture(gl, palette);
+    const paletteTexture = createPaletteTexture(gl, palette);
 
     // Current render boundaries
     let currentBounds: RenderBoundaries = {
@@ -598,10 +598,10 @@ export function createWebGLRenderer(
         canvas,
         width,
         height,
-        get palette() {
+        get palette(): Uint8ClampedArray {
             return palette;
         },
-        get opacityLUT() {
+        get opacityLUT(): Uint8ClampedArray {
             return opacityLUT;
         },
         clear,
@@ -642,7 +642,7 @@ export function withWebGLRenderer(
     return {
         kind: FeatureKind.Renderer,
 
-        setup(heatmap) {
+        setup(heatmap): void {
             const resolved = validateConfig(heatmap.config);
             const gradient = heatmap.config.gradient ?? DEFAULT_GRADIENT;
 
@@ -668,7 +668,7 @@ export function withWebGLRenderer(
             heatmap.container.appendChild(renderer.canvas);
         },
 
-        teardown() {
+        teardown(): void {
             // Cleanup handled by heatmap.destroy()
         }
     };

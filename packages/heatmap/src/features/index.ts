@@ -15,7 +15,5 @@ export {
     withAnimation,
     type AnimationConfig,
     type AnimatedHeatmap,
-    type TemporalHeatmapPoint,
-    type TemporalHeatmapData,
     type AnimationState
 } from "./animation";
