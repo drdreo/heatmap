@@ -57,12 +57,14 @@
     ],
     "keywords": [
         "heatmap",
+        "heat map",
+        "heat-map",
+        "intensity-map",
         "visualization",
+        "data-visualization",
         "canvas",
         "typescript",
-        "data-visualization",
-        "heat-map",
-        "intensity-map"
+        "javascript"
     ],
     "publishConfig": {
         "access": "public"

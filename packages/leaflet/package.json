@@ -23,7 +23,9 @@
         "dev": "tsdown --watch",
         "build": "tsdown",
         "test": "vitest",
-        "test:run": "vitest run"
+        "test:run": "vitest run",
+        "publish:jsr": "deno publish",
+        "publish:jsr:dry-run": "deno publish --dry-run"
     },
     "peerDependencies": {
         "@drdreo/heatmap": "^1.0.0",
@@ -53,11 +55,19 @@
     ],
     "keywords": [
         "heatmap",
-        "leaflet",
+        "heat-map",
+        "heat map",
         "map",
+        "leaflet",
+        "leaflet heatmap",
         "visualization",
+        "intensity-map",
         "canvas",
         "webgl",
-        "geospatial"
-    ]
+        "typescript",
+        "javascript"
+    ],
+    "publishConfig": {
+        "access": "public"
+    }
 }
