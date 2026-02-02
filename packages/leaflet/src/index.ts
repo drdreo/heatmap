@@ -41,4 +41,3 @@ export type {
 
 // Export factory function
 export { createLeafletHeatmap } from "./leaflet";
-

@@ -7,7 +7,12 @@
 
 import { LatLng } from "leaflet";
 import type { LeafletMap } from "leaflet";
-import { createHeatmap, type Heatmap, type HeatmapFeature, type HeatmapPoint } from "@drdreo/heatmap";
+import {
+    createHeatmap,
+    type Heatmap,
+    type HeatmapFeature,
+    type HeatmapPoint
+} from "@drdreo/heatmap";
 import type {
     LeafletHeatmapConfig,
     LeafletHeatmap,
@@ -35,7 +40,8 @@ export function createLeafletHeatmap(
     ...features: HeatmapFeature[]
 ): LeafletHeatmap {
     const scaleRadius = config.scaleRadius ?? DEFAULTS.scaleRadius;
-    const scaleRadiusBaseZoom = config.scaleRadiusBaseZoom ?? DEFAULTS.scaleRadiusBaseZoom;
+    const scaleRadiusBaseZoom =
+        config.scaleRadiusBaseZoom ?? DEFAULTS.scaleRadiusBaseZoom;
 
     // Store geographic data
     let latlngData: LeafletHeatmapPoint[] = [];
@@ -90,7 +96,9 @@ export function createLeafletHeatmap(
         const baseRadius = config.radius ?? 25;
 
         // Calculate radius scale factor based on zoom
-        const radiusScale = scaleRadius ? Math.pow(2, zoom - scaleRadiusBaseZoom) : 1;
+        const radiusScale = scaleRadius
+            ? Math.pow(2, zoom - scaleRadiusBaseZoom)
+            : 1;
         const scaledRadius = baseRadius * radiusScale;
 
         const mapSize = map.getSize();
@@ -203,7 +211,9 @@ export function createLeafletHeatmap(
 
         // Resize the heatmap canvas if method exists
         if ("resize" in heatmap && typeof heatmap.resize === "function") {
-            (heatmap as Heatmap & { resize: (w: number, h: number) => void }).resize(newSize.x, newSize.y);
+            (
+                heatmap as Heatmap & { resize: (w: number, h: number) => void }
+            ).resize(newSize.x, newSize.y);
         }
 
         renderImmediate();
@@ -250,7 +260,9 @@ export function createLeafletHeatmap(
     heatmap.addLatLngData = (
         pointOrPoints: LeafletHeatmapPoint | LeafletHeatmapPoint[]
     ): void => {
-        const points = Array.isArray(pointOrPoints) ? pointOrPoints : [pointOrPoints];
+        const points = Array.isArray(pointOrPoints)
+            ? pointOrPoints
+            : [pointOrPoints];
         latlngData.push(...points);
         render();
     };
@@ -297,4 +309,3 @@ export function createLeafletHeatmap(
 
     return heatmap;
 }
-

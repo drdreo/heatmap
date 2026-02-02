@@ -92,8 +92,8 @@ heatmap.setLatLngData(temperatureData);
 ```typescript
 const heatmap = createLeafletHeatmap(map, {
     radius: 25,
-    scaleRadius: true,        // Enable zoom-based scaling
-    scaleRadiusBaseZoom: 12   // Radius is 25px at zoom level 12
+    scaleRadius: true, // Enable zoom-based scaling
+    scaleRadiusBaseZoom: 12 // Radius is 25px at zoom level 12
 });
 ```
 
@@ -132,8 +132,8 @@ heatmap.destroy();
 
 ```typescript
 const heatmap = createLeafletHeatmap(map, {
-    valueMin: 0,    // Fixed minimum
-    valueMax: 100   // Fixed maximum
+    valueMin: 0, // Fixed minimum
+    valueMax: 100 // Fixed maximum
 });
 
 heatmap.setLatLngData(data);
@@ -155,27 +155,27 @@ function createLeafletHeatmap(
 
 #### Parameters
 
-| Parameter  | Type                   | Description                                    |
-| ---------- | ---------------------- | ---------------------------------------------- |
-| `map`      | `LeafletMap`           | The Leaflet map instance                       |
-| `config`   | `LeafletHeatmapConfig` | Optional heatmap configuration                 |
-| `features` | `HeatmapFeature[]`     | Optional features (withWebGLRenderer, etc.)    |
+| Parameter  | Type                   | Description                                 |
+| ---------- | ---------------------- | ------------------------------------------- |
+| `map`      | `LeafletMap`           | The Leaflet map instance                    |
+| `config`   | `LeafletHeatmapConfig` | Optional heatmap configuration              |
+| `features` | `HeatmapFeature[]`     | Optional features (withWebGLRenderer, etc.) |
 
 #### LeafletHeatmapConfig
 
 Extends the core `HeatmapConfig` with Leaflet-specific options:
 
-| Option              | Type            | Default   | Description                            |
-| ------------------- | --------------- | --------- | -------------------------------------- |
-| `radius`            | `number`        | `25`      | Point radius in pixels                 |
-| `blur`              | `number`        | `0.85`    | Blur factor (0-1)                      |
-| `maxOpacity`        | `number`        | `0.8`     | Maximum opacity (0-1)                  |
-| `minOpacity`        | `number`        | `0`       | Minimum opacity (0-1)                  |
-| `gradient`          | `GradientStop[]`| default   | Color gradient stops                   |
-| `valueMin`          | `number`        | auto      | Fixed minimum value for scaling        |
-| `valueMax`          | `number`        | auto      | Fixed maximum value for scaling        |
-| `scaleRadius`       | `boolean`       | `false`   | Scale radius with zoom level           |
-| `scaleRadiusBaseZoom` | `number`      | `10`      | Base zoom level for radius scaling     |
+| Option                | Type             | Default | Description                        |
+| --------------------- | ---------------- | ------- | ---------------------------------- |
+| `radius`              | `number`         | `25`    | Point radius in pixels             |
+| `blur`                | `number`         | `0.85`  | Blur factor (0-1)                  |
+| `maxOpacity`          | `number`         | `0.8`   | Maximum opacity (0-1)              |
+| `minOpacity`          | `number`         | `0`     | Minimum opacity (0-1)              |
+| `gradient`            | `GradientStop[]` | default | Color gradient stops               |
+| `valueMin`            | `number`         | auto    | Fixed minimum value for scaling    |
+| `valueMax`            | `number`         | auto    | Fixed maximum value for scaling    |
+| `scaleRadius`         | `boolean`        | `false` | Scale radius with zoom level       |
+| `scaleRadiusBaseZoom` | `number`         | `10`    | Base zoom level for radius scaling |
 
 ### LeafletHeatmap
 
@@ -187,7 +187,9 @@ interface LeafletHeatmap extends Heatmap {
     setLatLngData(data: LeafletHeatmapData): void;
 
     // Add geographic data incrementally
-    addLatLngData(pointOrPoints: LeafletHeatmapPoint | LeafletHeatmapPoint[]): void;
+    addLatLngData(
+        pointOrPoints: LeafletHeatmapPoint | LeafletHeatmapPoint[]
+    ): void;
 
     // Get current geographic data
     getLatLngData(): LeafletHeatmapPoint[];
@@ -204,9 +206,9 @@ interface LeafletHeatmap extends Heatmap {
 
 ```typescript
 interface LeafletHeatmapPoint {
-    lat: number;    // Latitude
-    lng: number;    // Longitude
-    value: number;  // Intensity value
+    lat: number; // Latitude
+    lng: number; // Longitude
+    value: number; // Intensity value
 }
 ```
 
@@ -259,4 +261,3 @@ map.on("click", (e) => {
 ## License
 
 MIT
-

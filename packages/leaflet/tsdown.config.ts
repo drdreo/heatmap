@@ -10,4 +10,3 @@ export default defineConfig({
     outDir: "dist",
     external: ["leaflet", "@drdreo/heatmap"]
 });
-
