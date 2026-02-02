@@ -317,13 +317,14 @@ describe("createHeatmap core", () => {
         });
 
         it("should return aggregated value at position", () => {
-            heatmap = createHeatmap({ container });
+            heatmap = createHeatmap({ container, aggregationMode: "sum" });
             heatmap.setData([
                 { x: 2, y: 2, value: 30 },
                 { x: 4, y: 4, value: 20 }
             ]);
 
             // Both points should be in same grid cell (default gridSize is 6)
+            // Using sum mode to test aggregation
             expect(heatmap.getValueAt(3, 3)).toBe(50); // 30 + 20
         });
 
@@ -1285,6 +1286,192 @@ describe("createHeatmap core", () => {
             const stats = heatmap.getStats();
             expect(stats.dataRange?.min).toBe(0);
             expect(stats.dataRange?.max).toBe(75);
+        });
+    });
+
+    describe("aggregationMode", () => {
+        describe("max (default)", () => {
+            it("should use maximum value in the same grid cell by default", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10
+                });
+
+                // Two points in the same grid cell (both in cell 0,0)
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 }
+                ]);
+
+                // getValueAt should return the max
+                expect(heatmap.getValueAt(3, 3)).toBe(30);
+            });
+
+            it("should reflect max values in dataMax", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 },
+                    { x: 50, y: 50, value: 10 } // Different cell
+                ]);
+
+                const stats = heatmap.getStats();
+                expect(stats.dataRange?.max).toBe(30);
+                expect(stats.dataRange?.min).toBe(10);
+            });
+        });
+
+        describe("sum", () => {
+            it("should sum values in the same grid cell", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "sum"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 }
+                ]);
+
+                expect(heatmap.getValueAt(3, 3)).toBe(50);
+            });
+
+            it("should reflect summed values in dataMax", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "sum"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 }
+                ]);
+
+                const stats = heatmap.getStats();
+                expect(stats.dataRange?.max).toBe(50); // Sum of overlapping points
+            });
+        });
+
+        describe("mean", () => {
+            it("should calculate average value in the same grid cell", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "mean"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 }
+                ]);
+
+                expect(heatmap.getValueAt(3, 3)).toBe(25); // (30 + 20) / 2
+            });
+
+            it("should reflect mean values in dataMax", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "mean"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 },
+                    { x: 50, y: 50, value: 10 } // Different cell, only one point
+                ]);
+
+                const stats = heatmap.getStats();
+                expect(stats.dataRange?.max).toBe(25); // Mean of overlapping cell
+                expect(stats.dataRange?.min).toBe(10); // Single point cell
+            });
+        });
+
+        describe("count", () => {
+            it("should count points in the same grid cell", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "count"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 100 }, // Value is ignored
+                    { x: 5, y: 5, value: 200 }, // Value is ignored
+                    { x: 7, y: 7, value: 50 } // Value is ignored
+                ]);
+
+                expect(heatmap.getValueAt(3, 3)).toBe(3); // 3 points in cell
+            });
+
+            it("should reflect counts in dataMax", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "count"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 100 },
+                    { x: 5, y: 5, value: 200 },
+                    { x: 50, y: 50, value: 300 } // Different cell
+                ]);
+
+                const stats = heatmap.getStats();
+                expect(stats.dataRange?.max).toBe(2); // Cell with 2 points
+                expect(stats.dataRange?.min).toBe(1); // Cell with 1 point
+            });
+        });
+
+        describe("consistency with legend", () => {
+            it("should ensure tooltip and legend values are consistent with sum mode", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "sum"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 }
+                ]);
+
+                const stats = heatmap.getStats();
+                const tooltipValue = heatmap.getValueAt(3, 3);
+
+                // The tooltip value should be within the data range (legend range)
+                expect(tooltipValue).toBeLessThanOrEqual(stats.dataRange!.max);
+                expect(tooltipValue).toBeGreaterThanOrEqual(
+                    stats.dataRange!.min
+                );
+            });
+
+            it("should ensure tooltip and legend values are consistent with max mode", () => {
+                heatmap = createHeatmap({
+                    container,
+                    gridSize: 10,
+                    aggregationMode: "max"
+                });
+
+                heatmap.setData([
+                    { x: 2, y: 2, value: 30 },
+                    { x: 5, y: 5, value: 20 }
+                ]);
+
+                const stats = heatmap.getStats();
+                const tooltipValue = heatmap.getValueAt(3, 3);
+
+                expect(tooltipValue).toBeLessThanOrEqual(stats.dataRange!.max);
+                expect(tooltipValue).toBeGreaterThanOrEqual(
+                    stats.dataRange!.min
+                );
+            });
         });
     });
 });

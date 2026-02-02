@@ -7,6 +7,7 @@ import type { AnimatedHeatmap } from "../features";
 import { generatePalette } from "./gradient";
 import { withCanvas2DRenderer } from "./render-pipeline";
 import type {
+    AggregationMode,
     AnimationFeature,
     GradientStop,
     Heatmap,
@@ -26,6 +27,14 @@ import { validateConfig } from "./validation";
 type GridKey = `${number},${number}`;
 
 /**
+ * Internal grid cell data for aggregation
+ */
+interface GridCell {
+    value: number;
+    count: number;
+}
+
+/**
  * Internal state for the heatmap
  */
 interface HeatmapState {
@@ -34,6 +43,9 @@ interface HeatmapState {
     dataMin: number;
     /** Auto-detected maximum value from data points */
     dataMax: number;
+    /** Grid cells with raw aggregation data (before final value calculation) */
+    gridCells: Map<GridKey, GridCell>;
+    /** Final computed grid values (after applying aggregation mode) */
     valueGrid: Map<GridKey, number>;
     renderBoundaries: RenderBoundaries;
 }
@@ -211,6 +223,9 @@ function createCore(config: HeatmapConfig): Heatmap {
     const { width, height, gridSize, intensityExponent } =
         validateConfig(config);
 
+    // Aggregation mode (default: 'max' for peak intensity display)
+    const aggregationMode: AggregationMode = config.aggregationMode ?? "max";
+
     // Renderer will be attached by withCanvas2DRenderer or similar
     let renderer: HeatmapRenderer | null = null;
 
@@ -218,6 +233,7 @@ function createCore(config: HeatmapConfig): Heatmap {
         points: [],
         dataMin: config.valueMin ?? 0,
         dataMax: config.valueMax ?? 0,
+        gridCells: new Map(),
         valueGrid: new Map(),
         renderBoundaries: { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 }
     };
@@ -228,19 +244,16 @@ function createCore(config: HeatmapConfig): Heatmap {
     // --- Core Methods ---
 
     /**
-     * Compute min and max values from data points in a single pass
+     * Compute min and max values from the aggregated grid values.
+     * This ensures legend values match what tooltips will show.
      */
-    function computeDataBounds(points: HeatmapPoint[]): {
-        min: number;
-        max: number;
-    } {
-        if (points.length === 0) return { min: 0, max: 0 };
+    function computeGridBounds(): { min: number; max: number } {
+        if (state.valueGrid.size === 0) return { min: 0, max: 0 };
 
-        let min = points[0].value;
-        let max = points[0].value;
+        let min = Infinity;
+        let max = -Infinity;
 
-        for (let i = 1; i < points.length; i++) {
-            const value = points[i].value;
+        for (const value of state.valueGrid.values()) {
             if (value < min) min = value;
             if (value > max) max = value;
         }
@@ -249,7 +262,7 @@ function createCore(config: HeatmapConfig): Heatmap {
     }
 
     /**
-     * Recompute and apply data bounds from current points
+     * Recompute and apply data bounds from the aggregated grid values
      * @returns Whether the bounds changed from previous values
      */
     function syncDataBounds(): boolean {
@@ -260,7 +273,7 @@ function createCore(config: HeatmapConfig): Heatmap {
             state.dataMin = config.valueMin;
             state.dataMax = config.valueMax;
         } else {
-            const bounds = computeDataBounds(state.points);
+            const bounds = computeGridBounds();
             state.dataMin = config.valueMin ?? bounds.min;
             state.dataMax = config.valueMax ?? bounds.max;
         }
@@ -270,8 +283,8 @@ function createCore(config: HeatmapConfig): Heatmap {
 
     function setData(data: HeatmapPoint[]): void {
         state.points = data;
-        syncDataBounds();
         updateValueGrid(state.points);
+        syncDataBounds();
         render();
         events.emit("datachange", {
             data,
@@ -290,8 +303,9 @@ function createCore(config: HeatmapConfig): Heatmap {
         const hadNoPoints = state.points.length === 0;
         state.points.push(...points);
 
-        const boundsChanged = syncDataBounds();
+        // Update grid first, then compute bounds from grid values
         updateValueGrid(state.points);
+        const boundsChanged = syncDataBounds();
 
         // Only do incremental render if bounds didn't change
         if (hadNoPoints || boundsChanged) {
@@ -330,6 +344,7 @@ function createCore(config: HeatmapConfig): Heatmap {
         state.points = [];
         state.dataMin = 0;
         state.dataMax = 0;
+        state.gridCells.clear();
         state.valueGrid.clear();
         renderer?.clear();
         events.emit("clear");
@@ -382,6 +397,7 @@ function createCore(config: HeatmapConfig): Heatmap {
         events.clear();
         renderer?.dispose();
         renderer?.canvas.remove();
+        state.gridCells.clear();
         state.valueGrid.clear();
         state.points = [];
     }
@@ -405,14 +421,55 @@ function createCore(config: HeatmapConfig): Heatmap {
     }
 
     function updateValueGrid(points: HeatmapPoint[]): void {
+        state.gridCells.clear();
         state.valueGrid.clear();
+
+        // First pass: collect raw data for each grid cell
         for (const point of points) {
             const gridX = Math.floor(point.x / gridSize);
             const gridY = Math.floor(point.y / gridSize);
             const key = `${gridX},${gridY}` as const;
-            const existing = state.valueGrid.get(key) ?? 0;
-            const newValue = existing + point.value;
-            state.valueGrid.set(key, newValue);
+            const existing = state.gridCells.get(key);
+
+            if (existing) {
+                // Update based on aggregation mode
+                switch (aggregationMode) {
+                    case "max":
+                        existing.value = Math.max(existing.value, point.value);
+                        break;
+                    case "sum":
+                    case "mean":
+                    case "count":
+                    default:
+                        existing.value += point.value;
+                        break;
+                }
+                existing.count++;
+            } else {
+                state.gridCells.set(key, {
+                    value: aggregationMode === "count" ? 1 : point.value,
+                    count: 1
+                });
+            }
+        }
+
+        // Second pass: compute final values based on aggregation mode
+        for (const [key, cell] of state.gridCells) {
+            let finalValue: number;
+            switch (aggregationMode) {
+                case "mean":
+                    finalValue = cell.value / cell.count;
+                    break;
+                case "count":
+                    finalValue = cell.count;
+                    break;
+                case "max":
+                case "sum":
+                default:
+                    finalValue = cell.value;
+                    break;
+            }
+            state.valueGrid.set(key, finalValue);
         }
     }
 

@@ -343,16 +343,17 @@ describe("withLegend feature", () => {
             expect(getLabels()[4]).toBe("150"); // new gridMax
         });
 
-        it("should show dataMax from points when points overlap", () => {
+        it("should show max value when points overlap (default max mode)", () => {
             heatmap = createHeatmap({ container, gridSize: 10 }, withLegend());
 
-            // Two points in same grid cell - legend shows max of individual point values
+            // Two points in same grid cell - legend shows max value (default aggregation)
+            // This ensures tooltip values and legend values are consistent
             heatmap.setData([
                 { x: 2, y: 2, value: 30 },
                 { x: 4, y: 4, value: 20 }
             ]);
 
-            // Legend shows max point value (30), not aggregated grid value
+            // Legend shows max grid value (30), matching what tooltip would show
             expect(getLabels()[4]).toBe("30");
         });
 
