@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
     { id: "animation-demo", label: "Animation" },
     { id: "legend-demo", label: "Legend" },
     { id: "webgl-demo", label: "WebGL" },
+    { id: "leaflet", label: "Leaflet" },
     { id: "benchmark", label: "Benchmark" },
     { id: "api", label: "API" }
 ];
