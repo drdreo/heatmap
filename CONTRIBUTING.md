@@ -120,7 +120,7 @@ docs: update installation instructions
 
 Using Nx release, all we have to do is checkout latest master and run:
 
-This generates the version bump, changelog, and GitHub release.
+This will build the projects dist files, generates the version bump, changelog, and GitHub release.
 
 ```bash
 nx release
@@ -130,6 +130,15 @@ Then publish the package to npm:
 
 ```bash
 nx release publish --otp=<OTP>
+```
+
+### JSR - Deno 
+
+To deploy the package to the JSR, first bump the version manually in the `jsr.json` file.
+Then run: 
+
+```bash
+pnpm --filter heatmap release:jsr
 ```
 
 ## Questions?
